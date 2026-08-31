@@ -1,0 +1,148 @@
+<template>
+  <div class="row mb-3">
+    <ul class="nav col-12 justify-content-center mx-auto">
+      <h1 class="titulo-header">Info Usuario</h1>
+    </ul>
+  </div>
+  <div class="recover-container">
+    <form class="recover-form">
+      <div v-if="isFormReady" class="row">
+        <div class="col-md-6">
+          <label for="docType">Tipo de documento</label>
+          <input type="text" id="docType" :value="docTypeName" disabled />
+
+          <label for="full-name">Nombres y Apellidos</label>
+          <input type="text" id="full-name" v-model="user.fullName" disabled />
+
+          <label for="email">Correo Electrónico</label>
+          <input type="email" id="email" v-model="user.email" disabled />
+
+          <label for="phone">Teléfono</label>
+          <input type="text" id="phone" v-model="user.phone" disabled />
+        </div>
+
+        <div class="col-md-6">
+          <label for="id-number">Número de Identificación</label>
+          <input type="text" id="id-number" v-model="user.idNumber" disabled />
+
+          <label for="address">Dirección</label>
+          <input type="text" id="address" v-model="user.address" disabled />
+
+          <label for="role">Rol</label>
+          <input type="text" id="role" :value="roleName" disabled />
+
+          <label for="status">Estado</label>
+          <input type="text" id="status" :value="user.status" disabled />
+        </div>
+      </div>
+
+      <div v-else>
+        <p>Cargando datos del usuario...</p>
+      </div>
+
+      <button type="button" class="btn back-button" @click="goBack">Regresar</button>
+    </form>
+  </div>
+
+
+</template>
+
+<script>
+import { reactive, computed, onMounted } from 'vue';
+import axios from 'axios';
+import { useRoute, useRouter } from 'vue-router';
+
+export default {
+  setup() {
+    const user = reactive({
+      fullName: '',
+      email: '',
+      idNumber: '',
+      address: '',
+      phone: '',
+      role: '',
+      status: '',
+      docType: ''
+    });
+
+    const route = useRoute();
+    const router = useRouter();
+    const userId = route.params.id;
+    const token = localStorage.getItem('token');
+
+    const isLoading = reactive({ value: true });
+
+    const rolesMap = {
+      1: "Administrador",
+      2: "Empleado",
+      3: "Cliente"
+    };
+
+    const docTypesMap = {
+      1: "Cédula de Ciudadanía",
+      2: "Tarjeta de Identidad",
+      3: "Cédula de Extranjería"
+    };
+
+    const statusMap = {
+      "Active": "Activo",
+      "Blocked": "Bloqueado",
+      "Inactive": "Inactivo",
+      "Account deleted": "Cuenta eliminada"
+    };
+
+    onMounted(async () => {
+      try {
+        if (!token) {
+          alert('No tienes permiso para ver esta información.');
+          router.push('/Login');
+          return;
+        }
+
+        const response = await axios.get(`http://localhost:5000/api/users/users/${userId}`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          }
+        });
+
+        const userData = response.data;
+        user.fullName = userData.full_name || '';
+        user.email = userData.user_email || '';
+        user.idNumber = userData.document_number || '';
+        user.address = userData.address || '';
+        user.phone = userData.phone || '';
+        user.role = userData.role_fk || '';
+        user.status = statusMap[userData.userStatus_name] || userData.userStatus_name;
+        user.docType = userData.type_document_id || '';
+
+        isLoading.value = false;
+      } catch (error) {
+        console.error(error);
+        alert('No se pudo cargar la información del usuario. Verifica tu sesión.');
+        router.push('/Users');
+      }
+    });
+
+    const roleName = computed(() => {
+      return rolesMap[user.role] || "Desconocido";
+    });
+
+    const docTypeName = computed(() => {
+      return docTypesMap[user.docType] || "Desconocido";
+    });
+
+    const goBack = () => {
+      router.push('/Users');
+    };
+
+    const isFormReady = computed(() => !isLoading.value && user.docType !== '');
+
+    return { user, goBack, isFormReady, roleName, docTypeName };
+  }
+};
+
+</script>
+
+<style scoped>
+@import '@/assets/css/users/verUser.css';
+</style>

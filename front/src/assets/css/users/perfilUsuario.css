@@ -1,0 +1,102 @@
+.profile-container {
+    display: flex;
+    align-items: center;
+    justify-content: center; 
+    gap: 20px; 
+    background: #000000; 
+    padding: 20px;
+    border-radius: 10px; 
+    width: 50%; 
+    margin: auto; 
+    box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1); 
+}
+.profile-name {
+    font-size: 25px;
+    font-weight: bold;
+    color: #ffffff; 
+}
+
+.profile-image img {
+    border-radius: 50%; 
+}
+
+.profile-info {
+    font-size: 25px;
+    display: flex;
+    flex-direction: column; 
+    gap: 10px; 
+    white-space: nowrap; 
+}
+.back-button-container {
+    display: flex;
+    justify-content: center; 
+    margin-top: 20px; 
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.back-button {
+    display: block;
+    margin: 15px auto 0 auto; 
+}
+
+.btn-delete {
+  background-color: #ff0000;
+  color: #000;
+  border: 1px solid #d43737;
+  font-weight: bold;
+}
+
+.btn-delete:hover {
+  background-color: #000000;
+  color: #ff0000;
+  border: 1px solid #ff0000;
+}
+
+/* .btn-edit {
+  background-color: #ccaf54;
+  color: #000000;
+  border: 1px solid #ccaf54;
+  font-weight: bold;
+}
+.btn-edit:hover {
+  background-color: #000000;
+  color: #ccaf54;
+  border: 1px solid #ccaf54;
+} */
+
+.btn-icon-edit img {
+    width: 20px;
+    height: 20px;
+    object-fit: contain;
+    margin-right: 8px;
+}
+.btn-icon-edit {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background-color: #ccaf54;
+    color: #000000;
+    border: 1px solid #ccaf54;
+    font-weight: bold;
+}
+.btn-icon-edit:hover {
+    background-color: #000000;
+    color: #ccaf54;
+    border: 1px solid #ccaf54;
+}
+
+.botonav-citas {
+    background-color: #3d71e2;
+    color: black;
+    border: 1px solid #0051ff;
+    /* margin-left: 10px; */
+  }
+  .botonav-citas:hover {
+    background-color: #000000;
+    color: #0051ff;
+    border: 1px solid #0051ff;
+    /* margin-left: 10px; */
+  }
+
+  

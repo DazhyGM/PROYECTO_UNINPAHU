@@ -1,0 +1,116 @@
+.textnav {
+    color: #CCAF54;
+}
+
+.botonav {
+    background-color: #CCAF54;
+    color: black;
+}
+
+.add-user-container {
+    background-color: #111;
+    padding: 30px;
+    border-radius: 10px;
+    text-align: center;
+    width: 800px;
+    margin: auto;
+    margin-top: 50px;
+}
+
+.docType-label{
+    color: #CCAF54;
+    margin-bottom: 25px;
+    font-size: 20px;
+    text-align: left;
+}
+
+.add-user-form label {
+    display: block;
+    margin-bottom: 8px;
+    color: #fff;
+    font-size: 17px;
+    text-align: left;
+}
+
+.add-user-form input[type="text"],
+.add-user-form input[type="email"],
+.add-user-form input[type="password"] {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 20px;
+    border-radius: 5px;
+    border: 1px solid #333;
+    background-color: #222;
+    color: #fff;
+    font-size: 14px;
+}
+
+.add-user-form label[for="docType"],
+.add-user-form label[for="full-name"],
+.add-user-form label[for="email"],
+.add-user-form label[for="phone"],
+.add-user-form label[for="id-number"],
+.add-user-form label[for="address"],
+.add-user-form label[for="password"],
+.add-user-form label[for="confirm-password"],
+.add-user-form label[for="role"],
+.add-user-form label[for="status"] {
+    width: 100%;
+    color: #CCAF54;
+}
+
+.add-user-form input[type="checkbox"] {
+    margin-right: 8px;
+}
+
+.button-add-user {
+    width: 100%;
+    padding: 12px;
+    background-color: #CCAF54;
+    border: 1px solid #D4AF37;
+    border-radius: 5px;
+    cursor: pointer;
+    color: #000;
+    font-weight: bold;
+    font-size: 16px;
+    margin-top: 20px;
+    margin-bottom: 20px;
+}
+
+.button-add-user:hover {
+    background-color: #000000;
+    border: 1px solid #D4AF37;
+    color: #CCAF54;
+}
+
+.select-field {
+  width: 100%;
+  padding: 10px;
+  color: #ffffff;
+  background-color: #333;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  margin-top: 5px;
+  transition: 0.3s ease-in-out;
+}
+
+.select-field:focus {
+  border-color: #cccccc3d;
+  box-shadow: #CCAF54;
+  outline: none;
+}
+
+/* .swal2-popup {
+    background-color: #000 !important;
+    border: 2px solid #CCAF54;
+}
+
+.swal2-title,
+.swal2-content {
+    color: #fff !important;
+}
+
+.swal2-confirm,
+.swal2-cancel {
+    color: #000 !important;
+} */

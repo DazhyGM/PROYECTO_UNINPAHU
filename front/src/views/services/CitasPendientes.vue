@@ -1,0 +1,140 @@
+<template>
+  <div class="container text-white">
+    <div class="row mb-2">
+      <ul class="nav col-12 justify-content-center mx-auto">
+        <h1>Mis Citas</h1>
+      </ul>
+    </div>
+    <div class="pedido-container">
+      <div class="table-responsive">
+        <table class="table table-dark table-striped">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Fecha</th>
+              <th>Hora</th>
+              <th>Cliente</th>
+              <th>Barbero</th>
+              <th>Servicio</th>
+              <th>Valor</th>
+              <th>Estado</th>
+              <th v-if="userRole === 'Employee' || userRole === 'Client' || userRole === 'admin'">Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="(cita, index) in citas" :key="cita.id_quotes">
+              <td>{{ index + 1 }}</td>
+              <td>{{ formatDate(cita.date_time) }}</td>
+              <td>{{ formatTime(cita.date_time) }}</td>
+              <td>{{ cita.client_name || 'N/A' }}</td>
+              <td>{{ cita.barber_name || 'N/A' }}</td>
+              <td>{{ cita.name_service || 'No disponible' }}</td>
+              <td>${{ cita.price ? cita.price.toLocaleString('es-CO') : 'N/A' }}</td>
+              <td>{{ cita.state_quotes }}</td>
+              <td v-if="userRole === 'Employee' || userRole === 'Client' || userRole === 'admin'">
+                <div class="d-flex gap-2">
+                  <button v-if="cita.state_quotes === 'pendiente'" class="btn btn-sm btn-danger"
+                    @click="cancelarCita(cita.id_quotes)">
+                    Cancelar
+                  </button>
+                  <button v-if="cita.state_quotes === 'pendiente' && userRole === 'Employee'"
+                    class="btn btn-sm btn-success" @click="finalizarCita(cita.id_quotes)">
+                    Finalizar
+                  </button>
+                  <span v-else-if="cita.state_quotes !== 'pendiente'" class="text-success fw-bold">✔ Terminado</span>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="text-center my-4">
+      <button class="btn back-button" @click="$router.push('/Home')">Regresar</button>
+    </div>
+
+  </div>
+</template>
+
+<script>
+import axios from 'axios';
+import { getQuotesWithServiceDetails, cancelQuote, finishQuote } from '@/services/quotesApi';
+
+export default {
+  name: 'CitasPendientes',
+  data() {
+    return {
+      citas: [],
+      userId: null,
+      userRole: null,
+    };
+  },
+  methods: {
+    async cargarCitas() {
+      try {
+        const token = localStorage.getItem('token');
+        if (!token) {
+          alert("No se ha iniciado sesión.");
+          this.$router.push('/');
+          return;
+        }
+
+        const { data: userData } = await axios.get('http://localhost:5000/api/users/profile', {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+
+        this.userId = userData.user_id;
+        this.userRole = userData.role;
+
+        const citasData = await getQuotesWithServiceDetails(this.userRole === 'admin' ? null : this.userId);
+        this.citas = citasData;
+      } catch (error) {
+        console.error('❌ Error al cargar citas:', error);
+        alert("No se pudieron cargar las citas.");
+      }
+    },
+    formatDate(dateString) {
+      if (!dateString) return 'Fecha no disponible';
+      return new Date(dateString).toLocaleDateString('es-CO', {
+        day: '2-digit', month: '2-digit', year: 'numeric'
+      });
+    },
+    formatTime(dateString) {
+      if (!dateString) return 'Hora no disponible';
+      return new Date(dateString).toLocaleTimeString('es-CO', {
+        hour: '2-digit', minute: '2-digit'
+      });
+    },
+    async cancelarCita(id) {
+      try {
+        await cancelQuote(id);
+        alert('Cita cancelada con éxito');
+        // Redirige a /Home después de cancelar
+        this.$router.push('/Home');
+      } catch (error) {
+        console.error('❌ Error al cancelar cita:', error);
+        alert('No se pudo cancelar la cita.');
+      }
+    },
+    async finalizarCita(id) {
+      try {
+        await finishQuote(id);
+        alert('Cita finalizada con éxito');
+        // Redirige a /Home después de finalizar
+        this.$router.push('/Home');
+      } catch (error) {
+        console.error('❌ Error al finalizar cita:', error);
+        alert('No se pudo finalizar la cita.');
+      }
+    }
+  },
+  mounted() {
+    this.cargarCitas();
+  }
+};
+</script>
+
+<style scoped>
+@import '@/assets/css/services/citasPend.css';
+</style>

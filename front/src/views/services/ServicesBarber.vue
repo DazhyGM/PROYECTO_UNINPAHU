@@ -1,0 +1,227 @@
+<template>
+  <div class="container-scaled">
+    <div class="row mb-2">
+      <ul class="nav col-12 justify-content-center mx-auto">
+        <h1 class="titulo-header">Servicios</h1>
+      </ul>
+    </div>
+    <div class="container">
+
+
+      <div class="category-nav">
+        <ul class="nav justify-content-center">
+          <li v-for="(services, category) in servicesByCategory" :key="category" class="nav-item">
+            <a :href="'#' + getCategoryId(category)" class="nav-link" :class="{ active: activeCategory === category }">{{ category }}</a>
+          </li>
+        </ul>
+      </div>
+
+      <div class="d-flex justify-content-between align-items-center my-3" v-if="userRole === 'Admin'">
+        <router-link to="/Create-Services" class="btn btn-agregar">
+          <img src="https://cdn-icons-png.flaticon.com/512/992/992651.png"
+            style="width: 20px; height: 20px; margin-right: 5px;" />
+          Agregar
+        </router-link>
+        <router-link to="/Services-Inactivos" class="btn btn-agregar">Servicios Inactivos</router-link>
+      </div>
+
+      <div class="d-flex flex-wrap justify-content-center gap-4 align-items-start">
+        <div class="col-lg-8">
+          <div v-for="(services, category) in servicesByCategory" :key="category" class="service-category">
+            <h3 :id="getCategoryId(category)" class="text-center text-uppercase category-title">{{ category }}</h3>
+            <div class="d-flex flex-column align-items-center">
+              <div class="service-section w-100 mb-5" v-for="service in services" :key="service.id_services">
+                <div class="card">
+                  <div class="card-body d-flex">
+                    <div class="service-image">
+                      <img :src="getServiceImage(service.image)" :alt="service.name_service" class="img-fluid"
+                        style="max-width: 150px; margin-right: 15px;" />
+
+                    </div>
+                    <div class="service-details">
+                      <h5 class="card-title">{{ service.name_service }}</h5>
+                      <p class="card-description">{{ service.description }}</p>
+                      <div class="card-actions mt-2">
+                        <router-link :to="`/View-Service/${service.id_services}`"
+                          class="btn btn-view me-2">Ver</router-link>
+                        <button v-if="userRole === 'Client'" class="btn btn-select me-2"
+                          @click="selectService(service)">Seleccionar</button>
+                        <router-link v-if="userRole === 'Admin'" :to="`/Editar-Services/${service.id_services}`"
+                          class="btn btn-edit me-2">Editar</router-link>
+                        <button v-if="userRole === 'Admin'" class="btn btn-delete-service"
+                          @click="confirmDelete(service.id_services)">Eliminar</button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div v-if="userRole === 'Client' && selectedServices.length"
+          class="selected-service-box card text-white bg-dark p-4">
+          <h4 class="mb-3">Servicios Seleccionados</h4>
+          <ul class="list-unstyled">
+            <li v-for="service in selectedServices" :key="service.id_services" class="mb-3">
+              <strong>{{ service.name_service }}</strong><br />
+              <span>Duración: {{ service.estimated_time }}</span><br />
+            </li>
+          </ul>
+          <p class="mt-3"><strong>Total:</strong> ${{ totalPrice }}</p>
+
+          <hr />
+
+
+          <div class="mt-3 d-grid gap-2">
+            <button class="btn btn-delete-select" @click="clearAllSelected">Eliminar selección</button>
+            <button class="btn btn-continuar" @click="goToSelectBarbero">Continuar</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="btn-regresar mt-3 text-center">
+        <button class="btn back-button" @click="goBack">Regresar</button>
+      </div>
+
+      <footer class="py-3 my-4">
+        <p class="text-center text-white">© 2026 www.mysticalcut.com, Inc</p>
+      </footer>
+    </div>
+  </div>
+</template>
+
+<script setup>
+import { ref, computed, onMounted, onUnmounted } from 'vue';
+import { useRouter } from 'vue-router';
+import { getAllServices, deleteService } from '@/services/servicesApi';
+import axios from 'axios';
+
+const router = useRouter();
+const services = ref([]);
+const selectedServices = ref([]);
+const isMenuOpen = ref(false);
+const user = ref({ full_name: '', user_id: null, user_email: '' });
+const roleModules = ref([]);
+const userRole = ref('');
+const closeMenu = (event) => { if (!event.target.closest('.dropdown')) isMenuOpen.value = false; };
+const goBack = () => router.push('/Home');
+
+onMounted(() => {
+  fetchServices();
+  fetchUserData();
+  document.addEventListener('click', closeMenu);
+
+  setTimeout(() => {
+    observeSections();
+  }, 500);
+});
+onUnmounted(() => document.removeEventListener('click', closeMenu));
+
+const fetchUserData = async () => {
+  try {
+    const token = localStorage.getItem('token');
+    const { data } = await axios.get('http://localhost:5000/api/users/profile', {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    user.value = {
+      full_name: data.full_name || 'Usuario',
+      user_id: data.user_id,
+      user_email: data.user_email || '',
+      modules: data.modules || []
+    };
+    roleModules.value = user.value.modules;
+    userRole.value = data.role || '';
+  } catch (err) {
+    console.error("❌ Error al obtener el usuario:", err);
+    alert("No se pudo obtener la información del usuario.");
+  }
+};
+
+const fetchServices = async () => {
+  try {
+    services.value = await getAllServices();
+  } catch (error) {
+    console.error("Error al cargar servicios:", error);
+    alert("Hubo un problema al obtener los servicios.");
+  }
+};
+
+const servicesByCategory = computed(() => {
+  const categorized = {};
+  services.value.forEach(service => {
+    const category = service.category_name || "Otros";
+    if (!categorized[category]) categorized[category] = [];
+    categorized[category].push(service);
+  });
+  return categorized;
+});
+
+const getCategoryId = (category) => category.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]+/g, '');
+
+const getServiceImage = (image) =>
+  image ? `http://localhost:5000/uploads/${image}` : '/img/background/combo01.png';
+
+const selectService = (service) => {
+  console.log("Servicio seleccionado:", service);
+  selectedServices.value = [service];
+};
+const clearAllSelected = () => selectedServices.value = [];
+const totalPrice = computed(() => selectedServices.value.reduce((sum, s) => sum + parseFloat(s.price || 0), 0).toFixed(2));
+
+// Eliminar servicio
+const confirmDelete = async (id) => {
+  if (!id) return alert("ID de servicio inválido.");
+  if (!confirm('¿Estás seguro de eliminar este servicio?')) return;
+  try {
+    await deleteService(id);
+    alert("✅ Servicio eliminado correctamente.");
+    await fetchServices();
+  } catch (error) {
+    console.error("❌ Error al eliminar el servicio:", error);
+    alert("❌ No se pudo eliminar el servicio.");
+  }
+};
+
+const goToSelectBarbero = () => {
+  if (!user.value.user_id) return alert("No se ha podido obtener el ID del usuario.");
+
+  localStorage.setItem('selectedService', JSON.stringify(selectedServices.value));
+  localStorage.setItem('userName', user.value.full_name);
+  localStorage.setItem('userId', user.value.user_id);
+  localStorage.setItem('userEmail', user.value.user_email);
+
+  router.push('/Select-Barbero');
+};
+
+const activeCategory = ref('');
+
+const observeSections = () => {
+  const sections = document.querySelectorAll('.service-category');
+
+  const observer = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+
+          const title = entry.target.querySelector('.category-title');
+
+          if (title) {
+            activeCategory.value = title.textContent.trim();
+          }
+        }
+      });
+    },
+    {
+      threshold: 0.4
+    }
+  );
+
+  sections.forEach((section) => observer.observe(section));
+};
+
+</script>
+
+<style scoped>
+@import '@/assets/css/services/servicesBarber.css';
+</style>
