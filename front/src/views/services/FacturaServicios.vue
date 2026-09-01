@@ -52,7 +52,10 @@
 </template>
 
 <script>
-import { sendQuoteEmail } from '@/services/quotesApi';
+import {
+  createQuote,
+  sendQuoteEmail
+} from '@/services/quotesApi';
 
 export default {
   name: 'FacturaServicios',
@@ -155,22 +158,93 @@ export default {
       }
     },
     async confirmarCita() {
-      const enviado = await this.enviarCorreo();
+      try {
 
-      if (enviado) {
-        alert('Cita confirmada correctamente ✅');
-      } else {
-        alert('Cita confirmada, pero hubo un problema con el correo ⚠️');
+        if (!this.userId || !this.barberId) {
+          alert('Faltan datos del usuario o del barbero.');
+          return;
+        }
+
+        if (!this.date || !this.time) {
+          alert('Faltan la fecha o la hora de la cita.');
+          return;
+        }
+
+        if (!this.servicioSeleccionado?.id &&
+          !this.servicioSeleccionado?.id_services) {
+          alert('No se encontró el servicio seleccionado.');
+          return;
+        }
+
+        const serviceId =
+          this.servicioSeleccionado.id_services ||
+          this.servicioSeleccionado.id;
+
+        const dateTimeStr = `${this.date}T${this.time}:00`;
+        const dateTimeUTC = new Date(dateTimeStr);
+
+        const estimatedTime =
+          this.servicioSeleccionado.estimated_time ||
+          this.servicioSeleccionado.duration ||
+          '00:30:00';
+
+        const [hours, minutes] = estimatedTime.split(':').map(Number);
+        const durationMinutes = (hours * 60) + minutes;
+
+        const endTime = new Date(
+          dateTimeUTC.getTime() + durationMinutes * 60000
+        );
+
+        const quoteData = {
+          user_id: this.userId,
+          barber_id: this.barberId,
+          date_time: dateTimeUTC.toISOString(),
+          end_time: endTime.toISOString(),
+          state_quotes: 'pendiente',
+          id_services: serviceId
+        };
+
+        await createQuote(quoteData);
+
+        const enviado = await this.enviarCorreo();
+
+        if (enviado) {
+          alert('Cita confirmada correctamente y correo enviado ✅');
+        } else {
+          alert(
+            'Cita confirmada correctamente, pero hubo un problema con el correo ⚠️'
+          );
+        }
+
+        localStorage.removeItem('facturaData');
+
+        this.$router.push('/citas');
+
+      } catch (error) {
+
+        console.error('❌ Error al confirmar la cita:', {
+          message: error.message,
+          response: error.response?.data,
+          stack: error.stack
+        });
+
+        if (error.response?.status === 409) {
+          alert(
+            error.response.data.message ||
+            'El barbero ya tiene una cita en ese horario.'
+          );
+        } else {
+          alert(
+            'No fue posible confirmar la cita: ' +
+            (error.response?.data?.message || error.message)
+          );
+        }
       }
-
-      localStorage.removeItem('facturaData');
-      this.$router.push('/citas');
     },
     volver() {
       this.$router.back();
     }
   },
-
 };
 </script>
 
