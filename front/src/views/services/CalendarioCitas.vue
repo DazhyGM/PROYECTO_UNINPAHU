@@ -71,7 +71,6 @@
 </template>
 
 <script>
-import { createQuote } from '@/services/quotesApi';
 
 export default {
   name: 'CalendarioCitas',
@@ -152,15 +151,16 @@ export default {
     },
     async confirmQuote() {
       console.log('--- INICIO confirmQuote ---');
-      console.log('Servicios disponibles:', this.selectedServices);
 
-      // Validación del servicio seleccionado
+      // Validar que haya exactamente un servicio
       if (!this.selectedServices?.length || this.selectedServices.length !== 1) {
         console.error('Error en servicios:', this.selectedServices);
         return alert('Debes seleccionar exactamente un servicio');
       }
 
       const selectedService = this.selectedServices[0];
+
+      // Obtener ID del servicio
       const serviceId = selectedService.id_services || selectedService.id;
 
       if (!serviceId) {
@@ -168,58 +168,40 @@ export default {
         return alert('El servicio seleccionado no tiene un ID válido');
       }
 
+      // Validar fecha y hora
       if (!this.selectedDate || !this.selectedTime) {
         return alert('Selecciona fecha y hora');
       }
 
+      // Validar usuario y barbero
       if (!this.userId || !this.barberId) {
         return alert('Faltan datos de usuario o barbero');
       }
 
-      const dateTimeStr = `${this.selectedDate}T${this.selectedTime}:00`;
-      const dateTimeUTC = new Date(dateTimeStr);
-      const estimatedTime = selectedService.estimated_time || selectedService.duration || '00:30:00';
-      const endTime = new Date(dateTimeUTC.getTime() + this.convertTimeToMinutes(estimatedTime) * 60000);
-
-      const quoteData = {
+      // Guardamos solamente los datos temporalmente
+      const facturaData = {
         user_id: this.userId,
         barber_id: this.barberId,
-        date_time: dateTimeUTC.toISOString(),
-        end_time: endTime.toISOString(),
-        state_quotes: 'pendiente',
+        barber_name: this.barberName,
+        date: this.selectedDate,
+        time: this.selectedTime,
+        servicios: this.selectedServices,
         id_services: serviceId
       };
 
-      console.log('Datos finales para API:', JSON.stringify(quoteData, null, 2));
+      console.log(
+        '📋 Datos preparados para la factura:',
+        JSON.stringify(facturaData, null, 2)
+      );
 
-      try {
-        const response = await createQuote(quoteData);
-        console.log('Cita creada:', response);
+      // Guardar datos temporalmente
+      localStorage.setItem(
+        'facturaData',
+        JSON.stringify(facturaData)
+      );
 
-        const facturaData = {
-          user_id: this.userId,
-          barber_id: this.barberId,
-          barber_name: this.barberName,
-          date: this.selectedDate,
-          time: this.selectedTime,
-          servicios: this.selectedServices,
-          id_services: serviceId,
-          quote_id: response.data?.id || null
-        };
-
-        localStorage.setItem('facturaData', JSON.stringify(facturaData));
-
-        this.$router.push('/FacturaServicios');
-
-      } catch (error) {
-        console.error('Error al crear cita:', {
-          message: error.message,
-          response: error.response?.data,
-          request: error.config,
-          stack: error.stack
-        });
-        alert(`Error al crear cita: ${error.response?.data?.message || error.message}`);
-      }
+      // Ir al resumen
+      this.$router.push('/FacturaServicios');
     },
 
     regresar() {
