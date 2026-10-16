@@ -12,13 +12,16 @@
 
     <p>Ingresa tu correo electrónico y te enviaremos un enlace para restablecer tu contraseña.</p>
     <form @submit.prevent="sendRecoveryEmail">
-      <input v-model="email" type="email" placeholder="Escribe aqui tu correo electrónico" required />
-      <button class="btn button-enviar" type="submit">Enviar</button>
-
+      <input v-model="email" type="email" placeholder="Escribe aqui tu correo electrónico" required :disabled="loading" />
+      <button class="btn button-enviar" type="submit" :disabled="loading">
+        {{ loading ? 'Enviando...' : 'Enviar' }}
+      </button>
     </form>
-    <button class="btn-regresar" @click="goBack">Regresar</button>
+    <button class="btn-regresar" @click="goBack" :disabled="loading">Regresar</button>
 
-    <p v-if="message">{{ message }}</p>
+    <p v-if="message" class="feedback" :class="messageType === 'success' ? 'feedback-success' : 'feedback-error'" role="alert">
+      {{ message }}
+    </p>
   </div>
 </template>
 
@@ -29,16 +32,36 @@ export default {
   data() {
     return {
       email: '',
-      message: ''
+      message: '',
+      messageType: '',
+      loading: false
     };
   },
   methods: {
     async sendRecoveryEmail() {
+      this.message = '';
+      this.messageType = '';
+      const email = this.email.trim();
+
+      if (!email) {
+        this.messageType = 'error';
+        this.message = 'Escribe el correo con el que te registraste.';
+        return;
+      }
+
+      this.loading = true;
       try {
-        await requestPasswordReset(this.email);
-        this.message = 'Si el correo está registrado, recibirás un enlace de recuperación.';
+        const data = await requestPasswordReset(email);
+        this.messageType = 'success';
+        this.message = data.message || 'Te enviamos un enlace para restablecer tu contraseña.';
       } catch (error) {
-        this.message = error.response?.data?.error || 'Error al enviar el correo';
+        const serverMessage = error.response?.data?.message;
+        this.messageType = 'error';
+        this.message = typeof serverMessage === 'string' && serverMessage
+          ? serverMessage
+          : 'No pudimos enviar el correo. Inténtalo de nuevo.';
+      } finally {
+        this.loading = false;
       }
     },
     goBack() {

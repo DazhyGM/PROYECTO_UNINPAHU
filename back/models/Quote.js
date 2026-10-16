@@ -1,5 +1,5 @@
 const db = require('../config/db');
-const nodemailer = require('nodemailer');
+const { createTransporter, getMailConfig } = require('../config/mailer');
 
 class Quote {
   // 🔹 Verificar disponibilidad del barbero
@@ -167,16 +167,11 @@ class Quote {
 
 static async sendConfirmationEmail(email, servicio, fecha, hora, total, barbero) {
   try {
-    const transporter = nodemailer.createTransport({
-      service: 'gmail',
-      auth: {
-        user: 'mysticalcut@gmail.com',
-        pass: 'ubxijicfjfuejqqp',
-      },
-    });
+    const { user: emailUser } = getMailConfig();
+    const transporter = createTransporter();
 
     const mailOptions = {
-      from: 'mysticalcut@gmail.com',
+      from: `"Mystical Cut" <${emailUser}>`,
       to: email,
       subject: 'Confirmación de tu cita - MysticalCut',
       html: `
