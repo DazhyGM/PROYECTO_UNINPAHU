@@ -1,7 +1,7 @@
 const db = require('../config/db');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
-const nodemailer = require('nodemailer');
+const { createTransporter, getMailConfig, describeMailError } = require('../config/mailer');
 const {
     registerUser,
     getProfile,
@@ -206,54 +206,57 @@ class UserController {
     }
 
     async forgotPassword(req, res) {
-        const { email } = req.body;
+        const email = (req.body.email || '').trim();
         try {
+            if (!email) {
+                return res.status(400).json({ message: 'Escribe el correo con el que te registraste.' });
+            }
+
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(email)) {
+                return res.status(400).json({ message: 'El correo no tiene un formato válido.' });
+            }
+
             const user = await getUserByEmail(email);
             if (!user) {
-                return res.status(404).json({ message: 'Usuario no encontrado' });
+                return res.status(404).json({ message: 'No encontramos una cuenta registrada con ese correo.' });
+            }
+
+            const { user: emailUser, pass } = getMailConfig();
+            if (!emailUser || !pass) {
+                return res.status(500).json({ message: 'El envío de correos no está configurado en el servidor.' });
             }
 
             const token = jwt.sign({ id: user.user_id }, process.env.JWT_SECRET, { expiresIn: '1h' });
             const expires = Date.now() + 3600000;
 
-            console.log('Token:', token);
-            console.log('Expires:', expires);
-
             try {
                 await forgotPassword(user.user_email, token, expires);
             } catch (dbError) {
                 console.error('Error actualizando reset_token en DB:', dbError);
-                return res.status(500).json({ message: 'Error al actualizar token en base de datos', error: dbError });
+                return res.status(500).json({ message: 'No pudimos preparar la recuperación. Inténtalo de nuevo.' });
             }
 
-            const transporter = nodemailer.createTransport({
-                service: 'gmail',
-                auth: {
-                    user: process.env.EMAIL_USER,
-                    pass: process.env.EMAIL_PASS,
-                },
+            const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:8080';
+            const resetLink = `${frontendUrl}/reset-password/${token}`;
+            const transporter = createTransporter();
+
+            await transporter.sendMail({
+                from: `"Mystical Cut" <${emailUser}>`,
+                to: user.user_email,
+                subject: 'Recuperación de contraseña - Mystical Cut',
+                html: `<p>Bienvenido a Mystical Cut.</p>
+                    <p>Haz clic en el siguiente enlace para restablecer tu contraseña:</p>
+                    <a href="${resetLink}">${resetLink}</a>
+                    <p>El enlace expira en 1 hora. Si no solicitaste este cambio, ignora este correo.</p>`
             });
 
-            const resetLink = `http://localhost:8080/reset-password/${token}`;
-            const mailOptions = {
-                from: process.env.EMAIL_USER,
-                to: user.user_email,
-                subject: 'Recuperación de contraseña',
-                html: `<p>Bienvenido a Mystical Cut 💈💥</p>
-                    <p>Haz clic en el siguiente enlace para restablecer tu contraseña 😉:</p>
-                    <a href="${resetLink}">${resetLink}</a>
-                    <p>Ingresa al enlace lo más pronto posible y restablece tu contraseña, este expirará en 1 hora 😱🏃‍♂️.</p>`
-            };
-
-            transporter.sendMail(mailOptions, (error, info) => {
-                if (error) {
-                    return res.status(500).json({ message: 'Error al enviar correo', error });
-                }
-                res.status(200).json({ message: 'Correo de recuperación enviado' });
+            return res.status(200).json({
+                message: 'Te enviamos un enlace a tu correo para restablecer la contraseña. Revisa también la carpeta de spam.'
             });
         } catch (error) {
             console.error('Error general en forgotPassword:', error);
-            res.status(500).json({ message: 'Error en la recuperación de contraseña', error });
+            return res.status(500).json({ message: describeMailError(error) });
         }
     }
 

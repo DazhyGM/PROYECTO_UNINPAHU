@@ -1,0 +1,2 @@
+# Secretos locales. No subir credenciales de base de datos ni de correo.
+.env
