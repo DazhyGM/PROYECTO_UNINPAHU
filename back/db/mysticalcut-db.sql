@@ -173,37 +173,6 @@ INSERT INTO `document_type` (`id_doctypes`, `doctype_name`) VALUES
 -- --------------------------------------------------------
 
 --
--- Estructura de tabla para la tabla `facture`
---
-
-CREATE TABLE IF NOT EXISTS `facture` (
-  `id_facture` int(11) NOT NULL AUTO_INCREMENT,
-  `date` date NOT NULL,
-  `total_value` float NOT NULL,
-  `user_fk` int(11) DEFAULT NULL,
-  PRIMARY KEY (`id_facture`),
-  KEY `fk_factura_usuario` (`user_fk`)
-) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- Truncar tablas antes de insertar `facture`
---
-
-TRUNCATE TABLE `facture`;
---
--- Volcado de datos para la tabla `facture`
---
-
-INSERT INTO `facture` (`id_facture`, `date`, `total_value`, `user_fk`) VALUES
-(1, '2024-12-03', 150.75, 1),
-(2, '2024-12-03', 180.75, 1),
-(3, '2024-12-03', 160.75, 1),
-(4, '2024-12-04', 250, 1),
-(5, '2024-12-04', 350, 1);
-
--- --------------------------------------------------------
-
---
 -- Estructura de tabla para la tabla `module`
 --
 
@@ -247,6 +216,7 @@ CREATE TABLE IF NOT EXISTS `product` (
   `id_category` int(11) DEFAULT NULL,
   `id_status` int(11) NOT NULL DEFAULT 1,
   `image` varchar(255) DEFAULT NULL,
+  `comprobante` varchar(255) DEFAULT NULL,
   PRIMARY KEY (`id_product`),
   KEY `fk_categoria` (`id_category`),
   KEY `fk_product_status` (`id_status`)
@@ -272,42 +242,6 @@ INSERT INTO `product` (`id_product`, `name`, `price`, `description`, `amount`, `
 (8, 'Minoxidil barba', 28000, 'Minoxidil para que te crezca una barba de vikingo', 12, 1, 1, 'image-1770176296806-481801453.jpg'),
 (9, 'Maquina re Chimba', 28000, 'Para gente re chimba', 12, 1, 3, 'barbero4.jpg'),
 (11, 'Maquina re Chimba', 28000, 'Para gente re chimba', 12, 1, 3, 'barbero1.jpg');
-
--- --------------------------------------------------------
-
---
--- Estructura de tabla para la tabla `product_invoice_detail`
---
-
-CREATE TABLE IF NOT EXISTS `product_invoice_detail` (
-  `amount` int(11) NOT NULL,
-  `price` float DEFAULT NULL,
-  `id_facture` int(11) NOT NULL,
-  `id_product` int(11) NOT NULL,
-  KEY `fk_product_invoice_detail` (`id_facture`),
-  KEY `fk_detail_invoice_product_product` (`id_product`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- Truncar tablas antes de insertar `product_invoice_detail`
---
-
-TRUNCATE TABLE `product_invoice_detail`;
---
--- Volcado de datos para la tabla `product_invoice_detail`
---
-
-INSERT INTO `product_invoice_detail` (`amount`, `price`, `id_facture`, `id_product`) VALUES
-(2, 30, 1, 1),
-(1, 20, 2, 2),
-(3, 36, 3, 3),
-(1, 18, 4, 4),
-(2, 100, 5, 5),
-(2, 30, 1, 1),
-(1, 20, 2, 2),
-(3, 36, 3, 3),
-(1, 18, 4, 4),
-(2, 100, 5, 5);
 
 -- --------------------------------------------------------
 
@@ -521,42 +455,6 @@ INSERT INTO `services` (`id_services`, `name_service`, `description`, `estimated
 -- --------------------------------------------------------
 
 --
--- Estructura de tabla para la tabla `service_invoice_detail`
---
-
-CREATE TABLE IF NOT EXISTS `service_invoice_detail` (
-  `amount` int(11) NOT NULL,
-  `price` float DEFAULT NULL,
-  `id_facture` int(11) NOT NULL,
-  `id_services` int(11) NOT NULL,
-  KEY `fk_service_invoice_detail` (`id_facture`),
-  KEY `fk_detail_invoice_service_service` (`id_services`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- Truncar tablas antes de insertar `service_invoice_detail`
---
-
-TRUNCATE TABLE `service_invoice_detail`;
---
--- Volcado de datos para la tabla `service_invoice_detail`
---
-
-INSERT INTO `service_invoice_detail` (`amount`, `price`, `id_facture`, `id_services`) VALUES
-(1, 15, 1, 1),
-(1, 10, 2, 2),
-(2, 80, 3, 3),
-(1, 25, 4, 4),
-(3, 36, 5, 5),
-(1, 15, 1, 1),
-(1, 10, 2, 2),
-(2, 80, 3, 3),
-(1, 25, 4, 4),
-(3, 36, 5, 5);
-
--- --------------------------------------------------------
-
---
 -- Estructura de tabla para la tabla `service_status`
 --
 
@@ -664,6 +562,37 @@ INSERT INTO `user` (`user_id`, `user_email`, `user_password`, `full_name`, `docu
 
 -- --------------------------------------------------------
 
+
+--
+-- Estructura de tabla para la tabla `dotacion`
+--
+
+CREATE TABLE IF NOT EXISTS `dotacion` (
+  `id_dotacion` int(11) NOT NULL AUTO_INCREMENT,
+  `id_product` int(11) NOT NULL,
+  `id_barbero` int(11) NOT NULL,
+  PRIMARY KEY (`id_dotacion`),
+  KEY `fk_dotacion_product` (`id_product`),
+  KEY `fk_dotacion_barbero` (`id_barbero`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `calificaciones`
+--
+
+CREATE TABLE IF NOT EXISTS `calificaciones` (
+  `id_calificacion` int(11) NOT NULL AUTO_INCREMENT,
+  `calificacion_barbero` decimal(3,1) NOT NULL,
+  `calificacion_general` decimal(3,1) NOT NULL,
+  `id_barbero` int(11) NOT NULL,
+  PRIMARY KEY (`id_calificacion`),
+  KEY `fk_calificacion_barbero` (`id_barbero`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
 --
 -- Estructura de tabla para la tabla `userstatus`
 --
@@ -695,24 +624,11 @@ INSERT INTO `userstatus` (`userStatus_id`, `userStatus_name`) VALUES
 --
 
 --
--- Filtros para la tabla `facture`
---
-ALTER TABLE `facture`
-  ADD CONSTRAINT `fk_factura_usuario` FOREIGN KEY (`user_fk`) REFERENCES `user` (`user_id`);
-
---
 -- Filtros para la tabla `product`
 --
 ALTER TABLE `product`
   ADD CONSTRAINT `fk_categoria` FOREIGN KEY (`id_category`) REFERENCES `category_product` (`id_category`),
   ADD CONSTRAINT `fk_product_status` FOREIGN KEY (`id_status`) REFERENCES `product_status` (`id_status`);
-
---
--- Filtros para la tabla `product_invoice_detail`
---
-ALTER TABLE `product_invoice_detail`
-  ADD CONSTRAINT `fk_detail_invoice_product_product` FOREIGN KEY (`id_product`) REFERENCES `product` (`id_product`),
-  ADD CONSTRAINT `fk_product_invoice_detail` FOREIGN KEY (`id_facture`) REFERENCES `facture` (`id_facture`);
 
 --
 -- Filtros para la tabla `quotes`
@@ -737,13 +653,6 @@ ALTER TABLE `services`
   ADD CONSTRAINT `fk_status` FOREIGN KEY (`id_status`) REFERENCES `service_status` (`id_status`);
 
 --
--- Filtros para la tabla `service_invoice_detail`
---
-ALTER TABLE `service_invoice_detail`
-  ADD CONSTRAINT `fk_detail_invoice_service_service` FOREIGN KEY (`id_services`) REFERENCES `services` (`id_services`),
-  ADD CONSTRAINT `fk_service_invoice_detail` FOREIGN KEY (`id_facture`) REFERENCES `facture` (`id_facture`);
-
---
 -- Filtros para la tabla `type_of_quotes`
 --
 ALTER TABLE `type_of_quotes`
@@ -757,6 +666,20 @@ ALTER TABLE `user`
   ADD CONSTRAINT `fk_id_tipo_docuemnto_User` FOREIGN KEY (`type_document_id`) REFERENCES `document_type` (`id_doctypes`),
   ADD CONSTRAINT `user_role` FOREIGN KEY (`role_fk`) REFERENCES `role` (`role_id`),
   ADD CONSTRAINT `user_status` FOREIGN KEY (`userStatus_fk`) REFERENCES `userstatus` (`userStatus_id`);
+
+--
+-- Filtros para la tabla `dotacion`
+--
+ALTER TABLE `dotacion`
+  ADD CONSTRAINT `fk_dotacion_product` FOREIGN KEY (`id_product`) REFERENCES `product` (`id_product`),
+  ADD CONSTRAINT `fk_dotacion_barbero` FOREIGN KEY (`id_barbero`) REFERENCES `user` (`user_id`);
+
+--
+-- Filtros para la tabla `calificaciones`
+--
+ALTER TABLE `calificaciones`
+  ADD CONSTRAINT `fk_calificacion_barbero` FOREIGN KEY (`id_barbero`) REFERENCES `user` (`user_id`);
+
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

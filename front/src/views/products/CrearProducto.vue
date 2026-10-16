@@ -35,6 +35,12 @@
           </div>
 
           <div class="mb-3">
+            <label class="block mb-1 form-label">Comprobante</label>
+            <input v-model="form.comprobante" type="text" class="form-select custom-input"
+              placeholder="Número o referencia del comprobante" />
+          </div>
+
+          <div class="mb-3">
             <label class="block mb-1 form-label">Descripción</label>
             <textarea v-model="form.description" required rows="3" class="form-select custom-input"
               placeholder="Descripción del producto"></textarea>
@@ -89,6 +95,7 @@ const form = ref({
   name: '',
   price: 1000,
   description: '',
+  comprobante: '',
   amount: 1,
   id_category: '',
   image: null,

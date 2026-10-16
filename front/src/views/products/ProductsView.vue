@@ -2,7 +2,7 @@
   <div class="container-scaled-wrapper">
     <div class="row mb-2">
       <ul class="nav col-12 justify-content-center mx-auto">
-        <h1 class="titulo-header">Productos</h1>
+        <h1 class="titulo-header">Insumos</h1>
       </ul>
     </div>
     <div class="container">
@@ -99,6 +99,7 @@
       <p class="modal-description"><strong>Descripción:</strong> {{ selectedProduct.description }}</p>
       <p class="modal-price"><strong>Precio:</strong> ${{ selectedProduct.price.toLocaleString() }}</p>
       <p class="modal-amount"><strong>Disponibles:</strong> {{ selectedProduct.amount }}</p>
+      <p v-if="selectedProduct.comprobante" class="modal-description"><strong>Comprobante:</strong> {{ selectedProduct.comprobante }}</p>
     </div>
   </div>
 </template>

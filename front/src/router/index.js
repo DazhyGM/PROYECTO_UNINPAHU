@@ -79,11 +79,11 @@ const routes = [
   { path: '/Reportes', component: Reportes , meta: { title: 'Reportes | MysticalCut', requiresAuth: true, role: 'Admin'  } },
 
   //Products
-  { path: '/Products', component: Products, meta: { title: 'Productos | MysticalCut', requiresAuth: true} },
-  { path: '/ProductsInactives', component: ProductsInactives, meta: { title: 'Productos inactivos | MysticalCut', requiresAuth: true} },
-  { path: '/Create-Products', component: CrearProducto, meta: { title: 'Crear Productos | MysticalCut', requiresAuth: true} },
-  { path: '/Edit-Products/:id', component: EditarProducto, meta: { title: 'Editar Productos | MysticalCut', requiresAuth: true} },
-  { path: '/Cart', component: CartView, meta: { title: 'Editar Productos | MysticalCut', requiresAuth: true} },
+  { path: '/Products', component: Products, meta: { title: 'Insumos | MysticalCut', requiresAuth: true, roles: ['Admin', 'Employee'] } },
+  { path: '/ProductsInactives', component: ProductsInactives, meta: { title: 'Insumos inactivos | MysticalCut', requiresAuth: true, roles: ['Admin'] } },
+  { path: '/Create-Products', component: CrearProducto, meta: { title: 'Crear insumo | MysticalCut', requiresAuth: true, roles: ['Admin'] } },
+  { path: '/Edit-Products/:id', component: EditarProducto, meta: { title: 'Editar insumo | MysticalCut', requiresAuth: true, roles: ['Admin'] } },
+  { path: '/Cart', component: CartView, meta: { title: 'Carrito | MysticalCut', requiresAuth: true, roles: ['Admin'] } },
 
   //Errores
   { path: '/error', component: ErrorAuth, meta: { title: 'Error 404 | MysticalCut', hideLayout: true } },
@@ -113,7 +113,7 @@ router.beforeEach((to, from, next) => {
   if (to.meta.requiresAuth) {
     if (!user) {
       next('/error');
-    } else if (to.meta.role && to.meta.role !== user.role) {
+    } else if ((to.meta.roles || (to.meta.role ? [to.meta.role] : null)) && !(to.meta.roles || [to.meta.role]).includes(user.role)) {
       localStorage.removeItem('user');
       localStorage.removeItem('token');
 
