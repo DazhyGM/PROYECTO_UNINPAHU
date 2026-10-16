@@ -1,51 +1,43 @@
 <template>
   <div>
-    <div class="container">
-      <header class="py-3 mb-4 border-bottom">
-        <div class="d-flex justify-content-between align-items-center">
+    <header class="py-3 mb-4 border-bottom">
+      <div class="container d-flex align-items-center justify-content-between">
+        <router-link to="/Home">
+          <img src="/img/background/LOGO.png" alt="Logo" width="125" height="125" class="d-inline-block align-text-top" />
+        </router-link>
 
-          <router-link to="/Home">
-            <img src="/img/background/LOGO.png" alt="Logo" width="125" height="125" />
-          </router-link>
+        <div class="dropdown">
+          <button class="btn dropdown-toggle-perfil" @click="toggleMenu">
+            <img src="/img/background/Icono usuario.png" alt="Profile" class="icon me-2" />
+            {{ user.full_name || 'Usuario' }}
+          </button>
 
-          <div class="dropdown">
-            <button class="btn dropdown-toggle-perfil" @click="toggleMenu">
-              <img src="/img/background/Icono usuario.png" alt="Profile" class="icon me-2" />
-              {{ user.full_name || 'Usuario' }}
-            </button>
-
-            <ul v-if="isMenuOpen" class="dropdown-menu dropdown-menu-end show">
-              <li>
-                <button class="dropdown-item" @click="goToProfile">
-                  Perfil
-                </button>
-              </li>
-              <li>
-                <hr class="dropdown-divider" />
-              </li>
-              <li>
-                <button class="dropdown-item" @click="logout">
-                  Cerrar Sesión
-                </button>
-              </li>
-            </ul>
-          </div>
-
-        </div>
-
-        <!-- FILA INFERIOR (MENÚ) -->
-        <div class="mt-3">
-          <ul class="nav justify-content-center flex-wrap">
-            <li v-for="module in filteredModules" :key="module.module_route" class="nav-item">
-              <a class="nav-link" :href="`/${module.module_route}`">
-                {{ module.role_module }}
-              </a>
+          <ul v-if="isMenuOpen" class="dropdown-menu dropdown-menu-end show">
+            <li>
+              <button class="dropdown-item" @click="goToProfile">
+                Perfil
+              </button>
+            </li>
+            <li>
+              <hr class="dropdown-divider" />
+            </li>
+            <li>
+              <button class="dropdown-item" @click="logout">
+                Cerrar Sesión
+              </button>
             </li>
           </ul>
         </div>
+      </div>
 
-      </header>
-    </div>
+      <ul class="nav justify-content-center flex-wrap">
+        <li v-for="module in filteredModules" :key="module.module_route" class="nav-item">
+          <a class="nav-link" :href="`/${module.module_route}`">
+            {{ module.role_module }}
+          </a>
+        </li>
+      </ul>
+    </header>
 
     <!--Carrusel-->
 
@@ -119,10 +111,10 @@
 
     </div>
 
-    <!--Seccion de Productos-->
+    <!-- Inventario de insumos: solo administración y barberos -->
 
-    <div class="container section">
-      <h2 class="section-title">Productos</h2>
+    <div v-if="user.role === 'Admin' || user.role === 'Employee'" class="container section">
+      <h2 class="section-title">Insumos</h2>
       <div class="row row-cols-1 row-cols-md-4 g-8">
         <div v-for="product in products" :key="product.title" class="col">
           <div class="card">
@@ -138,7 +130,7 @@
       </div>
       <!-- Botón para elegir un producto con más espacio abajo -->
       <div class="text-center mt-4 mb-4">
-        <a href="/Products" class="btn btn-custom">Elige un producto</a>
+        <a href="/Products" class="btn btn-custom">Ver inventario</a>
       </div>
 
     </div>
@@ -238,7 +230,7 @@ const allModules = [
   { module_route: 'Home', role_module: 'Inicio', roles: ['Admin', 'Client', 'Employee'] },
   { module_route: 'Users', role_module: 'Usuarios', roles: ['Admin'] },
   { module_route: 'Services', role_module: 'Servicios', roles: ['Admin', 'Client'] },
-  { module_route: 'Products', role_module: 'Productos', roles: ['Admin', 'Client'] },
+  { module_route: 'Products', role_module: 'Insumos', roles: ['Admin', 'Employee'] },
   { module_route: 'Citas', role_module: 'Citas', roles: ['Employee', 'Client'] },
   { module_route: 'Reportes', role_module: 'Reportes', roles: ['Admin'] },
 

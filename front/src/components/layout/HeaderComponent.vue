@@ -9,13 +9,6 @@
         <img src="/img/background/LOGO.png" alt="Logo" width="125" height="125" class="d-inline-block align-text-top" />
       </router-link>
 
-      <ul class="nav col-12 col-md-auto mb-2 justify-content-center mb-md-0">
-        <li v-for="module in roleModules" :key="module.module_route" class="nav-item">
-          <a class="nav-link" :href="`/${module.module_route}`">{{ module.role_module }}</a>
-        </li>
-      </ul>
-
-    
         <div class="dropdown">
           <button class="btn dropdown-toggle-perfil" @click="toggleMenu">
             <img src="/img/background/Icono usuario.png" alt="Profile" class="icon me-2" />

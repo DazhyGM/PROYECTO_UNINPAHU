@@ -2,12 +2,12 @@ const db = require('../config/db');
 
 // 🔹 Crear producto
 exports.createProduct = (productData) => {
-    const { name, price, description, amount, id_category, image } = productData;
-    const query = 'INSERT INTO product (name, price, description, amount, id_category, image) VALUES (?, ?, ?, ?, ?, ?)';
+    const { name, price, description, amount, id_category, image, comprobante } = productData;
+    const query = 'INSERT INTO product (name, price, description, amount, id_category, image, comprobante) VALUES (?, ?, ?, ?, ?, ?, ?)';
     return new Promise((resolve, reject) => {
-        db.query(query, [name, price, description, amount, id_category, image], (err, result) => {
+        db.query(query, [name, price, description, amount, id_category, image, comprobante || null], (err, result) => {
             if (err) return reject(err);
-            resolve({ id: result.insertId, name, price, description, amount, id_category, image });
+            resolve({ id: result.insertId, name, price, description, amount, id_category, image, comprobante: comprobante || null });
         });
     });
 };
@@ -38,16 +38,16 @@ exports.getProductById = (id) => {
 
 // 🔹 Actualizar producto
 exports.updateProduct = (id_product, productData) => {
-    const { name, price, description, amount, id_category, image } = productData;
+    const { name, price, description, amount, id_category, image, comprobante } = productData;
     const query = `
         UPDATE product 
-        SET name = ?, price = ?, description = ?, amount = ?, id_category = ?, image = ?
+        SET name = ?, price = ?, description = ?, amount = ?, id_category = ?, image = ?, comprobante = ?
         WHERE id_product = ?
     `;
     return new Promise((resolve, reject) => {
-        db.query(query, [name, price, description, amount, id_category, image, id_product], (err, result) => {
+        db.query(query, [name, price, description, amount, id_category, image, comprobante || null, id_product], (err, result) => {
             if (err) return reject(err);
-            resolve({ id_product, name, price, description, amount, id_category, image });
+            resolve({ id_product, name, price, description, amount, id_category, image, comprobante: comprobante || null });
         });
     });
 };
