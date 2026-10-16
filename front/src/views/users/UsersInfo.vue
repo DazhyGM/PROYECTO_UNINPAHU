@@ -1,5 +1,5 @@
 <template>
-  <div class="container my-3">
+  <div class="container usuarios-page my-3">
     <div class="row mb-3">
       <ul class="nav col-12 justify-content-center mx-auto">
         <h1 class="titulo-header">Usuarios</h1>

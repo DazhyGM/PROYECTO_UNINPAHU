@@ -134,13 +134,13 @@
     color: #000 !important;
 }
 
-.btn-agregar {
+.usuarios-page .btn-agregar {
     background-color: #ccaf54;
     color: #000000;
     border: 1px solid #d4af37;
 }
 
-.btn-agregar:hover {
+.usuarios-page .btn-agregar:hover {
     background-color: #2d2d2d;
     color: #ffffff;
     border: 1px solid #d4af37;

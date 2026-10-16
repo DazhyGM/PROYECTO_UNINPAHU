@@ -1,5 +1,5 @@
 <template>
-  <div class="container text-white">
+  <div class="container citas-page text-white">
     <div class="row mb-2">
       <ul class="nav col-12 justify-content-center mx-auto">
         <h1>Mis Citas</h1>

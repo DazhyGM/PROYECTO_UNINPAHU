@@ -11,7 +11,7 @@
   margin: 1rem 2rem;
 }
 
-.d-flex {
+.container-cart .d-flex {
   display: flex;
   justify-content: space-between;
   width: 100%;
@@ -80,7 +80,7 @@
   margin-bottom: 0.8rem;
 }
 
-.card-actions {
+.container-cart .card-actions {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
@@ -89,8 +89,8 @@
   border-top: 1px solid #333;
 }
 
-.btn-edit,
-.btn-delete {
+.container-cart .btn-edit,
+.container-cart .btn-delete {
   background-color: #d4af37;
   color: black;
   border: none;
@@ -101,16 +101,16 @@
   transition: 0.3s ease;
 }
 
-.btn-delete {
+.container-cart .btn-delete {
   background-color: #d9534f;
   color: white;
 }
 
-.btn-edit:hover {
+.container-cart .btn-edit:hover {
   background-color: #b28f2f;
 }
 
-.btn-delete:hover {
+.container-cart .btn-delete:hover {
   background-color: #c9302c;
 }
 
@@ -228,7 +228,7 @@
   flex-shrink: 0;
 }
 
-.form-control {
+.container-cart .form-control {
   background-color: #222;
   color: #fff;
   border: 1px solid #d4af37;
@@ -239,7 +239,7 @@
   text-align: center;
 }
 
-.btn-success {
+.container-cart .btn-success {
   background-color: #4caf50;
   border: none;
   padding: 0.6rem 1rem;
@@ -252,11 +252,11 @@
   margin-top: 1rem;
 }
 
-.btn-success:hover {
+.container-cart .btn-success:hover {
   background-color: #45a049;
 }
 
-.btn-success:disabled {
+.container-cart .btn-success:disabled {
   background-color: #6c757d;
   cursor: not-allowed;
 }

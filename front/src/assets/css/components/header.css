@@ -1,10 +1,10 @@
-  .container {
+  header .container {
       width: 90%;
       max-width: 1200px;
       margin: 0 auto;
   }
 
-  .icon {
+  header .icon {
       width: 2.5rem;
       height: 2.5rem;
       object-fit: contain;
@@ -19,12 +19,12 @@
       margin: auto;
   }
 
-  .dropdown {
+  header .dropdown {
       position: relative;
       display: inline-block;
   }
 
-  .dropdown-toggle {
+  header .dropdown-toggle {
       background-color: transparent;
       color: #fff;
       border: 1px solid #d4af37;
@@ -36,6 +36,6 @@
       transition: background-color 0.3s ease;
   }
 
-  .dropdown-toggle:hover {
+  header .dropdown-toggle:hover {
       background-color: #333;
   }
