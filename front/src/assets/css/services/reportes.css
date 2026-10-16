@@ -13,14 +13,14 @@
   overflow-y: auto;
 }
 
-.icon {
+.container-reporte .icon {
   width: 30px;
   height: 30px;
   border-radius: 50%;
   object-fit: cover;
 }
 
-.dropdown-menu {
+.container-reporte .dropdown-menu {
   position: absolute;
   top: 100%;
   right: 0;
@@ -33,11 +33,11 @@
   min-width: 160px;
 }
 
-.dropdown-menu.show {
+.container-reporte .dropdown-menu.show {
   display: block;
 }
 
-.dropdown-item {
+.container-reporte .dropdown-item {
   display: block;
   width: 100%;
   padding: 0.25rem 1rem;
@@ -52,13 +52,13 @@
   transition: background-color 0.15s ease-in-out;
 }
 
-.dropdown-item:hover,
-.dropdown-item:focus {
+.container-reporte .dropdown-item:hover,
+.container-reporte .dropdown-item:focus {
   color: #fff;
   background-color: #495057;
 }
 
-.dropdown-divider {
+.container-reporte .dropdown-divider {
   height: 0;
   margin: 0.5rem 0;
   overflow: hidden;
@@ -66,17 +66,17 @@
   opacity: 0.25;
 }
 
-.table {
+.container-reporte .table {
   /* margin-top: 30px; */
   border-collapse: collapse;
 }
 
-.table thead {
+.container-reporte .table thead {
   background-color: #333;
   color: white;
 }
 
-.table th {
+.container-reporte .table th {
   background-color: #000000;
   border: 2px solid #ccaf54;
   border-radius: 10px;
@@ -84,38 +84,38 @@
   text-align: center;
 }
 
-.table td {
+.container-reporte .table td {
   padding: 15px;
   text-align: center;
   border: 2px solid #696969;
   font-size: 1rem;
 }
 
-.table-striped tbody tr:nth-of-type(odd) {
+.container-reporte .table-striped tbody tr:nth-of-type(odd) {
   background-color: #2b2b2b;
 }
 
-.table-striped tbody tr:nth-of-type(even) {
+.container-reporte .table-striped tbody tr:nth-of-type(even) {
   background-color: #222;
 }
 
-.table-responsive {
+.container-reporte .table-responsive {
   overflow-x: auto;
 }
 
-.form-select,
-.form-control {
+.container-reporte .form-select,
+.container-reporte .form-control {
   border: 1px solid #444;
   color: #fff;
   background-color: #212529;
 }
 
-.form-select option {
+.container-reporte .form-select option {
   color: #fff;
   background-color: #333;
 }
 
-.form-label {
+.container-reporte .form-label {
   color: #fff;
   font-weight: bold;
 }
@@ -141,7 +141,7 @@
   outline: none;
 }
 
-.alert-info {
+.container-reporte .alert-info {
   background-color: #17a2b8;
   color: #fff;
   border-color: #17a2b8;

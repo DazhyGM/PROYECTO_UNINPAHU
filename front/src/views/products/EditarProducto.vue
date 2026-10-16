@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="editar-producto">
     <div class="row mb-2">
       <ul class="nav col-12 justify-content-center mx-auto">
         <h1 class="titulo-header">Editar producto</h1>

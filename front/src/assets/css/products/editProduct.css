@@ -1,8 +1,8 @@
-header {
+.editar-producto header {
   border-bottom: 1px solid #333;
 }
 
-header h1 {
+.editar-producto header h1 {
   color: #ccaf54;
   text-align: center;
   font-size: 24px;
@@ -106,8 +106,8 @@ textarea.custom-input {
   border: 1px solid #ff0000;
 }
 
-.btn-add,
-.btn-regresar {
+.editar-producto .btn-add,
+.editar-producto .btn-regresar {
   padding: 6px 20px;
   font-size: 14px;
   border-radius: 5px;
@@ -115,7 +115,7 @@ textarea.custom-input {
   max-width: 140px;
 }
 
-.text-success {
+.editar-producto .text-success {
   color: #4CAF50;
 }
 

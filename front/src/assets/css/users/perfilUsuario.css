@@ -40,14 +40,14 @@
     margin: 15px auto 0 auto; 
 }
 
-.btn-delete {
+.perfil-usuario .btn-delete {
   background-color: #ff0000;
   color: #000;
   border: 1px solid #d43737;
   font-weight: bold;
 }
 
-.btn-delete:hover {
+.perfil-usuario .btn-delete:hover {
   background-color: #000000;
   color: #ff0000;
   border: 1px solid #ff0000;
