@@ -175,7 +175,7 @@ El proyecto utiliza MySQL.
 Es necesario:
 
 1. Importar la base de datos ubicada en la carpeta back/db
-2. Crear nu archivo `.env` en la carpeta `back` y configurar las credenciales.
+2. Crear un archivo `.env` en la carpeta `back` y configurar las credenciales.
 
 Ejemplo:
 
@@ -281,13 +281,10 @@ El sistema cuenta con documentación estructurada que incluye:
 
 ---
 
-# Autor
+# Autores
 
-Kevin David Sabogal  
-Desarrollador Full Stack con enfoque en calidad
-
-📧 Correo: kevinsabogal24@gmail.com  
-🔗 LinkedIn: (https://www.linkedin.com/in/kevin-david-sabogal-mancipe/)
+Kevin Sabogal  
+Diana Ramirez
 
 ---
 
