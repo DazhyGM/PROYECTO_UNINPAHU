@@ -100,7 +100,8 @@ class Quote {
         s.estimated_time,
         q.barber_id,
         barberos.full_name AS barber_name,
-        clientes.full_name AS client_name
+        clientes.full_name AS client_name,
+        clientes.document_number AS client_document
       FROM quotes q
       JOIN services s ON q.id_services = s.id_services
       LEFT JOIN user barberos ON q.barber_id = barberos.user_id
