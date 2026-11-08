@@ -67,10 +67,7 @@
       <div class="citas-toolbar" v-if="!cargando && citas.length">
         <label class="filtro-campo filtro-pagina">
           <span>Registros por página</span>
-          <select v-model.number="porPagina">
-            <option :value="5">5</option>
-            <option :value="10">10</option>
-          </select>
+          <SelectCampo v-model.number="porPagina" :options="opcionesPagina" />
         </label>
         <p class="citas-rango">{{ textoRango }}</p>
       </div>
@@ -156,11 +153,17 @@
 <script>
 import axios from 'axios';
 import { getQuotesWithServiceDetails, cancelQuote, finishQuote } from '@/services/quotesApi';
+import SelectCampo from '@/components/ui/SelectCampo.vue';
 
 export default {
   name: 'CitasPendientes',
+  components: { SelectCampo },
   data() {
     return {
+      opcionesPagina: [
+        { value: 5, label: '5' },
+        { value: 10, label: '10' }
+      ],
       citas: [],
       userId: null,
       userRole: null,

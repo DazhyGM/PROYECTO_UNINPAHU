@@ -60,15 +60,10 @@
   border-radius: 5px;
   cursor: pointer;
   color: #CCAF54;
-  margin-top: 105px;
-  margin: auto;
+  margin: 28px auto 0;
   text-align: center;
   display: block;
-  justify-content: center;
   width: 130px;
-  position: relative;
-  top: 50%;
-  transform: translateY(50%);
 }
 
 .back-button-servi-in:hover {
@@ -87,9 +82,10 @@
 }
 
 .servi-box {
-  background-color: #111;
-  border: 2px solid #CCAF54;
-  border-radius: 10px;
+  background-color: #111111;
+  border: 1px solid rgba(204, 175, 84, 0.38);
+  border-radius: 14px;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.35);
   width: 90%;
   max-width: 900px;
   gap: 10px;

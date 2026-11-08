@@ -6,7 +6,7 @@
         <img src="/img/background/LOGO.png" alt="Logo" width="125" height="125" class="d-inline-block align-text-top" />
       </div>
       <ul class="nav col-12 justify-content-center mx-auto">
-        <h1>Recuperar Contraseña</h1>
+        <h1 class="titulo-header">Recuperar Contraseña</h1>
       </ul>
     </header>
 

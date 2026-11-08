@@ -6,38 +6,25 @@
       </ul>
     </div>
 
-    <div class="row mb-3 gy-2">
-      <div class="col-12 col-md-3">
-        <router-link to="/AgregarUser" class="btn btn-agregar w-100 d-flex align-items-center justify-content-center">
-          <img src="/img/logos/person-plus-fill.svg" style="width: 20px; height: 20px; margin-right: 5px;">
-          Agregar
-        </router-link>
-      </div>
+    <div class="barra-usuarios">
+      <router-link to="/AgregarUser" class="btn btn-agregar">
+        <img src="/img/logos/person-plus-fill.svg" alt="" width="18" height="18">
+        Agregar
+      </router-link>
 
-      <div class="col-12 col-md-3">
-        <router-link to="/usersInactives" class="btn btn-agregar w-100">
-          Ver usuarios inactivos
-        </router-link>
-      </div>
+      <router-link to="/usersInactives" class="btn btn-agregar">
+        Ver usuarios inactivos
+      </router-link>
 
-      <div class="col-12 col-md-3">
-        <select v-model="selectedRole" @change="filtrarPorRol" class="form-select w-100">
-          <option value="">Todos los roles</option>
-          <option value="1">Administrador</option>
-          <option value="2">Empleado</option>
-          <option value="3">Cliente</option>
-        </select>
-      </div>
+      <SelectCampo v-model="selectedRole" :options="roles" @change="filtrarPorRol" />
 
-      <div class="col-12 col-md-3">
-        <div class="input-group">
-          <input type="text" v-model="searchQuery" class="form-control" placeholder="Buscar usuario...">
-          <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown"></button>
-          <ul class="dropdown-menu dropdown-menu-end">
-            <li><a class="dropdown-item" href="#" @click.prevent="sortUsers('asc')">A......Z</a></li>
-            <li><a class="dropdown-item" href="#" @click.prevent="sortUsers('desc')">Z......A</a></li>
-          </ul>
-        </div>
+      <div class="buscar-usuario dropdown">
+        <input type="text" v-model="searchQuery" class="form-control" placeholder="Buscar usuario...">
+        <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-label="Ordenar usuarios"></button>
+        <ul class="dropdown-menu dropdown-menu-end">
+          <li><button class="dropdown-item" type="button" @click="sortUsers('asc')">A......Z</button></li>
+          <li><button class="dropdown-item" type="button" @click="sortUsers('desc')">Z......A</button></li>
+        </ul>
       </div>
     </div>
 
@@ -75,8 +62,6 @@
     <div class="btn-regresar mt-3">
       <button class="btn back-button" @click="goBack">Regresar</button>
     </div>
-
-    <FooterComponent />
   </div>
 </template>
 
@@ -84,12 +69,19 @@
 import { ref, computed, onMounted } from 'vue';
 import { useRouter } from "vue-router";
 import { getUsers, deleteUser, updateUserStatus, filterUsersByRole } from '@/services/api';
+import SelectCampo from '@/components/ui/SelectCampo.vue';
 
 const router = useRouter();
 const users = ref([]);
 const searchQuery = ref("");
 const selectedRole = ref("");
-const sortOrder = ref(""); // "asc" | "desc" | ""
+const sortOrder = ref("");
+const roles = [
+  { value: "", label: "Todos los roles" },
+  { value: "1", label: "Administrador" },
+  { value: "2", label: "Empleado" },
+  { value: "3", label: "Cliente" }
+];
 
 const loadUsers = async () => {
   try {

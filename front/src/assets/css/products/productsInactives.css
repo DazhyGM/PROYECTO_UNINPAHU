@@ -31,9 +31,10 @@
 
 .pedido-box {
   position: relative;
-  background-color: #3a3a3a;
-  border: 1px solid #ccaf54;
-  border-radius: 6px;
+  background-color: #111111;
+  border: 1px solid rgba(204, 175, 84, 0.38);
+  border-radius: 14px;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.35);
   padding: 1rem;
   height: 530px;
   box-sizing: border-box;

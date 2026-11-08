@@ -72,10 +72,11 @@
 }
 
 .product-card {
-  background-color: #1c1c1c;
-  border-radius: 10px;
+  background-color: #111111;
+  border-radius: 14px;
   padding: 1rem;
-  border: 1px solid #333;
+  border: 1px solid rgba(204, 175, 84, 0.38);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.35);
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -121,7 +122,7 @@
   gap: 0.5rem;
   margin-top: auto;
   padding-top: 1rem;
-  border-top: 1px solid #333;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
 }
 
 .switch {
@@ -509,10 +510,11 @@
 }
 
 .modal-content {
-  background-color: #1a1a1a;
+  background: linear-gradient(180deg, #151515 0%, #0c0c0c 100%);
   color: white;
   padding: 2rem;
-  border-radius: 10px;
+  border: 1px solid rgba(204, 175, 84, 0.45);
+  border-radius: 18px;
   max-width: 500px;
   width: 90%;
   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
@@ -552,7 +554,7 @@
   object-fit: contain;
   margin-bottom: 1.5rem;
   border-radius: 8px;
-  border: 1px solid #333;
+  border: 1px solid rgba(204, 175, 84, 0.38);
 }
 
 .modal-description,

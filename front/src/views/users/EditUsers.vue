@@ -44,12 +44,11 @@
           <label for="confirm-password">Confirmar Contraseña</label>
           <input type="password" id="confirm-password" v-model="form.confirmPassword" class="editable-field" />
           <label for="role">Rol del Usuario</label>
-          <select id="role" class="select-field" v-model="form.role" required>
-            <option value="" disabled>Seleccione un rol</option>
-            <option v-for="role in roles" :key="role.id" :value="role.id">
-              {{ role.name }}
-            </option>
-          </select>
+          <SelectCampo
+            v-model="form.role"
+            :options="roles.map(role => ({ value: role.id, label: role.name }))"
+            placeholder="Seleccione un rol"
+          />
         </div>
       </div>
       <button type="submit" class="btn button-guardar">Guardar Cambios</button>
@@ -62,8 +61,10 @@
 import { reactive, ref, onMounted } from 'vue';
 import axios from 'axios';
 import { useRoute, useRouter } from 'vue-router';
+import SelectCampo from '@/components/ui/SelectCampo.vue';
 
 export default {
+  components: { SelectCampo },
   setup() {
     const form = reactive({
       docType: '',
@@ -86,7 +87,6 @@ export default {
       { id: 2, name: 'Empleado' },
       { id: 3, name: 'Cliente' }
     ]);
-
     onMounted(async () => {
       try {
         const token = localStorage.getItem('token');

@@ -8,7 +8,7 @@
 </div>
 
       <ul class="nav col-12 justify-content-center mx-auto">
-        <h1>Registrarse</h1>
+        <h1 class="titulo-header">Registrarse</h1>
       </ul>
     </header>
   </div>

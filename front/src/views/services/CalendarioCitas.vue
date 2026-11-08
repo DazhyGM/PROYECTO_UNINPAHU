@@ -1,5 +1,14 @@
 <template>
   <div class="container-calendario">
+    <header
+      class="d-flex flex-wrap align-items-center justify-content-center justify-content-md-between py-3 mb-4 border-bottom">
+      <div class="col-md-3 mb-2 mb-md-0">
+        <img src="/img/background/LOGO.png" alt="Logo" width="125" height="125" class="d-inline-block align-text-top" />
+      </div>
+      <ul class="nav col-12 justify-content-center mx-auto">
+        <h1 class="titulo-header">Seleccione la fecha y horario</h1>
+      </ul>
+    </header>
     <div v-if="!userId || !barberId" class="alert alert-warning text-center" style="color: #f5c30f;">
       ⚠️ Faltan datos del usuario o del barbero. La cita no podrá confirmarse.
     </div>
@@ -39,41 +48,27 @@
       </div>
 
       <div class="right-column">
-        <div>
-          <h3>MysticalCut</h3>
-          <h4>Resumen de Datos</h4>
-          <p v-if="selectedDate">Fecha: {{ selectedDate }}</p>
-          <p v-if="selectedTime">Hora: {{ selectedTime }}</p>
-          <section class="barber-info">
-            <p><strong>Nombre:</strong> {{ barberName }}</p>
-          </section>
-        </div>
-
-        <div v-if="userId && barberId">
-          <div v-if="userName && userEmail && userId">
-          </div>
-          <div v-else class="text-muted">No se encontró información del usuario.</div>
-          <hr />
-          <div v-for="service in selectedServices" :key="service.id">
-            <p>{{ service.name }}</p>
-            <p>Precio: ${{ service.price }}</p>
-            <p>Duración: {{ service.duration }}</p>
+        <ResumenSeleccion :services="selectedServices" :barber-name="barberName" :date="selectedDate"
+          :time="selectedTime">
+          <template #actions>
             <button v-if="selectedDate && selectedTime" class="confirm-button" :disabled="!userId || !barberId"
               @click="confirmQuote">
               Siguiente
             </button>
             <button class="back-button-calendar" @click="regresar">Regresar</button>
-          </div>
-        </div>
+          </template>
+        </ResumenSeleccion>
       </div>
     </div>
   </div>
 </template>
 
 <script>
+import ResumenSeleccion from '@/components/services/ResumenSeleccion.vue';
 
 export default {
   name: 'CalendarioCitas',
+  components: { ResumenSeleccion },
   data() {
     return {
       selectedDate: '',

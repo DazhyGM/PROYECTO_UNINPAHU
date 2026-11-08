@@ -1,3 +1,16 @@
+.app-footer {
+  margin-top: auto;
+  padding: 16px;
+  border-top: 1px solid rgba(255, 255, 255, 0.18);
+  text-align: center;
+}
+
+.app-footer p {
+  margin: 0;
+  color: #ffffff;
+  font-size: 0.95rem;
+}
+
 .footer {
     background-color: #1c1c1c;
     color: #fff;

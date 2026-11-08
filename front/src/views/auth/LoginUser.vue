@@ -1,38 +1,35 @@
 <template>
-  <div class="container-login">
-    <header
-      class="d-flex flex-wrap align-items-center justify-content-center justify-content-md-between py-3 mb-4 border-bottom">
-      <div class="col-md-3 mb-2 mb-md-0">
-        <img src="/img/background/LOGO.png" alt="Logo" width="125" height="125" class="d-inline-block align-text-top" />
-      </div>
-      <ul class="nav col-12 justify-content-center mx-auto">
-        <h1>Iniciar Sesión</h1>
-      </ul>
+  <div class="login-page">
+    <header class="login-header">
+      <img src="/img/background/LOGO.png" alt="Logo" class="login-logo" />
+      <h1 class="login-title">Iniciar Sesión</h1>
+      <p class="login-subtitle">Ingresa tu correo y contraseña para continuar.</p>
     </header>
 
-    <div class="login-cont">
+    <section class="login-panel">
       <form @submit.prevent="logIn" class="login-form">
-        <h6 class="text-center text-danger">{{ message }}</h6>
+        <p v-if="message" class="login-message">{{ message }}</p>
 
-        <label for="email">Correo Electrónico</label>
-        <input type="email" id="email" v-model="email" required placeholder="Ingresa tu correo electrónico" />
+        <label class="login-field" for="email">
+          <span>Correo electrónico</span>
+          <input type="email" id="email" v-model="email" required placeholder="Ingresa tu correo electrónico" />
+        </label>
 
-        <label for="password">Contraseña</label>
-        <input type="password" id="password" v-model="password" required placeholder="Ingresa tu contraseña" />
+        <label class="login-field" for="password">
+          <span>Contraseña</span>
+          <input type="password" id="password" v-model="password" required placeholder="Ingresa tu contraseña" />
+        </label>
 
-        <button type="submit" class="btn btn-iniciar-sesion ">Iniciar Sesión</button>
+        <button type="submit" class="btn-iniciar-sesion" :disabled="loading">
+          {{ loading ? 'Ingresando...' : 'Iniciar Sesión' }}
+        </button>
 
-        <div class="links text-center mt-3">
-          <a href="/forgotPassword">Recuperar Contraseña</a>
-          <a href="/register">¿No tienes Usuario? Regístrate aquí</a>
+        <div class="links">
+          <a href="/forgotPassword">Recuperar contraseña</a>
+          <a href="/register">¿No tienes usuario? Regístrate aquí</a>
         </div>
       </form>
-    </div>
-
-    <footer class="py-3 my-4">
-      <ul class="nav justify-content-center border-bottom pb-3 mb-3"></ul>
-      <p class="text-center text-white"></p>
-    </footer>
+    </section>
   </div>
 </template>
 
