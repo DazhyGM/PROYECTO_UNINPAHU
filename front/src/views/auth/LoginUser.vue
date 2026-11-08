@@ -35,10 +35,11 @@
 
 <script setup>
 import { ref } from "vue";
-import { useRouter } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
 import { login } from "@/services/api";
 
 const router = useRouter();
+const route = useRoute();
 
 const email = ref("");
 const password = ref("");
@@ -66,8 +67,13 @@ const logIn = async () => {
     localStorage.setItem("token", data.token);
     localStorage.setItem("user", JSON.stringify(data.user));
 
+    const redirect = route.query.redirect;
+    const destino = typeof redirect === 'string' && redirect.startsWith('/') && !redirect.startsWith('//')
+      ? redirect
+      : '/Home';
+
     setTimeout(() => {
-      router.push("/Home");
+      router.push(destino);
     }, 1000);
 
   } catch (error) {
