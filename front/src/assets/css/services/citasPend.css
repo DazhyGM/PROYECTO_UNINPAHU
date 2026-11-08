@@ -519,6 +519,7 @@
   display: flex;
   justify-content: center;
   margin-top: 28px;
+  margin-bottom: 8px;
 }
 
 @media (max-width: 720px) {

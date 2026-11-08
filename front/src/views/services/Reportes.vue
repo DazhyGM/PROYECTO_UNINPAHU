@@ -9,13 +9,11 @@
       <div class="row g-3 align-items-end">
         <div class="col-md-3">
           <label for="reportType" class="form-label">Tipo de Reporte:</label>
-          <select id="reportType" class="form-select bg-dark text-white" v-model="selectedReportType"
-            @change="updateDatesForReportType">
-            <option value="custom">Todas las Citas</option>
-            <option value="daily">Hoy</option>
-            <option value="weekly">Esta Semana</option>
-            <option value="monthly">Este Mes</option>
-          </select>
+          <SelectCampo
+            v-model="selectedReportType"
+            :options="tiposReporte"
+            @change="updateDatesForReportType"
+          />
         </div>
         <div class="col-md-3" v-if="selectedReportType === 'custom'">
           <label for="startDate" class="form-label">Fecha de Inicio:</label>
@@ -88,11 +86,19 @@
 <script>
 import axios from 'axios';
 import { getReportQuotes } from '@/services/quotesApi';
+import SelectCampo from '@/components/ui/SelectCampo.vue';
 
 export default {
   name: 'CitasReportes',
+  components: { SelectCampo },
   data() {
     return {
+      tiposReporte: [
+        { value: 'custom', label: 'Todas las Citas' },
+        { value: 'daily', label: 'Hoy' },
+        { value: 'weekly', label: 'Esta Semana' },
+        { value: 'monthly', label: 'Este Mes' }
+      ],
       citas: [],
       selectedReportType: 'custom',
       startDate: null,

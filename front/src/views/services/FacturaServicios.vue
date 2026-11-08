@@ -4,48 +4,13 @@
       <div class="factura-wrapper">
         <p class="mini-title">MysticalCut</p>
         <h1 class="resumen-title">Resumen Servicio</h1>
-        <div class="factura-box">
-          <h2 class="orden-title">Orden de Servicio</h2>
-
-          <div class="fila-dato">
-            <span class="etiqueta">Servicio Seleccionado:</span>
-            <span class="valor">{{ servicioSeleccionado.name || servicioSeleccionado.name_service || 'No disponible'
-            }}</span>
-          </div>
-
-          <div class="fila-dato">
-            <span class="etiqueta">Barbero:</span>
-            <span class="valor">{{ barberName || 'No disponible' }}</span>
-          </div>
-
-          <div class="fila-dato">
-            <span class="etiqueta">Fecha:</span>
-            <span class="valor">{{ formattedDate || 'No disponible' }}</span>
-          </div>
-
-          <div class="fila-dato">
-            <span class="etiqueta">Hora:</span>
-            <span class="valor">{{ formattedTime || 'No disponible' }}</span>
-          </div>
-
-          <div class="fila-dato">
-            <span class="etiqueta">Correo del Cliente:</span>
-            <span class="valor">{{ userEmail || 'No disponible' }}</span>
-          </div>
-
-          <div class="fila-dato total">
-            <span><strong>Total:</strong></span>
-            <span class="valor"><strong>${{ totalServicios }}</strong></span>
-          </div>
-
-          <button class="confirmar-btn" @click="confirmarCita">
-            Confirmar Cita
-          </button>
-
-          <button class="volver-btn" @click="volver">
-            Volver / Editar Cita
-          </button>
-        </div>
+        <ResumenSeleccion :services="serviciosVisibles" :barber-name="barberName" :date="date" :time="time"
+          :email="userEmail">
+          <template #actions>
+            <button class="confirmar-btn" @click="confirmarCita">Confirmar Cita</button>
+            <button class="volver-btn" @click="volver">Volver / Editar Cita</button>
+          </template>
+        </ResumenSeleccion>
       </div>
     </div>
   </div>
@@ -56,9 +21,11 @@ import {
   createQuote,
   sendQuoteEmail
 } from '@/services/quotesApi';
+import ResumenSeleccion from '@/components/services/ResumenSeleccion.vue';
 
 export default {
   name: 'FacturaServicios',
+  components: { ResumenSeleccion },
   data() {
     return {
       userId: null,
@@ -74,6 +41,13 @@ export default {
   computed: {
     totalServicios() {
       return this.servicioSeleccionado.price || 0;
+    },
+    serviciosVisibles() {
+      if (this.servicios.length) return this.servicios;
+      if (this.servicioSeleccionado && Object.keys(this.servicioSeleccionado).length) {
+        return [this.servicioSeleccionado];
+      }
+      return [];
     },
     formattedDate() {
       if (!this.date) return '';

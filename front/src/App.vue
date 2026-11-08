@@ -1,16 +1,12 @@
 <template>
   <div id="app">
-    
-    <template v-if="!$route.meta.hideLayout">
-      <HeaderComponent :isHome="$route.meta.isHome" />
-    </template>
+    <HeaderComponent v-if="!$route.meta.hideLayout" :isHome="$route.meta.isHome" />
 
-    <router-view />
+    <main class="app-main">
+      <router-view />
+    </main>
 
-    <template v-if="!$route.meta.hideLayout">
-      <FooterComponent />
-    </template>
-
+    <FooterComponent v-if="!$route.meta.hideLayout" />
   </div>
 </template>
 
@@ -27,3 +23,19 @@ export default {
   }
 }
 </script>
+
+<style>
+#app {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  min-height: 100vh;
+}
+
+.app-main {
+  flex: 1 0 auto;
+  width: 100%;
+  min-width: 0;
+  padding-bottom: 40px;
+}
+</style>

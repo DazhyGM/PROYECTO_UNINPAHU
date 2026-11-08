@@ -59,34 +59,18 @@
           </div>
         </div>
 
-        <div v-if="userRole === 'Client' && selectedServices.length"
-          class="selected-service-box card text-white bg-dark p-4">
-          <h4 class="mb-3">Servicios Seleccionados</h4>
-          <ul class="list-unstyled">
-            <li v-for="service in selectedServices" :key="service.id_services" class="mb-3">
-              <strong>{{ service.name_service }}</strong><br />
-              <span>Duración: {{ service.estimated_time }}</span><br />
-            </li>
-          </ul>
-          <p class="mt-3"><strong>Total:</strong> ${{ totalPrice }}</p>
-
-          <hr />
-
-
-          <div class="mt-3 d-grid gap-2">
+        <ResumenSeleccion v-if="userRole === 'Client' && selectedServices.length" class="selected-service-box"
+          :services="selectedServices">
+          <template #actions>
             <button class="btn btn-delete-select" @click="clearAllSelected">Eliminar selección</button>
             <button class="btn btn-continuar" @click="goToSelectBarbero">Continuar</button>
-          </div>
-        </div>
+          </template>
+        </ResumenSeleccion>
       </div>
 
       <div class="btn-regresar mt-3 text-center">
         <button class="btn back-button" @click="goBack">Regresar</button>
       </div>
-
-      <footer class="py-3 my-4">
-        <p class="text-center text-white">© 2026 www.mysticalcut.com, Inc</p>
-      </footer>
     </div>
   </div>
 </template>
@@ -96,6 +80,7 @@ import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { getAllServices, deleteService } from '@/services/servicesApi';
 import axios from 'axios';
+import ResumenSeleccion from '@/components/services/ResumenSeleccion.vue';
 
 const router = useRouter();
 const services = ref([]);
@@ -167,7 +152,6 @@ const selectService = (service) => {
   selectedServices.value = [service];
 };
 const clearAllSelected = () => selectedServices.value = [];
-const totalPrice = computed(() => selectedServices.value.reduce((sum, s) => sum + parseFloat(s.price || 0), 0).toFixed(2));
 
 // Eliminar servicio
 const confirmDelete = async (id) => {

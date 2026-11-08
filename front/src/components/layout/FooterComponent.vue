@@ -1,6 +1,6 @@
 <template>
-    <footer class="py-3 my-4">
-      <ul class="nav justify-content-center border-bottom pb-3 mb-3"></ul>
+    <footer class="app-footer">
+      <p>© 2026 www.mysticalcut.com, Inc</p>
     </footer>
   </template>
   <style scoped>

@@ -8,9 +8,10 @@
 }
 
 .pedido-box {
-    background-color: #222;
-    border: 2px solid #CCAF54;
-    border-radius: 10px;
+    background-color: #111111;
+    border: 1px solid rgba(204, 175, 84, 0.38);
+    border-radius: 14px;
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.35);
     width: 90%;
     max-width: 900px;
     gap: 10px;
@@ -27,8 +28,8 @@
 .icon-usuario-container {
     position: relative;
     left: 20px; 
-    border: 2px solid #CCAF54;
-    border-radius: 20%;
+    border: 1px solid rgba(204, 175, 84, 0.45);
+    border-radius: 14px;
     padding: 7px;
 }
 
@@ -44,6 +45,72 @@
     flex-wrap: wrap;
     margin-bottom: 20px;
   }
+
+.buscar-usuario {
+  width: min(320px, 100%);
+}
+
+.search-filter-container .form-control {
+  height: 42px;
+  color: #ffffff;
+  background: #111111;
+  border: 1px solid rgba(204, 175, 84, 0.45);
+  outline: none;
+  box-shadow: none;
+}
+
+.search-filter-container .select-campo {
+  width: min(220px, 100%);
+}
+
+.search-filter-container .form-control {
+  border-radius: 10px 0 0 10px;
+}
+
+.search-filter-container .form-control::placeholder {
+  color: #8d8d8d;
+}
+
+.search-filter-container .form-control:focus {
+  border-color: #ccaf54;
+  box-shadow: none;
+  background: #111111;
+  color: #ffffff;
+}
+
+.buscar-usuario .dropdown-toggle {
+  height: 42px;
+  color: #ccaf54;
+  background: #111111;
+  border: 1px solid rgba(204, 175, 84, 0.45);
+  border-left: 0;
+  border-radius: 0 10px 10px 0;
+}
+
+.buscar-usuario .dropdown-toggle:hover,
+.buscar-usuario .dropdown-toggle:focus {
+  color: #111111;
+  background: #ccaf54;
+  border-color: #ccaf54;
+}
+
+.buscar-usuario .dropdown-menu {
+  background: #14120c;
+  border: 1px solid rgba(204, 175, 84, 0.55);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.buscar-usuario .dropdown-item {
+  color: #f3f3f3;
+  background: transparent;
+}
+
+.buscar-usuario .dropdown-item:hover,
+.buscar-usuario .dropdown-item:focus {
+  color: #111111;
+  background: #ccaf54;
+}
 
   .activate-btn {
     background-color: #CCAF54;

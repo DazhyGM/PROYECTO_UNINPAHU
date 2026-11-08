@@ -5,18 +5,18 @@
     </ul>
   </div>
   <div class="container perfil-usuario">
-    <div class="profile-container d-flex align-items-center justify-content-center">
-      <div class="profile-image me-3">
+    <div class="profile-container">
+      <div class="profile-image">
         <img src="/img/background/Icono usuario.png" width="100px" alt="Usuario">
       </div>
       <div class="profile-info">
-        <div class="profile-name">Nombre: {{ user.full_name }}</div>
-        <div class="profile-name">Correo: {{ user.user_email }}</div>
-        <div class="profile-name">Documento: {{ user.document_number }}</div>
-        <div class="profile-name">Tipo de Documento: {{ user.type_document }}</div>
-        <div class="profile-name">Dirección: {{ user.address }}</div>
-        <div class="profile-name">Telefono: {{ user.phone }}</div>
-        <div class="profile-name" id="role">Rol: {{ user.role }}</div>
+        <div class="profile-name"><span class="profile-label">Nombre:</span> <span class="profile-value">{{ user.full_name }}</span></div>
+        <div class="profile-name"><span class="profile-label">Correo:</span> <span class="profile-value">{{ user.user_email }}</span></div>
+        <div class="profile-name"><span class="profile-label">Documento:</span> <span class="profile-value">{{ user.document_number }}</span></div>
+        <div class="profile-name"><span class="profile-label">Tipo de Documento:</span> <span class="profile-value">{{ user.type_document }}</span></div>
+        <div class="profile-name"><span class="profile-label">Dirección:</span> <span class="profile-value">{{ user.address }}</span></div>
+        <div class="profile-name"><span class="profile-label">Telefono:</span> <span class="profile-value">{{ user.phone }}</span></div>
+        <div class="profile-name" id="role"><span class="profile-label">Rol:</span> <span class="profile-value">{{ user.role }}</span></div>
       </div>
     </div>
 
@@ -30,8 +30,6 @@
     </div>
     <button v-if="['Administrador', 'Cliente', 'Empleado'].includes(user.role)" class="btn back-button"
       @click="goBack">Regresar</button>
-
-    <FooterComponent />
   </div>
 </template>
 

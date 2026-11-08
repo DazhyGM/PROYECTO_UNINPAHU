@@ -42,22 +42,17 @@
 
           <div class="mb-3">
             <label class="form-label">Categoría</label>
-            <select v-model="form.id_category_services" class="form-select custom-input" required>
-              <option disabled value="">Seleccionar</option>
-              <option value="1">Corte</option>
-              <option value="2">Barba</option>
-              <option value="3">Cejas</option>
-              <option value="4">Tintes</option>
-              <option value="5">Combos</option>
-            </select>
+            <SelectCampo
+              v-model="form.id_category_services"
+              :options="categoriasServicio"
+              placeholder="Seleccionar"
+              required
+            />
           </div>
 
           <div class="mb-3">
             <label class="form-label">Estado</label>
-            <select v-model="form.id_status" class="form-select custom-input">
-              <option value="1">Activo</option>
-              <option value="2">Inactivo</option>
-            </select>
+            <SelectCampo v-model="form.id_status" :options="estadosServicio" />
           </div>
 
           <button type="submit" class="btn w-100 btn-add-service">
@@ -84,8 +79,10 @@
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { createService } from '@/services/servicesApi';
+import SelectCampo from '@/components/ui/SelectCampo.vue';
 
 export default {
+  components: { SelectCampo },
   setup() {
     const router = useRouter();
     const imagePreview = ref(null);
@@ -103,6 +100,17 @@ export default {
 
     const message = ref('');
     const error = ref('');
+    const categoriasServicio = [
+      { value: '1', label: 'Corte' },
+      { value: '2', label: 'Barba' },
+      { value: '3', label: 'Cejas' },
+      { value: '4', label: 'Tintes' },
+      { value: '5', label: 'Combos' }
+    ];
+    const estadosServicio = [
+      { value: 1, label: 'Activo' },
+      { value: 2, label: 'Inactivo' }
+    ];
 
     const handleImageUpload = (e) => {
       const file = e.target.files[0];
@@ -165,6 +173,8 @@ export default {
     };
 
     return {
+      categoriasServicio,
+      estadosServicio,
       form,
       imagePreview,
       handleSubmit,

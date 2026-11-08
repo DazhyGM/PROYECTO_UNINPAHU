@@ -8,9 +8,10 @@
 }
 
 .pedido-box {
-    background-color: #222;
-    border: 2px solid #CCAF54;
-    border-radius: 10px;
+    background-color: #111111;
+    border: 1px solid rgba(204, 175, 84, 0.38);
+    border-radius: 14px;
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.35);
     width: 90%;
     max-width: 900px;
     gap: 10px;
@@ -74,8 +75,8 @@
 .icon-usuario-container {
     position: relative;
     left: 20px;
-    border: 2px solid #CCAF54;
-    border-radius: 20%;
+    border: 1px solid rgba(204, 175, 84, 0.45);
+    border-radius: 14px;
     padding: 7px;
 }
 
@@ -134,10 +135,45 @@
     color: #000 !important;
 }
 
+.usuarios-page .barra-usuarios {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  align-items: stretch;
+  gap: 12px;
+  margin-bottom: 1.25rem;
+}
+
+.usuarios-page .barra-usuarios > .btn-agregar,
+.usuarios-page .barra-usuarios > .select-campo,
+.usuarios-page .barra-usuarios > .buscar-usuario {
+  height: 48px;
+  margin: 0;
+  box-sizing: border-box;
+}
+
 .usuarios-page .btn-agregar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    width: 100%;
+    margin: 0;
+    padding: 0 14px;
+    box-sizing: border-box;
+    border-radius: 10px;
+    font-size: 16px;
+    font-weight: 400;
+    line-height: 1;
     background-color: #ccaf54;
     color: #000000;
     border: 1px solid #d4af37;
+}
+
+.usuarios-page .btn-agregar img {
+    width: 18px;
+    height: 18px;
+    margin: 0;
+    flex: 0 0 auto;
 }
 
 .usuarios-page .btn-agregar:hover {
@@ -146,10 +182,125 @@
     border: 1px solid #d4af37;
 }
 
-.search-filter-container {
-    display: flex;
-    justify-content: center;
-    gap: 20px;
-    flex-wrap: wrap;
-    margin-bottom: 20px;
+.buscar-usuario {
+  position: relative;
+  display: flex;
+  align-items: stretch;
+  width: 100%;
+  flex-wrap: nowrap;
+}
+
+.buscar-usuario .form-control {
+  flex: 1 1 auto;
+  width: 1%;
+  min-width: 0;
+  margin: 0;
+  padding: 0 14px;
+  box-sizing: border-box;
+  color: #ffffff;
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 46px;
+  background: #111111;
+  border: 1px solid rgba(204, 175, 84, 0.45);
+  border-right: 0;
+  border-radius: 10px 0 0 10px;
+  box-shadow: none;
+}
+
+.buscar-usuario .form-control::placeholder {
+  color: #8d8d8d;
+  line-height: 46px;
+}
+
+.buscar-usuario .form-control:focus {
+  color: #ffffff;
+  background: #111111;
+  border-color: #ccaf54;
+  box-shadow: none;
+}
+
+.buscar-usuario .dropdown-toggle {
+  flex: 0 0 46px;
+  width: 46px;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  color: #ccaf54;
+  line-height: 1;
+  background: #111111;
+  border: 1px solid rgba(204, 175, 84, 0.45);
+  border-left: 0;
+  border-radius: 0 10px 10px 0;
+}
+
+.buscar-usuario .dropdown-toggle::after {
+  margin: 0;
+}
+
+.buscar-usuario .dropdown-toggle:hover,
+.buscar-usuario .dropdown-toggle:focus {
+  color: #111111;
+  background: #ccaf54;
+  border-color: #ccaf54;
+}
+
+.buscar-usuario .dropdown-menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  background: #14120c;
+  border: 1px solid rgba(204, 175, 84, 0.55);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.buscar-usuario .dropdown-item {
+  color: #f3f3f3;
+  background: transparent;
+}
+
+.buscar-usuario .dropdown-item:hover,
+.buscar-usuario .dropdown-item:focus {
+  color: #111111;
+  background: #ccaf54;
+}
+
+@media (max-width: 991px) {
+  .usuarios-page .barra-usuarios {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 575px) {
+  .usuarios-page .barra-usuarios {
+    grid-template-columns: 1fr;
+  }
+}
+
+.usuarios-page .barra-usuarios > .select-campo {
+  height: 48px !important;
+}
+
+.usuarios-page .barra-usuarios > .btn-agregar,
+.usuarios-page .barra-usuarios > .buscar-usuario,
+.usuarios-page .barra-usuarios .form-control,
+.usuarios-page .barra-usuarios .dropdown-toggle {
+  height: 48px !important;
+  min-height: 48px !important;
+  max-height: 48px !important;
+  box-sizing: border-box !important;
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+}
+
+.usuarios-page .barra-usuarios > .btn-agregar {
+  --bs-btn-padding-y: 0;
+  --bs-btn-padding-x: 14px;
+  --bs-btn-line-height: 1;
+  --bs-btn-font-size: 16px;
+  --bs-btn-border-radius: 10px;
+  padding: 0 14px !important;
+  border-radius: 10px !important;
+  line-height: 1 !important;
 }

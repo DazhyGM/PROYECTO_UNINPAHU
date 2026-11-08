@@ -9,7 +9,7 @@
 </div>
 
       <ul class="nav col-12 justify-content-center mx-auto">
-        <h1>Restablecer Contraseña</h1>
+        <h1 class="titulo-header">Restablecer Contraseña</h1>
       </ul>
     </header>
     <form @submit.prevent="resetPassword">

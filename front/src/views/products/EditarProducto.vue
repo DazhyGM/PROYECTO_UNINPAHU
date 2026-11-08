@@ -61,21 +61,24 @@
 
           <div class="mb-3">
             <label class="block mb-1 form-label">Categoría</label>
-            <select v-model.number="product.id_category" required class="form-select custom-input">
-              <option disabled value="">Seleccione una categoría</option>
-              <option v-for="cat in categories" :key="cat.id" :value="cat.id">
-                {{ cat.name }}
-              </option>
-            </select>
+            <SelectCampo
+              v-model="product.id_category"
+              :options="categories.map(cat => ({ value: cat.id, label: cat.name }))"
+              placeholder="Seleccione una categoría"
+              required
+            />
           </div>
 
           <div class="mb-3">
             <label class="form-label">Estado</label>
-            <select v-model.number="product.id_status" class="form-select custom-input">
-              <option :value="1">Activo</option>
-              <option :value="2">Agotado</option>
-              <option :value="3">Inactivo</option>
-            </select>
+            <SelectCampo
+              v-model="product.id_status"
+              :options="[
+                { value: 1, label: 'Activo' },
+                { value: 2, label: 'Agotado' },
+                { value: 3, label: 'Inactivo' }
+              ]"
+            />
           </div>
           <div class="contenedor-botones">
             <button type="submit" class="btn btn-guardar flex-grow-1 me-2">
@@ -101,6 +104,7 @@
 
 <script setup>
 import { ref, onMounted } from "vue";
+import SelectCampo from "@/components/ui/SelectCampo.vue";
 import { useRoute, useRouter } from "vue-router";
 import { getProductById, updateProduct } from "@/services/productsApi";
 

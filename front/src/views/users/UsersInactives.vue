@@ -7,21 +7,16 @@
 
   <div class="container">
     <div class="search-filter-container">
-      <div class="input-group" style="max-width: 300px;">
+      <div class="input-group buscar-usuario">
         <input type="text" v-model="searchQuery" class="form-control" placeholder="Buscar usuario...">
-        <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown"></button>
+        <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-label="Ordenar usuarios"></button>
         <ul class="dropdown-menu dropdown-menu-end">
-          <li><a class="dropdown-item" href="#" @click.prevent="sortUsers('asc')">A......Z</a></li>
-          <li><a class="dropdown-item" href="#" @click.prevent="sortUsers('desc')">Z......A</a></li>
+          <li><button class="dropdown-item" type="button" @click="sortUsers('asc')">A......Z</button></li>
+          <li><button class="dropdown-item" type="button" @click="sortUsers('desc')">Z......A</button></li>
         </ul>
       </div>
 
-      <select v-model="selectedRole" class="form-select" style="max-width: 200px;">
-        <option value="">Todos los roles</option>
-        <option value="1">Administrador</option>
-        <option value="2">Empleado</option>
-        <option value="3">Cliente</option>
-      </select>
+      <SelectCampo v-model="selectedRole" :options="roles" />
     </div>
 
     <div class="content">
@@ -44,12 +39,19 @@
 import { ref, onMounted, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { getInactiveUsers, updateUserStatus } from '@/services/api';
+import SelectCampo from '@/components/ui/SelectCampo.vue';
 
 const router = useRouter();
 const inactiveUsers = ref([]);
 const searchQuery = ref("");
 const selectedRole = ref("");
-const sortOrder = ref(""); // "asc" | "desc" | ""
+const sortOrder = ref("");
+const roles = [
+  { value: "", label: "Todos los roles" },
+  { value: "1", label: "Administrador" },
+  { value: "2", label: "Empleado" },
+  { value: "3", label: "Cliente" }
+];
 
 const loadInactiveUsers = async () => {
   try {

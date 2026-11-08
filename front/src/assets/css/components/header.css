@@ -1,7 +1,25 @@
   header .container {
-      width: 90%;
+      width: min(1200px, calc(100% - 24px));
       max-width: 1200px;
       margin: 0 auto;
+      gap: 12px;
+      flex-wrap: wrap;
+  }
+
+  header img[alt="Logo"] {
+      width: 96px;
+      height: auto;
+  }
+
+  @media (max-width: 640px) {
+      header img[alt="Logo"] {
+          width: 68px;
+      }
+
+      header .dropdown-toggle-perfil {
+          font-size: 0.95rem;
+          padding: 0.35rem 0.5rem;
+      }
   }
 
   header .icon {

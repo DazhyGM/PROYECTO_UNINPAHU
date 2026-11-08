@@ -40,12 +40,12 @@
           <label for="confirm-password">Confirmar Contraseña</label>
           <input type="password" id="confirm-password" v-model="form.confirmPassword" required />
           <label for="role">Rol del Usuario</label>
-          <select id="role" class="select-field" v-model="form.role" required>
-            <option value="" disabled>Seleccione un rol</option>
-            <option v-for="role in roles" :key="role.id" :value="role.id">
-              {{ role.name }}
-            </option>
-          </select>
+          <SelectCampo
+            v-model="form.role"
+            :options="roles.map(role => ({ value: role.id, label: role.name }))"
+            placeholder="Seleccione un rol"
+            required
+          />
         </div>
 
       </div>
@@ -59,8 +59,10 @@
 <script>
 import { reactive, ref } from 'vue';
 import axios from 'axios';
+import SelectCampo from '@/components/ui/SelectCampo.vue';
 
 export default {
+  components: { SelectCampo },
   setup() {
     const form = reactive({
       docType: '',

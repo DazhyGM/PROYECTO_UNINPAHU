@@ -20,10 +20,10 @@
 }
 
 .factura-wrapper {
-  background-color: #111;
+  background: linear-gradient(180deg, #151515 0%, #0c0c0c 100%);
   padding: 50px;
-  border-radius: 20px;
-  border: 1px solid #555;
+  border-radius: 18px;
+  border: 1px solid rgba(204, 175, 84, 0.45);
   box-shadow: 0 6px 16px rgba(0, 0, 0, 0.5);
   width: 95%;
   max-width: 650px;
@@ -41,18 +41,19 @@
 }
 
 .resumen-title {
-  color: #fff;
-  font-size: 36px;
+  color: #f4e7c4;
+  font-size: 2.5rem;
   margin-bottom: 35px;
   text-align: center;
-  font-weight: bold;
+  font-weight: 400;
+  letter-spacing: 0.03em;
 }
 
 .factura-box {
-  background-color: #1a1a1a;
+  background-color: #111111;
   padding: 40px;
-  border-radius: 16px;
-  border: 1px solid #ccc;
+  border-radius: 14px;
+  border: 1px solid rgba(204, 175, 84, 0.38);
   min-height: 600px;
   display: flex; 
   flex-direction: column; 

@@ -7,15 +7,15 @@
         <img src="/img/background/LOGO.png" alt="Logo" width="125" height="125" class="d-inline-block align-text-top" />
       </div>
       <ul class="nav col-12 justify-content-center mx-auto">
-        <h1>Selecciona el barbero</h1>
+        <h1 class="titulo-header">Selecciona el barbero</h1>
       </ul>
     </header>
     <div class="row">
       <div class="col-md-8 col-12 order-2 order-md-1">
-        <h2>Barbero</h2>
+        <h2 class="titulo-barbero">Barbero</h2>
         <div class="row">
-          <div class="col-6 col-sm-4 col-md-4 mb-3" v-for="barber in barbers" :key="barber.id">
-            <div class="barber-card" :class="{ selected: selectedBarber && selectedBarber.id === barber.id }"
+          <div class="col-6 col-sm-4 col-md-4 mb-3" v-for="barber in barbers" :key="barber.user_id">
+            <div class="barber-card" :class="{ selected: selectedBarber && selectedBarber.user_id === barber.user_id }"
               @click="selectBarber(barber)">
               <img :src="getImageUrl(barber.image)" :alt="barber.full_name" class="barber-img"
                 @error="onImageError($event)" />
@@ -27,34 +27,14 @@
       </div>
 
       <div class="col-md-4 col-12 order-1 order-md-2 mb-4 mb-md-0">
-        <div class="custom-card-resumen p-4 bg-dark text-white rounded summary-fixed-bottom">
-          <h3>Resumen de selección</h3>
-          <div v-if="selectedBarber">
-            <p><strong>Barbero Seleccionado:</strong></p>
-            <p>{{ selectedBarber.full_name }}</p>
-          </div>
-          <div v-else class="text-muted">Selecciona un barbero</div>
-
-          <hr />
-
-          <div v-if="selectedServices.length">
-            <p><strong>Servicios Seleccionados:</strong></p>
-            <div class="mb-2" v-for="service in selectedServices" :key="service.id_services">
-              <p><strong></strong> {{ service.name_service }}</p>
-              <p><strong>Precio:</strong> ${{ service.price }}</p>
-              <p><span>Duración: {{ service.estimated_time }}</span></p>
-              <hr />
-            </div>
-          </div>
-          <div v-else class="text-muted">No hay servicios seleccionados.</div>
-
-          <div class="mt-3 d-grid gap-2">
+        <ResumenSeleccion class="summary-fixed-bottom" :services="selectedServices"
+          :barber-name="selectedBarber ? selectedBarber.full_name : ''">
+          <template #actions>
             <button class="btn btn-delete-select-barber" @click="clearSelection">Eliminar selección</button>
-            <button class="btn btn-continuar-barber" @click="goToCalendar"
-              :disabled="!selectedBarber">Continuar</button>
-            <button class="btn back-button-barber mt-2" @click="goBack">Regresar</button>
-          </div>
-        </div>
+            <button class="btn btn-continuar-barber" @click="goToCalendar" :disabled="!selectedBarber">Continuar</button>
+            <button class="btn back-button-barber" @click="goBack">Regresar</button>
+          </template>
+        </ResumenSeleccion>
       </div>
     </div>
   </div>
@@ -62,9 +42,11 @@
 
 <script>
 import { getBarbers } from '@/services/api';
+import ResumenSeleccion from '@/components/services/ResumenSeleccion.vue';
 
 export default {
   name: 'SeleccionarBarbero',
+  components: { ResumenSeleccion },
 
   data() {
     return {
