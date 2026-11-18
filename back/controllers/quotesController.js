@@ -98,18 +98,43 @@ exports.cancelQuote = async (req, res) => {
   }
 };
 
-// Función para finalizar una cita
+// Función para finalizar una cita y enviar la encuesta de esa visita
 exports.finishQuote = async (req, res) => {
   const quoteId = req.params.id;
 
   try {
+    const quote = await Quote.findDetailedById(quoteId);
+
+    if (!quote) {
+      return res.status(404).json({ message: 'Cita no encontrada.' });
+    }
+
+    if (quote.state_quotes === 'finalizada') {
+      return res.status(200).json({
+        message: 'La cita ya estaba finalizada.',
+        emailSent: false,
+      });
+    }
+
     const success = await Quote.updateStatus(quoteId, 'finalizada');
-    
     if (!success) {
       return res.status(404).json({ message: 'Cita no encontrada.' });
     }
-    
-    res.status(200).json({ message: 'Cita finalizada con éxito.' });
+
+    let emailSent = false;
+    try {
+      await Quote.sendSatisfactionEmail(quote);
+      emailSent = true;
+    } catch (error) {
+      console.error('La cita se finalizó, pero no se pudo enviar la encuesta:', error);
+    }
+
+    res.status(200).json({
+      message: emailSent
+        ? 'Cita finalizada. Enviamos la encuesta al correo del cliente.'
+        : 'Cita finalizada. No se pudo enviar la encuesta por correo.',
+      emailSent,
+    });
   } catch (error) {
     console.error("Error al finalizar la cita:", error);
     res.status(500).json({ message: 'Error al finalizar la cita.' });

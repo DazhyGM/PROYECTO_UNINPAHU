@@ -584,11 +584,42 @@ CREATE TABLE IF NOT EXISTS `dotacion` (
 
 CREATE TABLE IF NOT EXISTS `calificaciones` (
   `id_calificacion` int(11) NOT NULL AUTO_INCREMENT,
-  `calificacion_barbero` decimal(3,1) NOT NULL,
-  `calificacion_general` decimal(3,1) NOT NULL,
+  `id_quotes` int(11) NOT NULL,
   `id_barbero` int(11) NOT NULL,
+  `id_servicio` int(11) NOT NULL,
+  `id_cliente` int(11) NOT NULL,
+  `calificacion_servicio` tinyint(4) NOT NULL,
+  `calificacion_barberia` tinyint(4) NOT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   PRIMARY KEY (`id_calificacion`),
-  KEY `fk_calificacion_barbero` (`id_barbero`)
+  UNIQUE KEY `uq_calificacion_cita` (`id_quotes`),
+  KEY `fk_calificacion_barbero` (`id_barbero`),
+  KEY `fk_calificacion_servicio` (`id_servicio`),
+  KEY `fk_calificacion_cliente` (`id_cliente`),
+  CONSTRAINT `chk_calificacion_servicio` CHECK (`calificacion_servicio` BETWEEN 1 AND 5),
+  CONSTRAINT `chk_calificacion_barberia` CHECK (`calificacion_barberia` BETWEEN 1 AND 5)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Calificación que el barbero da al cliente de cada cita finalizada
+--
+
+CREATE TABLE IF NOT EXISTS `calificaciones_cliente` (
+  `id_calificacion_cliente` int(11) NOT NULL AUTO_INCREMENT,
+  `id_quotes` int(11) NOT NULL,
+  `id_barbero` int(11) NOT NULL,
+  `id_cliente` int(11) NOT NULL,
+  `id_servicio` int(11) NOT NULL,
+  `calificacion_cliente` tinyint(4) NOT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`id_calificacion_cliente`),
+  UNIQUE KEY `uq_calificacion_cliente_cita` (`id_quotes`),
+  KEY `fk_calcli_barbero` (`id_barbero`),
+  KEY `fk_calcli_cliente` (`id_cliente`),
+  KEY `fk_calcli_servicio` (`id_servicio`),
+  CONSTRAINT `chk_calificacion_cliente` CHECK (`calificacion_cliente` BETWEEN 1 AND 5)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -678,7 +709,16 @@ ALTER TABLE `dotacion`
 -- Filtros para la tabla `calificaciones`
 --
 ALTER TABLE `calificaciones`
-  ADD CONSTRAINT `fk_calificacion_barbero` FOREIGN KEY (`id_barbero`) REFERENCES `user` (`user_id`);
+  ADD CONSTRAINT `fk_calificacion_cita` FOREIGN KEY (`id_quotes`) REFERENCES `quotes` (`id_quotes`),
+  ADD CONSTRAINT `fk_calificacion_barbero` FOREIGN KEY (`id_barbero`) REFERENCES `user` (`user_id`),
+  ADD CONSTRAINT `fk_calificacion_servicio` FOREIGN KEY (`id_servicio`) REFERENCES `services` (`id_services`),
+  ADD CONSTRAINT `fk_calificacion_cliente` FOREIGN KEY (`id_cliente`) REFERENCES `user` (`user_id`);
+
+ALTER TABLE `calificaciones_cliente`
+  ADD CONSTRAINT `fk_calcli_cita` FOREIGN KEY (`id_quotes`) REFERENCES `quotes` (`id_quotes`),
+  ADD CONSTRAINT `fk_calcli_barbero` FOREIGN KEY (`id_barbero`) REFERENCES `user` (`user_id`),
+  ADD CONSTRAINT `fk_calcli_cliente` FOREIGN KEY (`id_cliente`) REFERENCES `user` (`user_id`),
+  ADD CONSTRAINT `fk_calcli_servicio` FOREIGN KEY (`id_servicio`) REFERENCES `services` (`id_services`);
 
 COMMIT;
 

@@ -29,6 +29,7 @@ const SeleccionarBarbero = () => import('@/views/services/SeleccionarBarbero.vue
 const CalendarioCitas = () => import('@/views/services/CalendarioCitas.vue');
 const FacturaServicios = () => import('@/views/services/FacturaServicios.vue');
 const CitasPendientes = () => import('@/views/services/CitasPendientes.vue');
+const CalificarCita = () => import('@/views/services/CalificarCita.vue');
 const Reportes = () => import('@/views/services/Reportes.vue');
 
 //Products
@@ -76,6 +77,7 @@ const routes = [
   { path: '/Calendario', component: CalendarioCitas , meta: { title: 'Calendario | MysticalCut', hideLayout: true } },
   { path: '/FacturaServicios', component: FacturaServicios , meta: { title: 'factura | MysticalCut', hideLayout: true } },
   { path: '/Citas', component: CitasPendientes , meta: { title: 'Citas | MysticalCut', requiresAuth: true } },
+  { path: '/Calificar/:id', component: CalificarCita, meta: { title: 'Calificar | MysticalCut', requiresAuth: true } },
   { path: '/Reportes', component: Reportes , meta: { title: 'Reportes | MysticalCut', requiresAuth: true, role: 'Admin'  } },
 
   //Products
@@ -112,7 +114,11 @@ router.beforeEach((to, from, next) => {
 
   if (to.meta.requiresAuth) {
     if (!user) {
-      next('/error');
+      if (to.path.startsWith('/Calificar')) {
+        next({ path: '/Login', query: { redirect: to.fullPath } });
+      } else {
+        next('/error');
+      }
     } else if ((to.meta.roles || (to.meta.role ? [to.meta.role] : null)) && !(to.meta.roles || [to.meta.role]).includes(user.role)) {
       localStorage.removeItem('user');
       localStorage.removeItem('token');
