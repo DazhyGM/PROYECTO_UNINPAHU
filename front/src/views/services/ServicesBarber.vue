@@ -34,9 +34,8 @@
                 <div class="card">
                   <div class="card-body d-flex">
                     <div class="service-image">
-                      <img :src="getServiceImage(service.image)" :alt="service.name_service" class="img-fluid"
-                        style="max-width: 150px; margin-right: 15px;" />
-
+                      <img :src="getServiceImage(service.image)" :alt="service.name_service" class="img-fluid rounded"
+                        style="width: 150px; height: 150px; object-fit: contain; background-color: #f8f9fa; margin-right: 15px;" />
                     </div>
                     <div class="service-details">
                       <h5 class="card-title">{{ service.name_service }}</h5>

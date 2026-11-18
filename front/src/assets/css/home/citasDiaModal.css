@@ -1,0 +1,122 @@
+.citas-dia-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 3000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgba(0, 0, 0, 0.72);
+}
+
+.citas-dia-modal {
+  position: relative;
+  width: min(760px, 100%);
+  max-height: min(80vh, 640px);
+  overflow: auto;
+  padding: 28px 24px 22px;
+  color: #f3f3f3;
+  background: #111111;
+  border: 1px solid rgba(204, 175, 84, 0.5);
+  border-radius: 16px;
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.45);
+}
+
+.citas-dia-cerrar {
+  position: absolute;
+  top: 10px;
+  right: 14px;
+  border: 0;
+  background: transparent;
+  color: #ccaf54;
+  font-size: 1.8rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.citas-dia-kicker {
+  margin: 0 0 6px;
+  color: #ccaf54;
+  font-size: 0.75rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+}
+
+.citas-dia-modal h2 {
+  margin: 0;
+  color: #f4e7c4;
+  font-size: 1.8rem;
+}
+
+.citas-dia-fecha {
+  margin: 6px 0 18px;
+  color: #bdbdbd;
+}
+
+.citas-dia-vacio {
+  margin: 8px 0 0;
+  color: #d7d7d7;
+}
+
+.citas-dia-tabla-wrap {
+  overflow-x: auto;
+}
+
+.citas-dia-tabla {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.citas-dia-tabla th,
+.citas-dia-tabla td {
+  padding: 10px 12px;
+  text-align: left;
+  border-bottom: 1px solid rgba(204, 175, 84, 0.22);
+}
+
+.citas-dia-tabla th {
+  color: #ccaf54;
+  font-size: 0.82rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.citas-dia-tabla td {
+  color: #f3f3f3;
+}
+
+.badge-estado {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  text-transform: capitalize;
+  white-space: nowrap;
+}
+
+.badge-pendiente {
+  color: #e6c56a;
+  background: rgba(204, 175, 84, 0.12);
+  border-color: rgba(204, 175, 84, 0.42);
+}
+
+.badge-finalizada {
+  color: #86e0ad;
+  background: rgba(56, 193, 114, 0.12);
+  border-color: rgba(56, 193, 114, 0.38);
+}
+
+.badge-cancelada {
+  color: #f0a3a3;
+  background: rgba(220, 53, 69, 0.12);
+  border-color: rgba(220, 53, 69, 0.38);
+}
+
+.badge-otro {
+  color: #f3f3f3;
+  background: #2a2a2a;
+  border-color: rgba(255, 255, 255, 0.18);
+}

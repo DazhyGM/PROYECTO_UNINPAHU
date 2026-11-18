@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const userController = require('../controllers/userController');
 const authenticate = require('../middlewares/authenticate');
+const { getByBarber } = require('../models/barberScheduleModel');
 
 /**
  * @swagger
@@ -179,6 +180,15 @@ router.get('/users', authenticate, userController.getUsers);
  *         description: Usuario obtenido
  */
 router.get('/users/:id', authenticate, userController.getUserById);
+
+router.get('/users/:id/schedule', authenticate, async (req, res) => {
+    try {
+        const schedule = await getByBarber(req.params.id);
+        res.status(200).json(schedule);
+    } catch (error) {
+        res.status(500).json({ message: 'Error al obtener el horario del barbero' });
+    }
+});
 
 /**
  * @swagger

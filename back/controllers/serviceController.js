@@ -1,3 +1,5 @@
+const fs = require('fs');
+const path = require('path');
 const ServiceModel = require('../models/serviceModel');
 
 // Obtener todos los servicios activos
@@ -46,29 +48,69 @@ exports.createService = (req, res) => {
 exports.updateService = (req, res) => {
   const { id } = req.params;
   const { name_service, description, estimated_time, price, id_category_services, id_status } = req.body;
-  const image = req.file ? req.file.filename : null;
+  const newImage = req.file ? req.file.filename : null;
 
-  let query = `
-    UPDATE services 
-    SET name_service = ?, description = ?, estimated_time = ?, price = ?, 
-        id_category_services = ?, id_status = ?
-  `;
-  const params = [name_service, description, estimated_time, price, id_category_services, id_status];
-
-  if (image) {
-    query += `, image = ?`;
-    params.push(image);
-  }
-
-  query += ` WHERE id_services = ?`;
-  params.push(id);
-
-  ServiceModel.updateService(query, params, (err) => {
+  // 1. Primero consultamos el servicio actual para obtener la imagen anterior
+  ServiceModel.getServiceById(id, (err, results) => {
     if (err) {
-      console.error('Error al actualizar el servicio:', err);
+      console.error('Error al buscar el servicio:', err);
       return res.status(500).json({ message: 'Error al actualizar el servicio' });
     }
-    res.json({ message: 'Servicio actualizado correctamente' });
+
+    if (results.length === 0) {
+      return res.status(404).json({ message: 'Servicio no encontrado' });
+    }
+
+    const currentService = results[0];
+    const oldImage = currentService.image;
+
+    // 2. Construimos la consulta de actualización dinámica
+    let query = `
+      UPDATE services 
+      SET name_service = ?, description = ?, estimated_time = ?, price = ?, 
+          id_category_services = ?, id_status = ?
+    `;
+    const params = [name_service, description, estimated_time, price, id_category_services, id_status];
+
+    if (newImage) {
+      query += `, image = ?`;
+      params.push(newImage);
+    }
+
+    query += ` WHERE id_services = ?`;
+    params.push(id);
+
+    // 3. Ejecutamos la actualización en la BD
+    ServiceModel.updateService(query, params, (err) => {
+      if (err) {
+        console.error('Error al actualizar el servicio:', err);
+        return res.status(500).json({ message: 'Error al actualizar el servicio' });
+      }
+
+      // 4. Si se subió una nueva imagen y existía una anterior, eliminamos la vieja de la carpeta física
+      if (newImage && oldImage) {
+
+        // Construimos la ruta exacta: Subimos de 'controllers' a 'back', luego entramos a 'uploads'
+        const imagePath = path.join(__dirname, '../uploads', oldImage);
+        
+        console.log('Ruta intentando borrar:', imagePath); // Para verificar en consola
+
+        // Verificamos si el archivo realmente existe antes de llamar a fs.unlink
+        if (fs.existsSync(imagePath)) {
+          fs.unlink(imagePath, (unlinkErr) => {
+            if (unlinkErr) {
+              console.error('No se pudo eliminar la imagen anterior del disco:', unlinkErr);
+            } else {
+              console.log('Imagen anterior eliminada correctamente del disco.');
+            }
+          });
+        } else {
+          console.log('El archivo no se encontró físicamente en la ruta especificada.');
+        }
+      }
+
+      res.json({ message: 'Servicio actualizado correctamente' });
+    });
   });
 };
 

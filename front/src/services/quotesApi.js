@@ -79,6 +79,32 @@ export const finishQuote = async (quoteId) => {
 
 
 // 🔹 Obtener citas de un barbero en una fecha específica
+export const getBarberSchedule = async (barberId) => {
+  try {
+    const response = await axios.get(`http://localhost:5000/api/users/users/${barberId}/schedule`, getAuthHeaders());
+    return response.data;
+  } catch (error) {
+    console.error('Error al obtener el horario del barbero:', error.response?.data || error.message);
+    throw error;
+  }
+};
+
+export const getAvailability = async (barberId, date, serviceId) => {
+  try {
+    const response = await axios.get(`${QUOTES_API_URL}/disponibilidad`, {
+      params: {
+        barber_id: barberId,
+        date,
+        service_id: serviceId
+      }
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error al obtener horarios disponibles:', error.response?.data || error.message);
+    throw error;
+  }
+};
+
 export const getQuotesByBarberAndDate = async (barberId, date) => {
   try {
     const response = await axios.get(QUOTES_API_URL, {

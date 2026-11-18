@@ -66,6 +66,12 @@ const logIn = async () => {
     localStorage.setItem("token", data.token);
     localStorage.setItem("user", JSON.stringify(data.user));
 
+    if (data.user?.role === "Employee") {
+      sessionStorage.setItem("barberCitasModal", "1");
+    } else {
+      sessionStorage.removeItem("barberCitasModal");
+    }
+
     setTimeout(() => {
       router.push("/Home");
     }, 1000);

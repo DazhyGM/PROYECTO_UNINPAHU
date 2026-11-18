@@ -72,6 +72,7 @@ onUnmounted(() => {
 const logout = () => {
   localStorage.removeItem('token');
   localStorage.removeItem('user');
+  sessionStorage.removeItem('barberCitasModal');
   router.push('/');
 };
 

@@ -20,6 +20,11 @@ const {
     activateUser,
     getUserByDocument
 } = require('../models/userModel');
+const {
+    validateSchedules,
+    saveForBarber,
+    deleteForBarber
+} = require('../models/barberScheduleModel');
 
 class UserController {
 
@@ -77,12 +82,22 @@ class UserController {
             return res.status(400).json({ message: 'Ya existe un usuario registrado con este correo.' });
         }
 
+        const roleId = Number(req.body.role_fk);
+        if (roleId === 2) {
+            validateSchedules(req.body.schedules);
+        }
+
         // Registrar usuario si todo está correcto
-        await registerUser(req.body);
+        const created = await registerUser(req.body);
+        if (roleId === 2) {
+            await saveForBarber(created.insertId, req.body.schedules);
+        }
         res.status(201).json({ message: '✅ Usuario creado correctamente' });
 
     } catch (error) {
-        res.status(500).json({ message: 'Error al registrar el usuario', error: error.message });
+        const message = error.message || 'Error al registrar el usuario';
+        const isValidation = /horario|barbero|hora|descanso|jornada/i.test(message);
+        res.status(isValidation ? 400 : 500).json({ message });
     }
 }
 
@@ -165,12 +180,26 @@ class UserController {
 
     async updateUser(req, res) {
         try {
+            const roleId = Number(req.body.role_fk);
+            if (roleId === 2) {
+                validateSchedules(req.body.schedules);
+            }
+
             await updateUser(req.params.id, req.body);
+
+            if (roleId === 2) {
+                await saveForBarber(req.params.id, req.body.schedules);
+            } else if (req.body.role_fk !== undefined) {
+                await deleteForBarber(req.params.id);
+            }
+
             res.status(200).json({ message: '✅ Usuario actualizado correctamente' });
         } catch (error) {
             console.error('Error al actualizar usuario:', error.message);
             if (error.message === 'Usuario no encontrado') {
                 res.status(404).json({ message: 'Usuario no encontrado' });
+            } else if (error.message && /horario|barbero|hora|descanso|jornada/i.test(error.message)) {
+                res.status(400).json({ message: error.message });
             } else {
                 res.status(500).json({ message: 'Error al actualizar usuario' });
             }

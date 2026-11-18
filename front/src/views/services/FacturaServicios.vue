@@ -154,26 +154,10 @@ export default {
           this.servicioSeleccionado.id_services ||
           this.servicioSeleccionado.id;
 
-        const dateTimeStr = `${this.date}T${this.time}:00`;
-        const dateTimeUTC = new Date(dateTimeStr);
-
-        const estimatedTime =
-          this.servicioSeleccionado.estimated_time ||
-          this.servicioSeleccionado.duration ||
-          '00:30:00';
-
-        const [hours, minutes] = estimatedTime.split(':').map(Number);
-        const durationMinutes = (hours * 60) + minutes;
-
-        const endTime = new Date(
-          dateTimeUTC.getTime() + durationMinutes * 60000
-        );
-
         const quoteData = {
           user_id: this.userId,
           barber_id: this.barberId,
-          date_time: dateTimeUTC.toISOString(),
-          end_time: endTime.toISOString(),
+          date_time: `${this.date} ${this.time}:00`,
           state_quotes: 'pendiente',
           id_services: serviceId
         };
@@ -202,11 +186,10 @@ export default {
           stack: error.stack
         });
 
-        if (error.response?.status === 409) {
-          alert(
-            error.response.data.message ||
-            'El barbero ya tiene una cita en ese horario.'
-          );
+        if (error.response?.data?.message) {
+          alert(error.response.data.message);
+        } else if (error.response?.status === 409) {
+          alert('El barbero ya tiene una cita en ese horario.');
         } else {
           alert(
             'No fue posible confirmar la cita: ' +

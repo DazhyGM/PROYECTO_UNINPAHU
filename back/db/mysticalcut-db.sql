@@ -680,6 +680,23 @@ ALTER TABLE `dotacion`
 ALTER TABLE `calificaciones`
   ADD CONSTRAINT `fk_calificacion_barbero` FOREIGN KEY (`id_barbero`) REFERENCES `user` (`user_id`);
 
+--
+-- Horario semanal de cada barbero (0 = domingo ... 6 = sábado)
+--
+
+CREATE TABLE IF NOT EXISTS `barber_schedule` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `barber_id` int(11) NOT NULL,
+  `day_of_week` tinyint(4) NOT NULL,
+  `start_time` time NOT NULL,
+  `end_time` time NOT NULL,
+  `break_start` time DEFAULT NULL,
+  `break_end` time DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `unique_barber_day` (`barber_id`, `day_of_week`),
+  KEY `idx_barber_schedule_barber` (`barber_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
