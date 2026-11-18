@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: 127.0.0.1
--- Tiempo de generación: 10-03-2026 a las 06:10:37
+-- Tiempo de generación: 18-11-2026 a las 19:37:03
 -- Versión del servidor: 10.4.32-MariaDB
 -- Versión de PHP: 8.2.12
 
@@ -20,8 +20,6 @@ SET time_zone = "+00:00";
 --
 -- Base de datos: `mysticalcut-db`
 --
-CREATE DATABASE IF NOT EXISTS `mysticalcut-db` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
-USE `mysticalcut-db`;
 
 DELIMITER $$
 --
@@ -91,20 +89,89 @@ DELIMITER ;
 -- --------------------------------------------------------
 
 --
--- Estructura de tabla para la tabla `category_product`
+-- Estructura de tabla para la tabla `barber_schedule`
 --
 
-CREATE TABLE IF NOT EXISTS `category_product` (
-  `id_category` int(11) NOT NULL,
-  `name` varchar(100) DEFAULT NULL,
-  PRIMARY KEY (`id_category`)
+CREATE TABLE `barber_schedule` (
+  `id` int(11) NOT NULL,
+  `barber_id` int(11) NOT NULL,
+  `day_of_week` tinyint(4) NOT NULL,
+  `start_time` time NOT NULL,
+  `end_time` time NOT NULL,
+  `break_start` time DEFAULT NULL,
+  `break_end` time DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Truncar tablas antes de insertar `category_product`
+-- Volcado de datos para la tabla `barber_schedule`
 --
 
-TRUNCATE TABLE `category_product`;
+INSERT INTO `barber_schedule` (`id`, `barber_id`, `day_of_week`, `start_time`, `end_time`, `break_start`, `break_end`) VALUES
+(2, 12, 1, '08:00:00', '20:00:00', NULL, NULL),
+(3, 13, 1, '08:00:00', '20:00:00', NULL, NULL),
+(5, 15, 1, '08:00:00', '20:00:00', NULL, NULL),
+(6, 16, 1, '08:00:00', '20:00:00', NULL, NULL),
+(7, 43, 1, '08:00:00', '20:00:00', NULL, NULL),
+(9, 12, 2, '08:00:00', '20:00:00', NULL, NULL),
+(10, 13, 2, '08:00:00', '20:00:00', NULL, NULL),
+(12, 15, 2, '08:00:00', '20:00:00', NULL, NULL),
+(13, 16, 2, '08:00:00', '20:00:00', NULL, NULL),
+(14, 43, 2, '08:00:00', '20:00:00', NULL, NULL),
+(16, 12, 3, '08:00:00', '20:00:00', NULL, NULL),
+(17, 13, 3, '08:00:00', '20:00:00', NULL, NULL),
+(19, 15, 3, '08:00:00', '20:00:00', NULL, NULL),
+(20, 16, 3, '08:00:00', '20:00:00', NULL, NULL),
+(21, 43, 3, '08:00:00', '20:00:00', NULL, NULL),
+(23, 12, 4, '08:00:00', '20:00:00', NULL, NULL),
+(24, 13, 4, '08:00:00', '20:00:00', NULL, NULL),
+(26, 15, 4, '08:00:00', '20:00:00', NULL, NULL),
+(27, 16, 4, '08:00:00', '20:00:00', NULL, NULL),
+(28, 43, 4, '08:00:00', '20:00:00', NULL, NULL),
+(30, 12, 5, '08:00:00', '20:00:00', NULL, NULL),
+(31, 13, 5, '08:00:00', '20:00:00', NULL, NULL),
+(33, 15, 5, '08:00:00', '20:00:00', NULL, NULL),
+(34, 16, 5, '08:00:00', '20:00:00', NULL, NULL),
+(35, 43, 5, '08:00:00', '20:00:00', NULL, NULL),
+(37, 12, 6, '08:00:00', '20:00:00', NULL, NULL),
+(38, 13, 6, '08:00:00', '20:00:00', NULL, NULL),
+(40, 15, 6, '08:00:00', '20:00:00', NULL, NULL),
+(41, 16, 6, '08:00:00', '20:00:00', NULL, NULL),
+(42, 43, 6, '08:00:00', '20:00:00', NULL, NULL),
+(64, 14, 1, '08:00:00', '20:00:00', NULL, NULL),
+(65, 14, 2, '08:00:00', '20:00:00', NULL, NULL),
+(66, 14, 3, '08:00:00', '20:00:00', NULL, NULL),
+(67, 14, 4, '08:00:00', '20:00:00', NULL, NULL),
+(68, 14, 5, '08:00:00', '20:00:00', NULL, NULL),
+(74, 11, 1, '08:00:00', '20:00:00', NULL, NULL),
+(75, 11, 2, '08:00:00', '20:00:00', NULL, NULL),
+(76, 11, 3, '08:00:00', '20:00:00', '13:00:00', '14:00:00'),
+(77, 11, 4, '08:00:00', '20:00:00', NULL, NULL),
+(78, 11, 0, '08:00:00', '12:00:00', NULL, NULL);
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `calificaciones`
+--
+
+CREATE TABLE `calificaciones` (
+  `id_calificacion` int(11) NOT NULL,
+  `calificacion_barbero` decimal(3,1) NOT NULL,
+  `calificacion_general` decimal(3,1) NOT NULL,
+  `id_barbero` int(11) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `category_product`
+--
+
+CREATE TABLE `category_product` (
+  `id_category` int(11) NOT NULL,
+  `name` varchar(100) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
 --
 -- Volcado de datos para la tabla `category_product`
 --
@@ -122,17 +189,11 @@ INSERT INTO `category_product` (`id_category`, `name`) VALUES
 -- Estructura de tabla para la tabla `category_services`
 --
 
-CREATE TABLE IF NOT EXISTS `category_services` (
+CREATE TABLE `category_services` (
   `id_category_services` int(11) NOT NULL,
-  `name` varchar(100) DEFAULT NULL,
-  PRIMARY KEY (`id_category_services`)
+  `name` varchar(100) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
---
--- Truncar tablas antes de insertar `category_services`
---
-
-TRUNCATE TABLE `category_services`;
 --
 -- Volcado de datos para la tabla `category_services`
 --
@@ -150,17 +211,11 @@ INSERT INTO `category_services` (`id_category_services`, `name`) VALUES
 -- Estructura de tabla para la tabla `document_type`
 --
 
-CREATE TABLE IF NOT EXISTS `document_type` (
-  `id_doctypes` int(11) NOT NULL AUTO_INCREMENT,
-  `doctype_name` varchar(50) DEFAULT NULL,
-  PRIMARY KEY (`id_doctypes`)
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+CREATE TABLE `document_type` (
+  `id_doctypes` int(11) NOT NULL,
+  `doctype_name` varchar(50) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
---
--- Truncar tablas antes de insertar `document_type`
---
-
-TRUNCATE TABLE `document_type`;
 --
 -- Volcado de datos para la tabla `document_type`
 --
@@ -173,25 +228,29 @@ INSERT INTO `document_type` (`id_doctypes`, `doctype_name`) VALUES
 -- --------------------------------------------------------
 
 --
+-- Estructura de tabla para la tabla `dotacion`
+--
+
+CREATE TABLE `dotacion` (
+  `id_dotacion` int(11) NOT NULL,
+  `id_product` int(11) NOT NULL,
+  `id_barbero` int(11) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
 -- Estructura de tabla para la tabla `module`
 --
 
-CREATE TABLE IF NOT EXISTS `module` (
-  `module_id` int(11) NOT NULL AUTO_INCREMENT,
+CREATE TABLE `module` (
+  `module_id` int(11) NOT NULL,
   `module_name` varchar(20) NOT NULL,
   `module_route` varchar(20) NOT NULL,
   `module_icon` varchar(40) NOT NULL,
-  `module_description` varchar(200) NOT NULL,
-  PRIMARY KEY (`module_id`),
-  UNIQUE KEY `module_name` (`module_name`),
-  UNIQUE KEY `module_route` (`module_route`)
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+  `module_description` varchar(200) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
---
--- Truncar tablas antes de insertar `module`
---
-
-TRUNCATE TABLE `module`;
 --
 -- Volcado de datos para la tabla `module`
 --
@@ -207,8 +266,8 @@ INSERT INTO `module` (`module_id`, `module_name`, `module_route`, `module_icon`,
 -- Estructura de tabla para la tabla `product`
 --
 
-CREATE TABLE IF NOT EXISTS `product` (
-  `id_product` int(11) NOT NULL AUTO_INCREMENT,
+CREATE TABLE `product` (
+  `id_product` int(11) NOT NULL,
   `name` varchar(100) NOT NULL,
   `price` float NOT NULL,
   `description` varchar(255) DEFAULT NULL,
@@ -216,32 +275,24 @@ CREATE TABLE IF NOT EXISTS `product` (
   `id_category` int(11) DEFAULT NULL,
   `id_status` int(11) NOT NULL DEFAULT 1,
   `image` varchar(255) DEFAULT NULL,
-  `comprobante` varchar(255) DEFAULT NULL,
-  PRIMARY KEY (`id_product`),
-  KEY `fk_categoria` (`id_category`),
-  KEY `fk_product_status` (`id_status`)
-) ENGINE=InnoDB AUTO_INCREMENT=12 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+  `comprobante` varchar(255) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
---
--- Truncar tablas antes de insertar `product`
---
-
-TRUNCATE TABLE `product`;
 --
 -- Volcado de datos para la tabla `product`
 --
 
-INSERT INTO `product` (`id_product`, `name`, `price`, `description`, `amount`, `id_category`, `id_status`, `image`) VALUES
-(1, 'Cepillo capilar', 15000, 'Cepillo para cabello delicado', 5, 1, 1, 'cepillo.jpg'),
-(2, 'Cepillo barba', 10000, 'Cepillo para barbas bellas y bonitas', 15, 2, 1, 'image-1770153078459-820017996.jpg'),
-(3, 'Cera para cabello', 30000, 'Cera para cabello de macho bello', 5, 1, 1, 'image-1770175934248-67742671.png'),
-(4, 'Crema de barba', 50000, 'Crema para depilacion de barba', 3, 2, 1, 'image-1770176008054-234384581.jpg'),
-(5, 'Cera brillante', 35000, 'Cera brillante para el cabello', 20, 5, 1, 'image-1770176090017-663102808.jpg'),
-(6, 'Tratamiento capilar', 28000, 'Tratamiento para el pelo para tenerlo lindo', 12, 1, 1, 'image-1770176224964-513076674.jpg'),
-(7, 'Shampoo anticaida', 28000, 'Shampo anticaida para que no caigas en las mentiras de tu ex', 12, 1, 1, 'image-1770176252239-493672053.jpg'),
-(8, 'Minoxidil barba', 28000, 'Minoxidil para que te crezca una barba de vikingo', 12, 1, 1, 'image-1770176296806-481801453.jpg'),
-(9, 'Maquina re Chimba', 28000, 'Para gente re chimba', 12, 1, 3, 'barbero4.jpg'),
-(11, 'Maquina re Chimba', 28000, 'Para gente re chimba', 12, 1, 3, 'barbero1.jpg');
+INSERT INTO `product` (`id_product`, `name`, `price`, `description`, `amount`, `id_category`, `id_status`, `image`, `comprobante`) VALUES
+(1, 'Cepillo capilar', 15000, 'Cepillo para cabello delicado', 5, 1, 1, 'cepillo.jpg', NULL),
+(2, 'Cepillo barba', 10000, 'Cepillo para barbas bellas y bonitas', 15, 2, 1, 'image-1770153078459-820017996.jpg', NULL),
+(3, 'Cera para cabello', 30000, 'Cera para cabello de macho bello', 5, 1, 1, 'image-1770175934248-67742671.png', NULL),
+(4, 'Crema de barba', 50000, 'Crema para depilacion de barba', 3, 2, 1, 'image-1770176008054-234384581.jpg', NULL),
+(5, 'Cera brillante', 35000, 'Cera brillante para el cabello', 20, 5, 1, 'image-1770176090017-663102808.jpg', NULL),
+(6, 'Tratamiento capilar', 28000, 'Tratamiento para el pelo para tenerlo lindo', 12, 1, 1, 'image-1770176224964-513076674.jpg', NULL),
+(7, 'Shampoo anticaida', 28000, 'Shampo anticaida para que no caigas en las mentiras de tu ex', 12, 1, 1, 'image-1770176252239-493672053.jpg', NULL),
+(8, 'Minoxidil barba', 28000, 'Minoxidil para que te crezca una barba de vikingo', 12, 1, 1, 'image-1770176296806-481801453.jpg', NULL),
+(9, 'Maquina re Chimba', 28000, 'Para gente re chimba', 12, 1, 3, 'barbero4.jpg', NULL),
+(11, 'Maquina re Chimba', 28000, 'Para gente re chimba', 12, 1, 3, 'barbero1.jpg', NULL);
 
 -- --------------------------------------------------------
 
@@ -249,17 +300,11 @@ INSERT INTO `product` (`id_product`, `name`, `price`, `description`, `amount`, `
 -- Estructura de tabla para la tabla `product_status`
 --
 
-CREATE TABLE IF NOT EXISTS `product_status` (
-  `id_status` int(11) NOT NULL AUTO_INCREMENT,
-  `name_status` varchar(50) NOT NULL,
-  PRIMARY KEY (`id_status`)
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+CREATE TABLE `product_status` (
+  `id_status` int(11) NOT NULL,
+  `name_status` varchar(50) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
---
--- Truncar tablas antes de insertar `product_status`
---
-
-TRUNCATE TABLE `product_status`;
 --
 -- Volcado de datos para la tabla `product_status`
 --
@@ -275,25 +320,16 @@ INSERT INTO `product_status` (`id_status`, `name_status`) VALUES
 -- Estructura de tabla para la tabla `quotes`
 --
 
-CREATE TABLE IF NOT EXISTS `quotes` (
-  `id_quotes` int(11) NOT NULL AUTO_INCREMENT,
+CREATE TABLE `quotes` (
+  `id_quotes` int(11) NOT NULL,
   `date_time` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
   `end_time` timestamp NOT NULL DEFAULT current_timestamp(),
   `state_quotes` varchar(50) DEFAULT NULL,
   `user_id` int(11) DEFAULT NULL,
   `barber_id` int(11) NOT NULL,
-  `id_services` int(11) DEFAULT NULL,
-  PRIMARY KEY (`id_quotes`),
-  KEY `fk_appointment_user` (`user_id`),
-  KEY `fk_quotes_services` (`id_services`),
-  KEY `fk_barber_user` (`barber_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=37 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+  `id_services` int(11) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
---
--- Truncar tablas antes de insertar `quotes`
---
-
-TRUNCATE TABLE `quotes`;
 --
 -- Volcado de datos para la tabla `quotes`
 --
@@ -331,7 +367,11 @@ INSERT INTO `quotes` (`id_quotes`, `date_time`, `end_time`, `state_quotes`, `use
 (33, '2026-02-28 13:00:00', '2026-02-28 14:30:00', 'pendiente', 6, 11, 30),
 (34, '2026-02-28 23:00:00', '2026-02-28 23:30:00', 'pendiente', 6, 11, 6),
 (35, '2026-03-01 00:00:00', '2026-03-01 00:30:00', 'pendiente', 6, 11, 6),
-(36, '2026-03-02 13:00:00', '2026-03-02 13:30:00', 'pendiente', 6, 11, 6);
+(36, '2026-03-02 13:00:00', '2026-03-02 13:30:00', 'pendiente', 6, 11, 6),
+(37, '2026-11-10 16:00:00', '2026-11-10 17:10:00', 'pendiente', 46, 12, 23),
+(38, '2026-11-09 13:00:00', '2026-11-09 13:25:00', 'pendiente', 46, 14, 9),
+(41, '2026-11-11 17:00:00', '2026-11-11 17:30:00', 'pendiente', 46, 14, 18),
+(42, '2026-11-11 13:00:00', '2026-11-11 13:30:00', 'pendiente', 46, 11, 6);
 
 -- --------------------------------------------------------
 
@@ -339,18 +379,11 @@ INSERT INTO `quotes` (`id_quotes`, `date_time`, `end_time`, `state_quotes`, `use
 -- Estructura de tabla para la tabla `role`
 --
 
-CREATE TABLE IF NOT EXISTS `role` (
-  `role_id` int(11) NOT NULL AUTO_INCREMENT,
-  `role_name` varchar(20) NOT NULL,
-  PRIMARY KEY (`role_id`),
-  UNIQUE KEY `role_name` (`role_name`)
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+CREATE TABLE `role` (
+  `role_id` int(11) NOT NULL,
+  `role_name` varchar(20) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
---
--- Truncar tablas antes de insertar `role`
---
-
-TRUNCATE TABLE `role`;
 --
 -- Volcado de datos para la tabla `role`
 --
@@ -366,20 +399,12 @@ INSERT INTO `role` (`role_id`, `role_name`) VALUES
 -- Estructura de tabla para la tabla `role_module`
 --
 
-CREATE TABLE IF NOT EXISTS `role_module` (
-  `roleModule_id` int(11) NOT NULL AUTO_INCREMENT,
+CREATE TABLE `role_module` (
+  `roleModule_id` int(11) NOT NULL,
   `role_fk` int(11) NOT NULL,
-  `module_fk` int(11) NOT NULL,
-  PRIMARY KEY (`roleModule_id`),
-  KEY `role_module_role` (`role_fk`),
-  KEY `role_module_module` (`module_fk`)
-) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+  `module_fk` int(11) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
---
--- Truncar tablas antes de insertar `role_module`
---
-
-TRUNCATE TABLE `role_module`;
 --
 -- Volcado de datos para la tabla `role_module`
 --
@@ -397,55 +422,38 @@ INSERT INTO `role_module` (`roleModule_id`, `role_fk`, `module_fk`) VALUES
 -- Estructura de tabla para la tabla `services`
 --
 
-CREATE TABLE IF NOT EXISTS `services` (
-  `id_services` int(11) NOT NULL AUTO_INCREMENT,
+CREATE TABLE `services` (
+  `id_services` int(11) NOT NULL,
   `name_service` varchar(255) DEFAULT NULL,
   `description` varchar(255) NOT NULL,
   `estimated_time` time DEFAULT NULL,
   `price` float DEFAULT NULL,
   `id_category_services` int(11) NOT NULL,
   `image` varchar(255) DEFAULT NULL,
-  `id_status` int(11) DEFAULT 1,
-  PRIMARY KEY (`id_services`),
-  KEY `fk_categoria_Servicios` (`id_category_services`),
-  KEY `fk_status` (`id_status`)
-) ENGINE=InnoDB AUTO_INCREMENT=31 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+  `id_status` int(11) DEFAULT 1
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
---
--- Truncar tablas antes de insertar `services`
---
-
-TRUNCATE TABLE `services`;
 --
 -- Volcado de datos para la tabla `services`
 --
 
 INSERT INTO `services` (`id_services`, `name_service`, `description`, `estimated_time`, `price`, `id_category_services`, `image`, `id_status`) VALUES
-(1, 'Corte Clásico', 'Corte clasico para gente wapa', '00:30:00', 15000, 1, 'barbero1.jpg', 2),
-(2, 'Afeitado Tradicional', 'Afeitado tranquilon para gente wapa', '00:20:00', 10, 2, NULL, 2),
-(3, 'Tinte Capilar', 'Tinte bien mamalon para gente wapa', '01:00:00', 40, 3, NULL, 2),
-(4, 'Tratamiento Hidratan', 'Tratamiento que hidrata para gente wapa', '00:45:00', 25, 4, NULL, 2),
-(5, 'Corte Infantil', 'Corte infantil para niños bien wapos', '00:25:00', 12000, 5, NULL, 2),
-(6, 'Corte Clásico', 'Corte tradicional con acabado limpio y elegante.', '00:30:00', 20000, 1, NULL, 1),
-(7, 'Fade Bajo', 'Degradado bajo con diseño moderno y perfilado incluido.', '00:35:00', 22000, 1, NULL, 1),
-(8, 'Corte con Tijera', 'Corte completo realizado solo con tijera, ideal para cabello largo.', '00:40:00', 25000, 1, NULL, 1),
-(9, 'Corte Infantil', 'Corte para niños con técnicas suaves y amigables.', '00:25:00', 15000, 1, NULL, 1),
-(10, 'Corte Ejecutivo', 'Corte formal y profesional para hombres de oficina.', '00:30:00', 20000, 1, NULL, 1),
-(11, 'Perfilado de Barba', 'Perfilado de contorno con máquina y navaja.', '01:30:00', 12000, 2, NULL, 1),
-(12, 'Afeitado Tradicional', 'Afeitado completo con toalla caliente y crema especial.', '00:55:00', 15000, 2, NULL, 1),
-(13, 'Diseño de Barba', 'Estilizado personalizado con formas y detalles.', '00:50:00', 18000, 2, NULL, 1),
-(14, 'Mantenimiento de Barba', 'Recorte y limpieza general de barba.', '01:40:00', 10000, 2, NULL, 1),
-(15, 'Diseño Barba', 'Tratamiento de barba con hidratación y aceites esenciales.', '01:30:00', 60000, 2, NULL, 1),
-(16, 'Diseño de Cejas Masculino', 'Limpieza y forma natural, adaptado al rostro masculino.', '00:15:00', 10000, 3, NULL, 1),
-(17, 'Depilación con Cera', 'Eliminación de exceso de vello con cera fría o caliente.', '00:10:00', 8000, 3, NULL, 1),
-(18, 'Cejas con Pinza', 'Eliminación de exceso de vello con cera fría o caliente.', '00:30:00', 9000, 3, NULL, 1),
-(19, 'Diseño Artístico de Cejas', 'Forma más estilizada y estética con simetría.', '00:20:00', 12000, 3, NULL, 1),
-(20, 'Retoque de Cejas', 'Descripción: Mantenimiento rápido para conservar el diseño.', '00:10:00', 10000, 3, NULL, 1),
-(21, 'Tinte para Canas', 'Cobertura total de canas con color natural.', '00:45:00', 30000, 4, NULL, 1),
-(22, 'Color Fantasía', 'Aplicación de colores vivos como azul, rojo o verde.', '01:00:00', 45000, 4, NULL, 1),
-(23, 'Reflejos o Iluminaciones', 'Aclaración parcial para dar brillo y textura.', '01:10:00', 50000, 4, NULL, 1),
-(24, 'Baño de Color', 'Refrescamiento del tono actual sin dañar el cabello.', '00:40:00', 28000, 4, NULL, 1),
-(25, 'Tinte Negro Intenso', ' Aplicación de negro profundo con brillo duradero.', '00:45:00', 32000, 4, NULL, 1),
+(6, 'Corte Clásico', 'Corte tradicional con acabado limpio y elegante.', '00:30:00', 20000, 1, 'image-1794106202854-18505472.jpg', 1),
+(7, 'Fade Bajo', 'Degradado bajo con diseño moderno y perfilado incluido.', '00:35:00', 22000, 1, 'image-1794106331653-25981107.jpg', 1),
+(8, 'Corte con Tijera', 'Corte completo realizado solo con tijera, ideal para cabello largo.', '00:40:00', 25000, 1, 'image-1794106439825-295825754.jpg', 1),
+(9, 'Corte Infantil', 'Corte para niños con técnicas suaves y amigables.', '00:25:00', 15000, 1, 'image-1794106706351-41065488.jpg', 1),
+(10, 'Corte Ejecutivo', 'Corte formal y profesional para hombres de oficina.', '00:30:00', 20000, 1, 'image-1794106836695-748523115.jpg', 1),
+(11, 'Perfilado de Barba', 'Perfilado de contorno con máquina y navaja.', '01:30:00', 12000, 2, 'image-1794106914544-863990355.jpg', 1),
+(12, 'Afeitado Tradicional', 'Afeitado completo con toalla caliente y crema especial.', '00:55:00', 15000, 2, 'image-1794106975987-668165062.jpg', 1),
+(13, 'Diseño de Barba', 'Estilizado personalizado con formas y detalles.', '00:50:00', 18000, 2, 'image-1794107055295-906275346.jpg', 1),
+(16, 'Diseño de Cejas Masculino', 'Limpieza y forma natural, adaptado al rostro masculino.', '00:15:00', 10000, 3, 'image-1794107143285-379939214.jpg', 1),
+(17, 'Depilación con Cera', 'Eliminación de exceso de vello con cera fría o caliente.', '00:10:00', 8000, 3, 'image-1794107353224-439995405.jpg', 1),
+(18, 'Cejas con Pinza', 'Eliminación de exceso de vello con cera fría o caliente.', '00:30:00', 9000, 3, 'image-1794107405754-985239378.jpg', 1),
+(21, 'Tinte para Canas', 'Cobertura total de canas con color natural.', '00:45:00', 30000, 4, 'image-1794107577451-984995418.jpg', 1),
+(22, 'Color Fantasía', 'Aplicación de colores vivos como azul, rojo o verde.', '01:00:00', 45000, 4, 'image-1794107618785-679989777.jpg', 1),
+(23, 'Reflejos o Iluminaciones', 'Aclaración parcial para dar brillo y textura.', '01:10:00', 50000, 4, 'image-1794107889589-227912312.jpg', 1),
+(24, 'Baño de Color', 'Refrescamiento del tono actual sin dañar el cabello.', '00:40:00', 28000, 4, 'image-1794107834455-786415052.jpg', 1),
+(25, 'Tinte Negro Intenso', ' Aplicación de negro profundo con brillo duradero.', '00:45:00', 32000, 4, 'image-1794107760353-996426901.jpg', 1),
 (26, 'Corte + Barba', 'Servicio completo con corte y perfilado de barba.', '00:50:00', 30000, 5, NULL, 1),
 (27, 'Corte + Cejas', 'Corte moderno y diseño de cejas incluidos.', '00:45:00', 28000, 5, NULL, 1),
 (28, 'Corte + Barba + Cejas', 'Paquete para renovar tu estilo completo.', '01:00:00', 40000, 5, NULL, 1),
@@ -458,17 +466,11 @@ INSERT INTO `services` (`id_services`, `name_service`, `description`, `estimated
 -- Estructura de tabla para la tabla `service_status`
 --
 
-CREATE TABLE IF NOT EXISTS `service_status` (
+CREATE TABLE `service_status` (
   `id_status` int(11) NOT NULL,
-  `name_status` varchar(50) DEFAULT NULL,
-  PRIMARY KEY (`id_status`)
+  `name_status` varchar(50) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
---
--- Truncar tablas antes de insertar `service_status`
---
-
-TRUNCATE TABLE `service_status`;
 --
 -- Volcado de datos para la tabla `service_status`
 --
@@ -483,27 +485,20 @@ INSERT INTO `service_status` (`id_status`, `name_status`) VALUES
 -- Estructura de tabla para la tabla `type_of_quotes`
 --
 
-CREATE TABLE IF NOT EXISTS `type_of_quotes` (
+CREATE TABLE `type_of_quotes` (
   `id_quotes` int(11) NOT NULL,
   `id_services` int(11) NOT NULL,
-  `barber_id` int(11) DEFAULT NULL,
-  KEY `fk_type_citation_citation` (`id_quotes`),
-  KEY `fk_type_appointment_service` (`id_services`)
+  `barber_id` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
---
--- Truncar tablas antes de insertar `type_of_quotes`
---
-
-TRUNCATE TABLE `type_of_quotes`;
 -- --------------------------------------------------------
 
 --
 -- Estructura de tabla para la tabla `user`
 --
 
-CREATE TABLE IF NOT EXISTS `user` (
-  `user_id` int(11) NOT NULL AUTO_INCREMENT,
+CREATE TABLE `user` (
+  `user_id` int(11) NOT NULL,
   `user_email` varchar(30) NOT NULL,
   `user_password` varchar(256) NOT NULL,
   `full_name` varchar(100) NOT NULL,
@@ -515,20 +510,9 @@ CREATE TABLE IF NOT EXISTS `user` (
   `phone` varchar(20) NOT NULL,
   `reset_token` varchar(64) DEFAULT NULL,
   `reset_token_expires` bigint(20) DEFAULT NULL,
-  `profile_image` varchar(255) DEFAULT NULL,
-  PRIMARY KEY (`user_id`),
-  UNIQUE KEY `user_email` (`user_email`),
-  UNIQUE KEY `unique_document` (`document_number`),
-  KEY `user_role` (`role_fk`),
-  KEY `user_status` (`userStatus_fk`),
-  KEY `fk_id_tipo_docuemnto_User` (`type_document_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=46 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+  `profile_image` varchar(255) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
---
--- Truncar tablas antes de insertar `user`
---
-
-TRUNCATE TABLE `user`;
 --
 -- Volcado de datos para la tabla `user`
 --
@@ -558,38 +542,8 @@ INSERT INTO `user` (`user_id`, `user_email`, `user_password`, `full_name`, `docu
 (40, 'mocaco@gmail.com', '$2b$10$7bevJojAS9.DUvsaGgqR8O6WybCbAaJwrIs6B5ydMDHGVcgsQx0v2', 'Mocaco mocaco', '1555202236', 1, 3, 1, 'Carrera 11 m Bis # 43 - 40 Sur', '3203206565', NULL, NULL, NULL),
 (43, 'usuario.employee@gmail.com', '$2b$10$X8Q1ACKOiE1VdGEuI.DVzuNS49Y7kws6uioeMjRRppYrQ7pH3/zC.', 'Usuario Empleado', '1000112012', 1, 2, 1, 'Trans 12 C Bis #43-40', '3003113203', NULL, NULL, NULL),
 (44, 'usuario.client@gmail.com', '$2b$10$AbR9/71fcwjO5q0KIyUVueR5RHH4YuDIe/rw82ZLFAE4YliYbnKdC', 'Usuario Cliente', '1001001000', 1, 3, 1, 'Carrera 11 bis # 43 sur', '12345678', NULL, NULL, NULL),
-(45, 'usuario.admin@gmail.com', '$2b$10$wPjShyqSiGwRAha1ETWYfewMqM6k2vAZDRy2gn0QxwzfbGeVn57gi', 'Usuario Admin', '1000002323', 1, 1, 1, 'Trans 12 Bis #43', '3003113203', NULL, NULL, NULL);
-
--- --------------------------------------------------------
-
-
---
--- Estructura de tabla para la tabla `dotacion`
---
-
-CREATE TABLE IF NOT EXISTS `dotacion` (
-  `id_dotacion` int(11) NOT NULL AUTO_INCREMENT,
-  `id_product` int(11) NOT NULL,
-  `id_barbero` int(11) NOT NULL,
-  PRIMARY KEY (`id_dotacion`),
-  KEY `fk_dotacion_product` (`id_product`),
-  KEY `fk_dotacion_barbero` (`id_barbero`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
--- --------------------------------------------------------
-
---
--- Estructura de tabla para la tabla `calificaciones`
---
-
-CREATE TABLE IF NOT EXISTS `calificaciones` (
-  `id_calificacion` int(11) NOT NULL AUTO_INCREMENT,
-  `calificacion_barbero` decimal(3,1) NOT NULL,
-  `calificacion_general` decimal(3,1) NOT NULL,
-  `id_barbero` int(11) NOT NULL,
-  PRIMARY KEY (`id_calificacion`),
-  KEY `fk_calificacion_barbero` (`id_barbero`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+(45, 'usuario.admin@gmail.com', '$2b$10$wPjShyqSiGwRAha1ETWYfewMqM6k2vAZDRy2gn0QxwzfbGeVn57gi', 'Usuario Admin', '1000002323', 1, 1, 1, 'Trans 12 Bis #43', '3003113203', NULL, NULL, NULL),
+(46, 'dr4356752@gmail.com', '$2b$10$0Oj300J2MqTIAOKpPo8MHuOQx24/0whXzONi7mmbJHLHJl/bayujS', 'Diana Ramirez', '1032677560', 1, 3, 1, 'CRA 12 A Este #44 B 04 Sur', '3027195267', NULL, NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -597,18 +551,11 @@ CREATE TABLE IF NOT EXISTS `calificaciones` (
 -- Estructura de tabla para la tabla `userstatus`
 --
 
-CREATE TABLE IF NOT EXISTS `userstatus` (
-  `userStatus_id` int(11) NOT NULL AUTO_INCREMENT,
-  `userStatus_name` varchar(20) NOT NULL,
-  PRIMARY KEY (`userStatus_id`),
-  UNIQUE KEY `userStatus_name` (`userStatus_name`)
-) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+CREATE TABLE `userstatus` (
+  `userStatus_id` int(11) NOT NULL,
+  `userStatus_name` varchar(20) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
---
--- Truncar tablas antes de insertar `userstatus`
---
-
-TRUNCATE TABLE `userstatus`;
 --
 -- Volcado de datos para la tabla `userstatus`
 --
@@ -620,8 +567,233 @@ INSERT INTO `userstatus` (`userStatus_id`, `userStatus_name`) VALUES
 (3, 'Inactive');
 
 --
+-- Índices para tablas volcadas
+--
+
+--
+-- Indices de la tabla `barber_schedule`
+--
+ALTER TABLE `barber_schedule`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `unique_barber_day` (`barber_id`,`day_of_week`),
+  ADD KEY `idx_barber_schedule_barber` (`barber_id`);
+
+--
+-- Indices de la tabla `calificaciones`
+--
+ALTER TABLE `calificaciones`
+  ADD PRIMARY KEY (`id_calificacion`),
+  ADD KEY `fk_calificacion_barbero` (`id_barbero`);
+
+--
+-- Indices de la tabla `category_product`
+--
+ALTER TABLE `category_product`
+  ADD PRIMARY KEY (`id_category`);
+
+--
+-- Indices de la tabla `category_services`
+--
+ALTER TABLE `category_services`
+  ADD PRIMARY KEY (`id_category_services`);
+
+--
+-- Indices de la tabla `document_type`
+--
+ALTER TABLE `document_type`
+  ADD PRIMARY KEY (`id_doctypes`);
+
+--
+-- Indices de la tabla `dotacion`
+--
+ALTER TABLE `dotacion`
+  ADD PRIMARY KEY (`id_dotacion`),
+  ADD KEY `fk_dotacion_product` (`id_product`),
+  ADD KEY `fk_dotacion_barbero` (`id_barbero`);
+
+--
+-- Indices de la tabla `module`
+--
+ALTER TABLE `module`
+  ADD PRIMARY KEY (`module_id`),
+  ADD UNIQUE KEY `module_name` (`module_name`),
+  ADD UNIQUE KEY `module_route` (`module_route`);
+
+--
+-- Indices de la tabla `product`
+--
+ALTER TABLE `product`
+  ADD PRIMARY KEY (`id_product`),
+  ADD KEY `fk_categoria` (`id_category`),
+  ADD KEY `fk_product_status` (`id_status`);
+
+--
+-- Indices de la tabla `product_status`
+--
+ALTER TABLE `product_status`
+  ADD PRIMARY KEY (`id_status`);
+
+--
+-- Indices de la tabla `quotes`
+--
+ALTER TABLE `quotes`
+  ADD PRIMARY KEY (`id_quotes`),
+  ADD KEY `fk_appointment_user` (`user_id`),
+  ADD KEY `fk_quotes_services` (`id_services`),
+  ADD KEY `fk_barber_user` (`barber_id`);
+
+--
+-- Indices de la tabla `role`
+--
+ALTER TABLE `role`
+  ADD PRIMARY KEY (`role_id`),
+  ADD UNIQUE KEY `role_name` (`role_name`);
+
+--
+-- Indices de la tabla `role_module`
+--
+ALTER TABLE `role_module`
+  ADD PRIMARY KEY (`roleModule_id`),
+  ADD KEY `role_module_role` (`role_fk`),
+  ADD KEY `role_module_module` (`module_fk`);
+
+--
+-- Indices de la tabla `services`
+--
+ALTER TABLE `services`
+  ADD PRIMARY KEY (`id_services`),
+  ADD KEY `fk_categoria_Servicios` (`id_category_services`),
+  ADD KEY `fk_status` (`id_status`);
+
+--
+-- Indices de la tabla `service_status`
+--
+ALTER TABLE `service_status`
+  ADD PRIMARY KEY (`id_status`);
+
+--
+-- Indices de la tabla `type_of_quotes`
+--
+ALTER TABLE `type_of_quotes`
+  ADD KEY `fk_type_citation_citation` (`id_quotes`),
+  ADD KEY `fk_type_appointment_service` (`id_services`);
+
+--
+-- Indices de la tabla `user`
+--
+ALTER TABLE `user`
+  ADD PRIMARY KEY (`user_id`),
+  ADD UNIQUE KEY `user_email` (`user_email`),
+  ADD UNIQUE KEY `unique_document` (`document_number`),
+  ADD KEY `user_role` (`role_fk`),
+  ADD KEY `user_status` (`userStatus_fk`),
+  ADD KEY `fk_id_tipo_docuemnto_User` (`type_document_id`);
+
+--
+-- Indices de la tabla `userstatus`
+--
+ALTER TABLE `userstatus`
+  ADD PRIMARY KEY (`userStatus_id`),
+  ADD UNIQUE KEY `userStatus_name` (`userStatus_name`);
+
+--
+-- AUTO_INCREMENT de las tablas volcadas
+--
+
+--
+-- AUTO_INCREMENT de la tabla `barber_schedule`
+--
+ALTER TABLE `barber_schedule`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=79;
+
+--
+-- AUTO_INCREMENT de la tabla `calificaciones`
+--
+ALTER TABLE `calificaciones`
+  MODIFY `id_calificacion` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT de la tabla `document_type`
+--
+ALTER TABLE `document_type`
+  MODIFY `id_doctypes` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+
+--
+-- AUTO_INCREMENT de la tabla `dotacion`
+--
+ALTER TABLE `dotacion`
+  MODIFY `id_dotacion` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT de la tabla `module`
+--
+ALTER TABLE `module`
+  MODIFY `module_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+
+--
+-- AUTO_INCREMENT de la tabla `product`
+--
+ALTER TABLE `product`
+  MODIFY `id_product` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
+
+--
+-- AUTO_INCREMENT de la tabla `product_status`
+--
+ALTER TABLE `product_status`
+  MODIFY `id_status` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+
+--
+-- AUTO_INCREMENT de la tabla `quotes`
+--
+ALTER TABLE `quotes`
+  MODIFY `id_quotes` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=43;
+
+--
+-- AUTO_INCREMENT de la tabla `role`
+--
+ALTER TABLE `role`
+  MODIFY `role_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+
+--
+-- AUTO_INCREMENT de la tabla `role_module`
+--
+ALTER TABLE `role_module`
+  MODIFY `roleModule_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+
+--
+-- AUTO_INCREMENT de la tabla `services`
+--
+ALTER TABLE `services`
+  MODIFY `id_services` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=32;
+
+--
+-- AUTO_INCREMENT de la tabla `user`
+--
+ALTER TABLE `user`
+  MODIFY `user_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=47;
+
+--
+-- AUTO_INCREMENT de la tabla `userstatus`
+--
+ALTER TABLE `userstatus`
+  MODIFY `userStatus_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+
+--
 -- Restricciones para tablas volcadas
 --
+
+--
+-- Filtros para la tabla `calificaciones`
+--
+ALTER TABLE `calificaciones`
+  ADD CONSTRAINT `fk_calificacion_barbero` FOREIGN KEY (`id_barbero`) REFERENCES `user` (`user_id`);
+
+--
+-- Filtros para la tabla `dotacion`
+--
+ALTER TABLE `dotacion`
+  ADD CONSTRAINT `fk_dotacion_barbero` FOREIGN KEY (`id_barbero`) REFERENCES `user` (`user_id`),
+  ADD CONSTRAINT `fk_dotacion_product` FOREIGN KEY (`id_product`) REFERENCES `product` (`id_product`);
 
 --
 -- Filtros para la tabla `product`
@@ -666,37 +838,6 @@ ALTER TABLE `user`
   ADD CONSTRAINT `fk_id_tipo_docuemnto_User` FOREIGN KEY (`type_document_id`) REFERENCES `document_type` (`id_doctypes`),
   ADD CONSTRAINT `user_role` FOREIGN KEY (`role_fk`) REFERENCES `role` (`role_id`),
   ADD CONSTRAINT `user_status` FOREIGN KEY (`userStatus_fk`) REFERENCES `userstatus` (`userStatus_id`);
-
---
--- Filtros para la tabla `dotacion`
---
-ALTER TABLE `dotacion`
-  ADD CONSTRAINT `fk_dotacion_product` FOREIGN KEY (`id_product`) REFERENCES `product` (`id_product`),
-  ADD CONSTRAINT `fk_dotacion_barbero` FOREIGN KEY (`id_barbero`) REFERENCES `user` (`user_id`);
-
---
--- Filtros para la tabla `calificaciones`
---
-ALTER TABLE `calificaciones`
-  ADD CONSTRAINT `fk_calificacion_barbero` FOREIGN KEY (`id_barbero`) REFERENCES `user` (`user_id`);
-
---
--- Horario semanal de cada barbero (0 = domingo ... 6 = sábado)
---
-
-CREATE TABLE IF NOT EXISTS `barber_schedule` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `barber_id` int(11) NOT NULL,
-  `day_of_week` tinyint(4) NOT NULL,
-  `start_time` time NOT NULL,
-  `end_time` time NOT NULL,
-  `break_start` time DEFAULT NULL,
-  `break_end` time DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_barber_day` (`barber_id`, `day_of_week`),
-  KEY `idx_barber_schedule_barber` (`barber_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
