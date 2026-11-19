@@ -73,6 +73,11 @@ const logIn = async () => {
       sessionStorage.removeItem("barberCitasModal");
     }
 
+    const redirect = route.query.redirect;
+    const destino = typeof redirect === 'string' && redirect.startsWith('/') && !redirect.startsWith('//')
+      ? redirect
+      : '/Home';
+
     setTimeout(() => {
       router.push(destino);
     }, 1000);
