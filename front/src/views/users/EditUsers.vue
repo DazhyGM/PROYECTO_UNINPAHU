@@ -51,6 +51,7 @@
           />
         </div>
       </div>
+      <HorarioBarbero v-if="Number(form.role) === 2" :days="form.schedules" />
       <button type="submit" class="btn button-guardar">Guardar Cambios</button>
     </form>
     <button class="back-button" @click="goBack">Regresar</button>
@@ -62,9 +63,11 @@ import { reactive, ref, onMounted } from 'vue';
 import axios from 'axios';
 import { useRoute, useRouter } from 'vue-router';
 import SelectCampo from '@/components/ui/SelectCampo.vue';
+import HorarioBarbero from '@/components/users/HorarioBarbero.vue';
+import { defaultSchedules, applySchedules, schedulesPayload, validateSchedules } from '@/utils/barberSchedule';
 
 export default {
-  components: { SelectCampo },
+  components: { SelectCampo, HorarioBarbero },
   setup() {
     const form = reactive({
       docType: '',
@@ -75,7 +78,8 @@ export default {
       phone: '',
       password: '',
       confirmPassword: '',
-      role: ''
+      role: '',
+      schedules: defaultSchedules()
     });
 
     const route = useRoute();
@@ -108,6 +112,13 @@ export default {
         form.phone = user.phone;
         form.role = user.role_fk;
         form.docType = user.type_document_id;
+
+        if (Number(user.role_fk) === 2) {
+          const scheduleResponse = await axios.get(`http://localhost:5000/api/users/users/${userId}/schedule`, {
+            headers: { Authorization: `Bearer ${token}` }
+          });
+          applySchedules(form.schedules, scheduleResponse.data);
+        }
       } catch (error) {
         console.error('Error al cargar el usuario:', error);
         alert('No se pudo cargar la información del usuario.');
@@ -123,6 +134,15 @@ export default {
         return;
       }
 
+      const isBarber = Number(form.role) === 2;
+      if (isBarber) {
+        const scheduleError = validateSchedules(form.schedules);
+        if (scheduleError) {
+          alert(scheduleError);
+          return;
+        }
+      }
+
       try {
         const token = localStorage.getItem('token');
         if (!token) {
@@ -136,7 +156,8 @@ export default {
           address: form.address,
           user_email: form.email,
           phone: form.phone,
-          role_fk: form.role
+          role_fk: form.role,
+          schedules: isBarber ? schedulesPayload(form.schedules) : []
         };
 
         if (trimmedPassword) {
@@ -153,7 +174,7 @@ export default {
         router.push('/Users');
       } catch (error) {
         console.error('Error al editar el usuario:', error);
-        alert('Hubo un error al editar el usuario.');
+        alert(error.response?.data?.message || 'Hubo un error al editar el usuario.');
       }
     };
 

@@ -10,9 +10,10 @@
       <h2 class="text-center mb-4">{{ service.name_service }}</h2>
 
       <div class="d-flex flex-column align-items-center">
-        <div class="image-container mb-4 text-center">
-          <img :src="getImage(service.image)" :alt="service.name_service" class="img-fluid rounded"
-            style="max-width: 300px;" />
+        <!-- Contenedor optimizado para que la imagen se ajuste perfectamente -->
+        <div class="image-container mb-4 text-center d-flex align-items-center justify-content-center bg-dark rounded overflow-hidden" style="width: 250px; height: 250px;">
+          <img :src="getImage(service.image)" :alt="service.name_service" 
+            style="max-width: 100%; max-height: 100%; object-fit: contain;" />
         </div>
 
         <div class="details text-center">
@@ -53,7 +54,11 @@ const fetchService = async () => {
 };
 
 const getImage = (image) => {
-  return image ? `/img/background/${image}` : '/img/background/combo01.png';
+  if (!image) return '/img/background/combo01.png';
+  if (image.startsWith('http') || image.startsWith('blob')) {
+    return image;
+  }
+  return `http://localhost:5000/uploads/${image}`;
 };
 
 onMounted(fetchService);

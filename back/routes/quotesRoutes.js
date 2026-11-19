@@ -46,6 +46,8 @@ const authenticateToken = require('../middlewares/authMiddleware');
  */
 router.post('/', authenticateToken, quotesController.createQuote);
 
+router.get('/disponibilidad', quotesController.getAvailability);
+
 /**
  * @swagger
  * /api/quotes/mes:

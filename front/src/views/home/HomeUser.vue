@@ -167,16 +167,113 @@
         <p class="footer-copyright">© 2026 www.mysticalcut.com, Inc</p>
       </div>
     </footer>
+
+    <div v-if="mostrarCitasDia" class="citas-dia-overlay" @click.self="cerrarCitasDia">
+      <section class="citas-dia-modal" role="dialog" aria-modal="true" aria-labelledby="citas-dia-titulo">
+        <button class="citas-dia-cerrar" type="button" aria-label="Cerrar" @click="cerrarCitasDia">×</button>
+        <p class="citas-dia-kicker">Agenda de hoy</p>
+        <h2 id="citas-dia-titulo">Citas del día</h2>
+        <p class="citas-dia-fecha">{{ fechaHoyTexto }}</p>
+
+        <p v-if="cargandoCitasDia" class="citas-dia-vacio">Cargando citas...</p>
+        <p v-else-if="errorCitasDia" class="citas-dia-vacio">No se pudieron cargar las citas de hoy.</p>
+        <p v-else-if="!citasDelDia.length" class="citas-dia-vacio">No tienes citas para hoy.</p>
+        <div v-else class="citas-dia-tabla-wrap">
+          <table class="citas-dia-tabla">
+            <thead>
+              <tr>
+                <th>Hora</th>
+                <th>Cliente</th>
+                <th>Servicio</th>
+                <th>Estado</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="cita in citasDelDia" :key="cita.id_quotes">
+                <td>{{ formatHora(cita.date_time) }}</td>
+                <td>{{ cita.client_name || 'Sin cliente' }}</td>
+                <td>{{ cita.name_service || 'Sin servicio' }}</td>
+                <td>
+                  <span class="badge-estado" :class="claseEstado(cita.state_quotes)">
+                    {{ cita.state_quotes || 'Sin estado' }}
+                  </span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </div>
   </div>
 </template>
 
 <script setup>
 import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
 import { useRouter } from "vue-router";
+import { getUserData } from "@/services/api";
+import { getQuotesWithServiceDetails } from "@/services/quotesApi";
 
 const router = useRouter();
 const isMenuOpen = ref(false);
 const user = ref({ full_name: '', role: '' });
+const mostrarCitasDia = ref(false);
+const cargandoCitasDia = ref(false);
+const errorCitasDia = ref(false);
+const citasDelDia = ref([]);
+
+const fechaClave = (valor) => {
+  const fecha = new Date(valor);
+  if (Number.isNaN(fecha.getTime())) return '';
+  const mes = String(fecha.getMonth() + 1).padStart(2, '0');
+  const dia = String(fecha.getDate()).padStart(2, '0');
+  return `${fecha.getFullYear()}-${mes}-${dia}`;
+};
+
+const fechaHoyTexto = new Date().toLocaleDateString('es-CO', {
+  weekday: 'long',
+  day: 'numeric',
+  month: 'long',
+});
+
+const formatHora = (valor) => {
+  const fecha = new Date(valor);
+  if (Number.isNaN(fecha.getTime())) return '';
+  return fecha.toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' });
+};
+
+const claseEstado = (estado) => {
+  const valor = (estado || '').toLowerCase();
+  if (valor === 'pendiente') return 'badge-pendiente';
+  if (valor === 'finalizada') return 'badge-finalizada';
+  if (valor === 'cancelada') return 'badge-cancelada';
+  return 'badge-otro';
+};
+
+const cerrarCitasDia = () => {
+  mostrarCitasDia.value = false;
+};
+
+const cargarCitasDelDia = async () => {
+  mostrarCitasDia.value = true;
+  cargandoCitasDia.value = true;
+  errorCitasDia.value = false;
+
+  try {
+    const token = localStorage.getItem('token');
+    const perfil = await getUserData(token);
+    const citas = await getQuotesWithServiceDetails(perfil.user_id);
+    const hoy = fechaClave(new Date());
+
+    citasDelDia.value = (Array.isArray(citas) ? citas : [])
+      .filter((cita) => Number(cita.barber_id) === Number(perfil.user_id) && fechaClave(cita.date_time) === hoy)
+      .sort((a, b) => new Date(a.date_time) - new Date(b.date_time));
+  } catch (error) {
+    errorCitasDia.value = true;
+    citasDelDia.value = [];
+  } finally {
+    cargandoCitasDia.value = false;
+  }
+};
 
 // Función para alternar el menú
 const toggleMenu = () => {
@@ -204,6 +301,11 @@ onMounted(() => {
       console.error("❌ Error al parsear usuario de localStorage", error);
     }
   }
+
+  if (user.value.role === 'Employee' && sessionStorage.getItem('barberCitasModal') === '1') {
+    sessionStorage.removeItem('barberCitasModal');
+    cargarCitasDelDia();
+  }
 });
 
 // 🔹 Eliminar evento al desmontar el componente
@@ -213,9 +315,10 @@ onUnmounted(() => {
 
 // Cerrar sesión
 const logout = () => {
-  localStorage.removeItem('token'); // Eliminar token
-  localStorage.removeItem('user'); // Eliminar usuario
-  router.push('/'); // Redirigir al Index
+  localStorage.removeItem('token');
+  localStorage.removeItem('user');
+  sessionStorage.removeItem('barberCitasModal');
+  router.push('/');
 };
 
 // Función para ir a la página de perfil
@@ -296,4 +399,5 @@ export default {
 </script>
 <style scoped>
 @import '@/assets/css/components/footer.css';
+@import '@/assets/css/home/citasDiaModal.css';
 </style>

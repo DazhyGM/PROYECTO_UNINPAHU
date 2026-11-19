@@ -50,6 +50,8 @@
 
       </div>
 
+      <HorarioBarbero v-if="Number(form.role) === 2" :days="form.schedules" />
+
       <button type="submit" class="btn button-add-user">Agregar Usuario</button>
     </form>
     <button class="back-button" @click="goBack">Regresar</button>
@@ -60,9 +62,11 @@
 import { reactive, ref } from 'vue';
 import axios from 'axios';
 import SelectCampo from '@/components/ui/SelectCampo.vue';
+import HorarioBarbero from '@/components/users/HorarioBarbero.vue';
+import { defaultSchedules, schedulesPayload, validateSchedules } from '@/utils/barberSchedule';
 
 export default {
-  components: { SelectCampo },
+  components: { SelectCampo, HorarioBarbero },
   setup() {
     const form = reactive({
       docType: '',
@@ -73,7 +77,8 @@ export default {
       phone: '',
       password: '',
       confirmPassword: '',
-      role: ''
+      role: '',
+      schedules: defaultSchedules()
     });
 
     const roles = ref([
@@ -88,6 +93,15 @@ export default {
         return;
       }
 
+      const isBarber = Number(form.role) === 2;
+      if (isBarber) {
+        const scheduleError = validateSchedules(form.schedules);
+        if (scheduleError) {
+          alert(scheduleError);
+          return;
+        }
+      }
+
       try {
         const response = await axios.post('http://localhost:5000/api/users/users/register', {
           full_name: form.fullName,
@@ -97,7 +111,8 @@ export default {
           type_document_id: form.docType,
           address: form.address,
           phone: form.phone,
-          role_fk: form.role
+          role_fk: form.role,
+          schedules: isBarber ? schedulesPayload(form.schedules) : []
         });
 
         alert(response.data.message);
@@ -105,7 +120,7 @@ export default {
         window.location.href = '/Users';
       } catch (error) {
         console.error(error);
-        alert('Hubo un error al registrar el usuario');
+        alert(error.response?.data?.message || 'Hubo un error al registrar el usuario');
       }
     };
 

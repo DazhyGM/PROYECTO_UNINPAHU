@@ -34,7 +34,10 @@
           <img src="/img/logos/person-circle.svg" class="btn icon-usuario">
         </div>
 
-        <h5>{{ user.full_name }}</h5>
+        <div class="usuario-identidad">
+          <h5>{{ user.full_name }}</h5>
+          <span class="rol-badge" :class="roleClass(user.role_fk)">{{ roleLabel(user.role_fk) }}</span>
+        </div>
 
         <div class="icon-container">
           <router-link :to="`/EditUser/${user.user_id}`" class="btn btn-icon">
@@ -155,6 +158,16 @@ const confirmDelete = async (id) => {
 
 const sortUsers = (order) => {
   sortOrder.value = order;
+};
+
+const roleLabel = (roleId) => {
+  const match = roles.find(role => role.value === String(roleId));
+  return match?.label || "Sin rol";
+};
+
+const roleClass = (roleId) => {
+  const classes = { 1: "rol-admin", 2: "rol-empleado", 3: "rol-cliente" };
+  return classes[Number(roleId)] || "rol-otro";
 };
 
 const goBack = () => {

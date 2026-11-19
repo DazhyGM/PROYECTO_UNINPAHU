@@ -12,6 +12,7 @@ const ServiceModel = {
         s.id_category_services, 
         cs.name AS category_name,
         s.id_status,
+        s.image,
         ss.name_status
       FROM services s
       INNER JOIN category_services cs ON s.id_category_services = cs.id_category_services
