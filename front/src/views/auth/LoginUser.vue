@@ -35,10 +35,11 @@
 
 <script setup>
 import { ref } from "vue";
-import { useRouter } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
 import { login } from "@/services/api";
 
 const router = useRouter();
+const route = useRoute();
 
 const email = ref("");
 const password = ref("");
@@ -73,7 +74,7 @@ const logIn = async () => {
     }
 
     setTimeout(() => {
-      router.push("/Home");
+      router.push(destino);
     }, 1000);
 
   } catch (error) {

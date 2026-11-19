@@ -11,6 +11,7 @@ const serviceRoutes = require('./routes/serviceRoutes');
 const quoteRoutes = require('./routes/quotesRoutes');
 const productRoutes = require('./routes/productRoutes');
 const shoppingCartRoutes = require('./routes/shoppingCartRoutes');
+const ratingRoutes = require('./routes/ratingRoutes');
 
 
 const app = express();
@@ -63,6 +64,7 @@ app.use('/api/services', serviceRoutes);
 app.use('/api/quotes', quoteRoutes);
 app.use('/api/products', productRoutes)
 app.use('/api/cart', shoppingCartRoutes);
+app.use('/api/ratings', ratingRoutes);
 
 app.get('/api/', (req, res) => {
   res.send('API funcionando correctamente 🚀');

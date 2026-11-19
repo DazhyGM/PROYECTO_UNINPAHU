@@ -509,6 +509,21 @@
   font-size: 0.82rem;
 }
 
+.btn-calificar {
+  height: 34px;
+  padding: 0 12px;
+  color: #111111;
+  background: #ccaf54;
+  border: 1px solid #ccaf54;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.82rem;
+}
+
+.btn-calificar:hover {
+  background: #e0c56d;
+}
+
 .citas-state {
   padding: 56px 20px;
   color: #d0d0d0;
