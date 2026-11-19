@@ -8,12 +8,15 @@
     <div class="row add-service-container">
       <div class="col-md-5 text-center">
         <label class="form-label">Imagen actual:</label>
-        <div class="image-placeholder mx-auto mb-3">
-          <img :src="imagePreview || '/img/background/signointerrogacion.jpg'" alt="Preview" class="preview-image" />
+        <div class="image-placeholder mx-auto mb-3 d-flex align-items-center justify-content-center bg-light border rounded overflow-hidden" style="width: 200px; height: 200px;">
+          <img :src="imagePreview || '/img/background/signointerrogacion.jpg'" alt="Preview" style="max-width: 100%; max-height: 100%; object-fit: contain;" />
         </div>
         <div class="mb-3">
           <label class="form-label">Imagen</label>
           <input type="file" @change="handleImageUpload" class="form-control custom-input" />
+          <div class="form-text mt-1" style="font-size: 0.85rem; color: #adb5bd;">
+            <i class="bi bi-info-circle"></i> Tamaño ideal: 500x500 px (Formatos: JPG, PNG).
+          </div>
         </div>
         <div class="mb-3">
           <label class="form-label">Precio</label>

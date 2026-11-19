@@ -200,6 +200,13 @@
   border: 1px solid #ccaf54;
 }
 
+.schedule-label,
+.time-empty {
+  color: #ccaf54;
+  margin: 12px 0;
+  text-align: left;
+}
+
 .barber-name {
   display: block;
   margin-top: 10px;

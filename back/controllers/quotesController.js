@@ -39,12 +39,31 @@ exports.createQuote = async (req, res) => {
     });
   } catch (error) {
     console.error('🔴 Error en createQuote:', error);
-    
-    if (error.message === 'El barbero ya tiene una cita en ese horario') {
-      return res.status(409).json({ message: error.message });
+
+    if (error.statusCode) {
+      return res.status(error.statusCode).json({ message: error.message });
     }
     
     res.status(500).json({ message: 'Error interno del servidor' });
+  }
+};
+
+exports.getAvailability = async (req, res) => {
+  const { barber_id, date, service_id } = req.query;
+
+  if (!barber_id || !date || !service_id) {
+    return res.status(400).json({ message: 'Faltan parámetros: barber_id, date o service_id' });
+  }
+
+  try {
+    const availability = await Quote.getAvailableSlots(barber_id, date, service_id);
+    res.status(200).json(availability);
+  } catch (error) {
+    console.error('🔴 Error al calcular disponibilidad:', error);
+    if (error.statusCode) {
+      return res.status(error.statusCode).json({ message: error.message });
+    }
+    res.status(500).json({ message: 'Error al calcular los horarios disponibles' });
   }
 };
 

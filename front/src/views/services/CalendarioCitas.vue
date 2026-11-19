@@ -30,18 +30,22 @@
             <div class="calendar-day" v-for="calendarDate in calendarDays" :key="formatDate(calendarDate)" :class="{
               selected: selectedDate === formatDate(calendarDate),
               empty: calendarDate === null,
-              disabled: isPastDate(calendarDate)
-            }" @click="calendarDate && !isPastDate(calendarDate) && selectDate(calendarDate)">
+              disabled: isDayDisabled(calendarDate)
+            }" @click="calendarDate && !isDayDisabled(calendarDate) && selectDate(calendarDate)">
               {{ calendarDate ? new Date(calendarDate).getDate() : '' }}
             </div>
           </div>
         </div>
 
         <div class="time-list">
-          <div class="time-scroll">
-            <button v-for="time in availableTimes" :key="time" @click="selectTime(time)"
-              :class="['time-button', { selected: selectedTime === formatTimeTo24H(time) }]">
-              {{ time }}
+          <p v-if="scheduleLabel" class="schedule-label">{{ scheduleLabel }}</p>
+          <p v-if="loadingTimes" class="time-empty">Cargando horarios...</p>
+          <p v-else-if="timeMessage" class="time-empty">{{ timeMessage }}</p>
+          <p v-else-if="!selectedDate" class="time-empty">Selecciona un día para ver los horarios del barbero.</p>
+          <div v-else class="time-scroll">
+            <button v-for="slot in availableSlots" :key="slot.start" @click="selectTime(slot)"
+              :class="['time-button', { selected: selectedTime === slot.start }]">
+              {{ formatRange(slot) }}
             </button>
           </div>
         </div>
@@ -49,7 +53,7 @@
 
       <div class="right-column">
         <ResumenSeleccion :services="selectedServices" :barber-name="barberName" :date="selectedDate"
-          :time="selectedTime">
+          :time="selectedTimeLabel || selectedTime">
           <template #actions>
             <button v-if="selectedDate && selectedTime" class="confirm-button" :disabled="!userId || !barberId"
               @click="confirmQuote">
@@ -65,6 +69,7 @@
 
 <script>
 import ResumenSeleccion from '@/components/services/ResumenSeleccion.vue';
+import { getAvailability, getBarberSchedule } from '@/services/quotesApi';
 
 export default {
   name: 'CalendarioCitas',
@@ -73,13 +78,20 @@ export default {
     return {
       selectedDate: '',
       selectedTime: '',
+      selectedTimeLabel: '',
       barberId: null,
       barberName: '',
       userId: null,
       userName: '',
       userEmail: '',
       selectedServices: [],
-      availableTimes: ['8:00 a.m.', '9:00 a.m.', '10:00 a.m.', '11:00 a.m.', '12:00 p.m.', '1:00 p.m.', '2:00 p.m.', '3:00 p.m.', '4:00 p.m.', '5:00 p.m.', '6:00 p.m.', '7:00 p.m.', '8:00 p.m.'],
+      availableSlots: [],
+      workingDays: [],
+      dayEnds: {},
+      scheduleLoaded: false,
+      loadingTimes: false,
+      timeMessage: '',
+      scheduleWindow: null,
       daysOfWeek: ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'],
       monthNames: ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'],
       currentYear: new Date().getFullYear(),
@@ -96,31 +108,131 @@ export default {
       for (let i = 0; i < startWeekday; i++) days.push(null);
       for (let i = 1; i <= totalDays; i++) days.push(new Date(this.currentYear, this.currentMonth, i));
       return days;
+    },
+    scheduleLabel() {
+      if (!this.scheduleWindow) return '';
+      const shift = `Atiende de ${this.formatTimeLabel(this.scheduleWindow.start)} a ${this.formatTimeLabel(this.scheduleWindow.end)}`;
+      if (!this.scheduleWindow.breakStart || !this.scheduleWindow.breakEnd) return shift;
+      return `${shift}. Descanso de ${this.formatTimeLabel(this.scheduleWindow.breakStart)} a ${this.formatTimeLabel(this.scheduleWindow.breakEnd)}`;
     }
   },
   methods: {
     formatDate(date) {
-      return date ? date.toISOString().split('T')[0] : '';
+      if (!date) return '';
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      return `${date.getFullYear()}-${month}-${day}`;
     },
     isPastDate(date) {
       const today = new Date();
       today.setHours(0, 0, 0, 0);
       return date && date < today;
     },
-    formatTimeTo24H(time12h) {
-      const [time, modifier] = time12h.split(' ');
-      let [hours, minutes] = time.split(':');
-      if (modifier === 'p.m.' && hours !== '12') hours = parseInt(hours) + 12;
-      if (modifier === 'a.m.' && hours === '12') hours = '00';
-      return `${hours.toString().padStart(2, '0')}:${minutes}`;
+    isShiftOver(date) {
+      const end = this.dayEnds[date.getDay()];
+      if (end == null) return false;
+      const now = new Date();
+      const sameDay = date.getFullYear() === now.getFullYear()
+        && date.getMonth() === now.getMonth()
+        && date.getDate() === now.getDate();
+      if (!sameDay) return false;
+      return (now.getHours() * 60) + now.getMinutes() >= end;
     },
-    selectDate(date) {
+    isDayDisabled(date) {
+      if (!date || this.isPastDate(date)) return true;
+      if (!this.scheduleLoaded) return false;
+      if (!this.workingDays.includes(date.getDay())) return true;
+      return this.isShiftOver(date);
+    },
+    formatTimeLabel(time24h) {
+      const [hoursText, minutes] = time24h.split(':');
+      const hours = Number(hoursText);
+      const suffix = hours >= 12 ? 'p.m.' : 'a.m.';
+      const hours12 = hours % 12 || 12;
+      return `${hours12}:${minutes} ${suffix}`;
+    },
+    formatRange(slot) {
+      return `${this.formatTimeLabel(slot.start)} – ${this.formatTimeLabel(slot.end)}`;
+    },
+    minutesFromClock(value) {
+      const match = String(value || '').match(/(\d{2}):(\d{2})/);
+      if (!match) return null;
+      return (Number(match[1]) * 60) + Number(match[2]);
+    },
+    serviceId() {
+      const service = this.selectedServices[0];
+      return service?.id_services || service?.id || null;
+    },
+    async selectDate(date) {
       this.selectedDate = this.formatDate(date);
-      console.log('Fecha seleccionada:', this.selectedDate);
+      this.selectedTime = '';
+      this.selectedTimeLabel = '';
+      this.scheduleWindow = null;
+      await this.loadSlots();
     },
-    selectTime(time) {
-      this.selectedTime = this.formatTimeTo24H(time);
-      console.log('Hora seleccionada (24h):', this.selectedTime);
+    selectTime(slot) {
+      this.selectedTime = slot.start;
+      this.selectedTimeLabel = this.formatRange(slot);
+    },
+    async loadSchedule() {
+      if (!this.barberId) return;
+      try {
+        const rows = await getBarberSchedule(this.barberId);
+        const ends = {};
+        this.workingDays = (rows || []).map((row) => {
+          const day = Number(row.day_of_week);
+          ends[day] = this.minutesFromClock(row.end_time);
+          return day;
+        });
+        this.dayEnds = ends;
+        this.scheduleLoaded = true;
+        if (!this.workingDays.length) {
+          this.timeMessage = 'Este barbero no tiene horarios asignados. Configúralos al editar el barbero.';
+        }
+      } catch (error) {
+        this.scheduleLoaded = false;
+        this.timeMessage = 'No se pudo cargar el horario del barbero.';
+      }
+    },
+    async loadSlots() {
+      this.availableSlots = [];
+      this.timeMessage = '';
+      if (!this.selectedDate) return;
+
+      const serviceId = this.serviceId();
+      if (!serviceId) {
+        this.timeMessage = 'Selecciona un servicio antes de elegir la hora.';
+        return;
+      }
+
+      this.loadingTimes = true;
+      try {
+        const availability = await getAvailability(this.barberId, this.selectedDate, serviceId);
+        if (!availability.works) {
+          const reasons = {
+            past: 'Ese día ya pasó.',
+            finished: 'La jornada de este barbero ya terminó.',
+            closed: 'El barbero no atiende este día.'
+          };
+          this.timeMessage = reasons[availability.reason] || 'El barbero no atiende este día.';
+          return;
+        }
+
+        this.scheduleWindow = {
+          start: availability.start_time,
+          end: availability.end_time,
+          breakStart: availability.break_start,
+          breakEnd: availability.break_end
+        };
+        this.availableSlots = availability.slots || [];
+        if (!this.availableSlots.length) {
+          this.timeMessage = 'No hay horarios libres. Las horas ocupadas, de descanso o que ya pasaron no se pueden agendar.';
+        }
+      } catch (error) {
+        this.timeMessage = error.response?.data?.message || 'No se pudieron cargar los horarios.';
+      } finally {
+        this.loadingTimes = false;
+      }
     },
     nextMonth() {
       if (this.currentMonth === 11) {
@@ -235,6 +347,8 @@ export default {
     if (!this.userId || !this.barberId) {
       console.warn('Faltan datos esenciales (userId o barberId)');
     }
+
+    this.loadSchedule();
   }
 };
 </script>
