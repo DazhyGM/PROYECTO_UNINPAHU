@@ -12,6 +12,7 @@ const quoteRoutes = require('./routes/quotesRoutes');
 const productRoutes = require('./routes/productRoutes');
 const shoppingCartRoutes = require('./routes/shoppingCartRoutes');
 const ratingRoutes = require('./routes/ratingRoutes');
+const assistantRoutes = require('./routes/assistantRoutes');
 
 
 const app = express();
@@ -65,6 +66,7 @@ app.use('/api/quotes', quoteRoutes);
 app.use('/api/products', productRoutes)
 app.use('/api/cart', shoppingCartRoutes);
 app.use('/api/ratings', ratingRoutes);
+app.use('/api/assistant', assistantRoutes);
 
 app.get('/api/', (req, res) => {
   res.send('API funcionando correctamente 🚀');
