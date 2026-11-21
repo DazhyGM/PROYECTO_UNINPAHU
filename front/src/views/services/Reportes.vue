@@ -102,15 +102,17 @@ import axios from 'axios';
 import { getReportQuotes } from '@/services/quotesApi';
 import { getBarbers } from '@/services/api';
 import SelectCampo from '@/components/ui/SelectCampo.vue';
-import { crearInformeExcel } from '@/services/informeExcel';
+import {
+  claveDe,
+  filtrarCitasReporte,
+  resumenReporte,
+  filasDelInforme,
+  textoRangoInforme,
+  tituloInforme,
+  descargarInforme,
+} from '@/services/descargarReporte';
 
 const COLORES = ['#ccaf54', '#f4e7c4', '#8d7340', '#e8d5a3', '#5c4a28', '#fff6dc', '#a89060', '#6e5b34'];
-
-function claveDe(fecha) {
-  const mes = String(fecha.getMonth() + 1).padStart(2, '0');
-  const dia = String(fecha.getDate()).padStart(2, '0');
-  return `${fecha.getFullYear()}-${mes}-${dia}`;
-}
 
 function arco(cx, cy, radio, inicio, fin) {
   if (fin - inicio >= Math.PI * 2 - 0.001) {
@@ -160,35 +162,14 @@ export default {
       ];
     },
     citasFiltradas() {
-      return this.citas.filter((cita) => {
-        if ((cita.state_quotes || '').toLowerCase() !== 'finalizada') return false;
-        if (this.vista === 'citas' && this.barberoId && String(cita.barber_id) !== String(this.barberoId)) return false;
-        if (this.vista === 'calidad') {
-          const nota = Number(cita.calificacion_servicio);
-          if (!nota) return false;
-          if (this.calificacion && String(nota) !== String(this.calificacion)) return false;
-        }
-        return true;
+      return filtrarCitasReporte(this.citas, {
+        vista: this.vista,
+        barberoId: this.barberoId,
+        calificacion: this.calificacion,
       });
     },
     segmentos() {
-      const grupos = new Map();
-      this.citasFiltradas.forEach((cita) => {
-        const nota = Number(cita.calificacion_servicio);
-        const nombre = this.vista === 'calidad'
-          ? `${nota} ${nota === 1 ? 'estrella' : 'estrellas'}`
-          : (cita.name_service || 'Sin servicio');
-        if (!grupos.has(nombre)) grupos.set(nombre, { nombre, valor: 0, clientes: new Set() });
-        const actual = grupos.get(nombre);
-        if (this.vista === 'calidad') actual.clientes.add(cita.user_id || cita.id_quotes);
-        else actual.valor += 1;
-      });
-      if (this.vista === 'calidad') {
-        grupos.forEach((grupo) => {
-          grupo.valor = grupo.clientes.size;
-        });
-      }
-      const lista = [...grupos.values()].sort((a, b) => b.valor - a.valor);
+      const lista = resumenReporte(this.citasFiltradas, this.vista);
       const total = lista.reduce((suma, item) => suma + item.valor, 0);
       let angulo = -Math.PI / 2;
       return lista.map((item, indice) => {
@@ -208,21 +189,15 @@ export default {
       return this.vista === 'calidad' ? 'clientes' : 'servicios';
     },
     tituloDashboard() {
-      if (this.vista === 'calidad') {
-        return this.calificacion
-          ? `Clientes con ${this.calificacion} ${this.calificacion === '1' ? 'estrella' : 'estrellas'}`
-          : 'Calificaciones del servicio';
-      }
-      return this.esHoy ? 'Servicios del día' : 'Servicios del rango';
-    },
-    esHoy() {
-      const hoy = claveDe(new Date());
-      return this.fechaDesde === hoy && this.fechaHasta === hoy;
+      return tituloInforme({
+        vista: this.vista,
+        calificacion: this.calificacion,
+        fechaDesde: this.fechaDesde,
+        fechaHasta: this.fechaHasta,
+      });
     },
     textoRango() {
-      if (this.esHoy) return 'Hoy';
-      if (this.fechaDesde === this.fechaHasta) return this.textoFecha(this.fechaDesde);
-      return `${this.textoFecha(this.fechaDesde)} – ${this.textoFecha(this.fechaHasta)}`;
+      return textoRangoInforme(this.fechaDesde, this.fechaHasta);
     },
     tituloMes() {
       const titulo = this.mesVista.toLocaleDateString('es-CO', { month: 'long', year: 'numeric' });
@@ -241,24 +216,10 @@ export default {
       return celdas;
     },
     filasInforme() {
-      return this.citasFiltradas.map((cita) => ({
-        fecha: this.formatDate(cita.date_time),
-        hora: this.formatTime(cita.date_time),
-        cliente: cita.client_name || 'N/A',
-        barbero: cita.barber_name || 'N/A',
-        servicio: cita.name_service || 'No disponible',
-        valor: Number(cita.price) || 0,
-        calificacion: Number(cita.calificacion_servicio) || '',
-      }));
+      return filasDelInforme(this.citasFiltradas);
     },
   },
   methods: {
-    textoFecha(clave) {
-      if (!clave) return '';
-      const meses = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
-      const [year, month, day] = clave.split('-').map(Number);
-      return `${day} ${meses[month - 1]} ${year}`;
-    },
     claseDia(celda) {
       if (!celda) return 'vacio';
       const dentro = celda.clave >= this.fechaDesde && celda.clave <= this.fechaHasta;
@@ -318,120 +279,16 @@ export default {
         this.barberos = [];
       }
     },
-    textoFiltro() {
-      if (this.vista === 'citas') {
-        const barbero = this.opcionesBarbero.find((opcion) => String(opcion.value) === String(this.barberoId));
-        return barbero ? barbero.label : 'Todos los barberos';
-      }
-      const nota = this.opcionesCalificacion.find((opcion) => String(opcion.value) === String(this.calificacion));
-      return nota ? nota.label : 'Todas las calificaciones';
-    },
     async descargarExcel() {
-      const encabezados = this.vista === 'citas'
-        ? ['Fecha', 'Hora', 'Cliente', 'Barbero', 'Servicio', 'Valor']
-        : ['Fecha', 'Cliente', 'Barbero', 'Servicio', 'Calificación'];
-      const detalle = this.filasInforme.map((fila) => (
-        this.vista === 'citas'
-          ? [fila.fecha, fila.hora, fila.cliente, fila.barbero, fila.servicio, fila.valor]
-          : [fila.fecha, fila.cliente, fila.barbero, fila.servicio, fila.calificacion]
-      ));
-      const logo = await this.logoInforme();
-      const archivo = crearInformeExcel({
-        titulo: this.tituloDashboard,
-        filtros: [
-          ['Rango', this.textoRango],
-          [this.vista === 'citas' ? 'Barbero' : 'Calificación', this.textoFiltro()],
-        ],
-        resumen: this.segmentos.map((item) => [item.nombre, item.valor]),
-        encabezados,
-        detalle,
-        totalDinero: this.vista === 'citas',
-        logo,
+      await descargarInforme({
+        vista: this.vista,
+        citas: this.citas,
+        fechaDesde: this.fechaDesde,
+        fechaHasta: this.fechaHasta,
+        barberoId: this.barberoId,
+        barberos: this.barberos,
+        calificacion: this.calificacion,
       });
-      const blob = new Blob([archivo], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
-      const enlace = document.createElement('a');
-      enlace.href = URL.createObjectURL(blob);
-      enlace.download = `reporte-${this.vista}-${this.fechaDesde}-a-${this.fechaHasta}.xlsx`;
-      enlace.click();
-      URL.revokeObjectURL(enlace.href);
-    },
-    logoInforme() {
-      return new Promise((resolve) => {
-        const imagen = new Image();
-        imagen.onload = () => {
-          const lienzo = document.createElement('canvas');
-          lienzo.width = imagen.width;
-          lienzo.height = imagen.height;
-          const contexto = lienzo.getContext('2d');
-          contexto.drawImage(imagen, 0, 0);
-          const pixeles = contexto.getImageData(0, 0, lienzo.width, lienzo.height).data;
-          let minX = lienzo.width;
-          let minY = lienzo.height;
-          let maxX = 0;
-          let maxY = 0;
-          for (let y = 0; y < lienzo.height; y += 1) {
-            for (let x = 0; x < lienzo.width; x += 1) {
-              const i = (y * lienzo.width + x) * 4;
-              if (pixeles[i + 3] < 20 || (pixeles[i] < 40 && pixeles[i + 1] < 40 && pixeles[i + 2] < 40)) continue;
-              minX = Math.min(minX, x);
-              minY = Math.min(minY, y);
-              maxX = Math.max(maxX, x);
-              maxY = Math.max(maxY, y);
-            }
-          }
-          if (maxX <= minX) {
-            resolve(null);
-            return;
-          }
-          const altoCaja = maxY - minY + 1;
-          const filas = new Array(altoCaja).fill(0);
-          for (let y = minY; y <= maxY; y += 1) {
-            for (let x = minX; x <= maxX; x += 1) {
-              const i = (y * lienzo.width + x) * 4;
-              if (pixeles[i + 3] < 20 || (pixeles[i] < 40 && pixeles[i + 1] < 40 && pixeles[i + 2] < 40)) continue;
-              filas[y - minY] += 1;
-            }
-          }
-          let vacío = 0;
-          let inicioVacío = 0;
-          let mejorLargo = 0;
-          let mejorInicio = altoCaja;
-          for (let i = Math.floor(altoCaja * 0.35); i < altoCaja; i += 1) {
-            if (filas[i] === 0) {
-              if (vacío === 0) inicioVacío = i;
-              vacío += 1;
-              if (vacío > mejorLargo) {
-                mejorLargo = vacío;
-                mejorInicio = inicioVacío;
-              }
-            } else {
-              vacío = 0;
-            }
-          }
-          const corte = mejorLargo > 6 ? minY + mejorInicio : minY + Math.round(altoCaja * 0.62);
-          const margen = 16;
-          const origenX = Math.max(0, minX - margen);
-          const origenY = Math.max(0, minY - margen);
-          const ancho = Math.min(lienzo.width - origenX, maxX - minX + 1 + margen * 2);
-          const recorte = document.createElement('canvas');
-          recorte.width = ancho;
-          recorte.height = Math.max(1, Math.min(lienzo.height - origenY, corte - origenY));
-          recorte.getContext('2d').drawImage(lienzo, origenX, origenY, recorte.width, recorte.height, 0, 0, recorte.width, recorte.height);
-          recorte.toBlob(async (blob) => {
-            resolve(blob ? new Uint8Array(await blob.arrayBuffer()) : null);
-          }, 'image/png');
-        };
-        imagen.onerror = () => resolve(null);
-        imagen.src = '/img/background/LOGO.png';
-      });
-    },
-    formatDate(dateString) {
-      if (!dateString) return '';
-      return new Date(dateString).toLocaleDateString('es-CO', { day: '2-digit', month: '2-digit', year: 'numeric' });
-    },
-    formatTime(dateString) {
-      if (!dateString) return '';
-      return new Date(dateString).toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' });
     },
     async checkUserRole() {
       const token = localStorage.getItem('token');
