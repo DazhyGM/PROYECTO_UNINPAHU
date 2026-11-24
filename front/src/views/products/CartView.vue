@@ -1,5 +1,8 @@
 <template>
   <div class="container-cart">
+    <div class="page-top">
+      <button class="page-back" type="button" @click="goBack">Continuar comprando</button>
+    </div>
     <div v-if="products.length === 0" class="empty-cart-message">
       <p>Tu carrito está vacío. ¡Agrega algunos productos!</p>
     </div>
@@ -23,10 +26,6 @@
           <button class="btn-buy" @click="() => buyNow(product)">Comprar Ahora</button>
         </div>
       </div>
-    </div>
-
-    <div>
-      <button class="btn back-button" @click="goBack">Continuar Comprando</button>
     </div>
 
     <div v-if="showSidebar" class="cart-add-box cart-adjust-box-bottom">
@@ -71,6 +70,7 @@ import { ref, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import { getProducts } from "@/services/productsApi";
 import { getCartAPI, updateCartItemAPI, removeFromCartAPI } from "@/services/shoppingCartApi";
+import { confirmar, notificar } from "@/utils/alerts";
 
 const router = useRouter();
 const products = ref([]);
@@ -86,7 +86,7 @@ const loadProducts = async () => {
     let userCartItems = [];
 
     if (!userId) {
-      alert("No se pudo obtener el ID del usuario. Por favor, inicia sesión de nuevo.");
+      notificar("No se pudo obtener el ID del usuario. Por favor, inicia sesión de nuevo.");
       router.push("/");
       return;
     }
@@ -97,7 +97,7 @@ const loadProducts = async () => {
       console.log("Carrito del usuario cargado:", userCartItems);
     } catch (error) {
       console.error("Error al cargar el carrito del usuario:", error);
-      alert('No se pudo cargar el carrito. Intenta de nuevo más tarde.');
+      notificar('No se pudo cargar el carrito. Intenta de nuevo más tarde.');
       products.value = [];
       return;
     }
@@ -116,7 +116,7 @@ const loadProducts = async () => {
 
   } catch (error) {
     console.error("Error al cargar productos del carrito:", error);
-    alert('Hubo un problema al cargar los productos de tu carrito. Por favor, intenta de nuevo.');
+    notificar('Hubo un problema al cargar los productos de tu carrito. Por favor, intenta de nuevo.');
   }
 };
 
@@ -133,13 +133,13 @@ const addToCart = (product) => {
 
 const confirmAddToCart = async () => {
   if (!selectedProduct.value || quantity.value < 0 || quantity.value > selectedProduct.value.amount) {
-    alert("Cantidad inválida o excede el stock disponible.");
+    notificar("Cantidad inválida o excede el stock disponible.");
     return;
   }
 
   const user_id = getUserIdFromToken();
   if (!user_id) {
-    alert("No se pudo obtener el ID del usuario. Por favor, inicia sesión de nuevo.");
+    notificar("No se pudo obtener el ID del usuario. Por favor, inicia sesión de nuevo.");
     return;
   }
 
@@ -151,23 +151,23 @@ const confirmAddToCart = async () => {
     }
 
     await updateCartItemAPI(selectedProduct.value.id_cart_item, quantity.value);
-    alert("Cantidad del producto actualizada en el carrito.");
+    notificar("Cantidad del producto actualizada en el carrito.");
 
     showSidebar.value = false;
     await loadProducts();
   } catch (error) {
     console.error("Error al actualizar el carrito:", error);
-    alert("Error al actualizar el carrito: " + error.message);
+    notificar("Error al actualizar el carrito: " + error.message);
   }
 };
 
 const removeFromCart = async (id_product_to_remove) => {
-  const confirmed = confirm("¿Estás seguro de que quieres eliminar este producto del carrito?");
+  const confirmed = await confirmar("¿Estás seguro de que quieres eliminar este producto del carrito?");
   if (!confirmed) return;
 
   const userId = getUserIdFromToken();
   if (!userId) {
-    alert("No se pudo obtener el ID del usuario.");
+    notificar("No se pudo obtener el ID del usuario.");
     return;
   }
 
@@ -175,19 +175,19 @@ const removeFromCart = async (id_product_to_remove) => {
     const itemToRemove = products.value.find(p => p.id_product === id_product_to_remove);
     if (itemToRemove && itemToRemove.id_cart_item) {
       await removeFromCartAPI(itemToRemove.id_cart_item);
-      alert("Producto eliminado del carrito.");
+      notificar("Producto eliminado del carrito.");
       await loadProducts();
     } else {
-      alert("Error: No se encontró el ID del item del carrito para eliminar.");
+      notificar("Error: No se encontró el ID del item del carrito para eliminar.");
     }
   } catch (error) {
     console.error("Error al eliminar producto del carrito:", error);
-    alert("Error al eliminar producto del carrito: " + error.message);
+    notificar("Error al eliminar producto del carrito: " + error.message);
   }
 };
 
 const buyNow = (product) => {
-  alert(`Has iniciado el proceso de compra para "${product.name}". Esto iniciaría el checkout.`);
+  notificar(`Has iniciado el proceso de compra para "${product.name}". Esto iniciaría el checkout.`);
 };
 
 onMounted(loadProducts);

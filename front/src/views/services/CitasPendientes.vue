@@ -1,6 +1,7 @@
 <template>
   <div class="citas-page">
-    <header class="citas-header">
+    <header class="citas-header page-top">
+      <button class="page-back" type="button" @click="$router.push('/Home')">Regresar</button>
       <h1 class="citas-title">Mis Citas</h1>
       <p class="citas-subtitle">Revisa fecha, barbero, servicio y estado de cada cita.</p>
     </header>
@@ -144,9 +145,6 @@
       </div>
     </section>
 
-    <div class="citas-footer">
-      <button class="btn back-button" type="button" @click="$router.push('/Home')">Regresar</button>
-    </div>
   </div>
 </template>
 
@@ -154,6 +152,7 @@
 import axios from 'axios';
 import { getQuotesWithServiceDetails, cancelQuote, finishQuote } from '@/services/quotesApi';
 import SelectCampo from '@/components/ui/SelectCampo.vue';
+import { notificar } from '@/utils/alerts';
 
 export default {
   name: 'CitasPendientes',
@@ -288,7 +287,7 @@ export default {
       try {
         const token = localStorage.getItem('token');
         if (!token) {
-          alert("No se ha iniciado sesión.");
+          notificar("No se ha iniciado sesión.");
           this.$router.push('/');
           return;
         }
@@ -304,7 +303,7 @@ export default {
         this.citas = citasData;
       } catch (error) {
         console.error('❌ Error al cargar citas:', error);
-        alert("No se pudieron cargar las citas.");
+        notificar("No se pudieron cargar las citas.");
       } finally {
         this.cargando = false;
       }
@@ -447,23 +446,21 @@ export default {
     async cancelarCita(id) {
       try {
         await cancelQuote(id);
-        alert('Cita cancelada con éxito');
-        // Redirige a /Home después de cancelar
+        await notificar('Cita cancelada con éxito', 'success');
         this.$router.push('/Home');
       } catch (error) {
         console.error('❌ Error al cancelar cita:', error);
-        alert('No se pudo cancelar la cita.');
+        notificar('No se pudo cancelar la cita.');
       }
     },
     async finalizarCita(id) {
       try {
         await finishQuote(id);
-        alert('Cita finalizada con éxito');
-        // Redirige a /Home después de finalizar
+        await notificar('Cita finalizada con éxito', 'success');
         this.$router.push('/Home');
       } catch (error) {
         console.error('❌ Error al finalizar cita:', error);
-        alert('No se pudo finalizar la cita.');
+        notificar('No se pudo finalizar la cita.');
       }
     }
   },

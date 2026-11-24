@@ -1,8 +1,7 @@
 <template>
-  <div class="row mb-2">
-    <ul class="nav col-12 justify-content-center mx-auto">
-      <h1 class="titulo-header">Usuarios Inactivos</h1>
-    </ul>
+  <div class="page-top">
+    <button class="page-back" type="button" @click="goBack">Regresar</button>
+    <h1 class="titulo-header">Usuarios Inactivos</h1>
   </div>
 
   <div class="container">
@@ -28,7 +27,6 @@
           <span class="user-name">{{ user.full_name }}</span>
           <button class="activate-btn" @click="activateUser(user)">Activar</button>
         </div>
-        <button class="btn back-button" @click="goBack">Regresar</button>
       </div>
     </div>
 

@@ -1,8 +1,7 @@
 <template>
-  <div class="row mb-3">
-    <ul class="nav col-12 justify-content-center mx-auto">
-      <h1 class="titulo-header">Info Usuario</h1>
-    </ul>
+  <div class="page-top">
+    <button class="page-back" type="button" @click="goBack">Regresar</button>
+    <h1 class="titulo-header">Info Usuario</h1>
   </div>
   <div class="recover-container">
     <form class="recover-form">
@@ -40,7 +39,6 @@
         <p>Cargando datos del usuario...</p>
       </div>
 
-      <button type="button" class="btn back-button" @click="goBack">Regresar</button>
     </form>
   </div>
 
@@ -51,6 +49,7 @@
 import { reactive, computed, onMounted } from 'vue';
 import axios from 'axios';
 import { useRoute, useRouter } from 'vue-router';
+import { notificar } from '@/utils/alerts';
 
 export default {
   setup() {
@@ -94,7 +93,7 @@ export default {
     onMounted(async () => {
       try {
         if (!token) {
-          alert('No tienes permiso para ver esta información.');
+          notificar('No tienes permiso para ver esta información.');
           router.push('/Login');
           return;
         }
@@ -118,7 +117,7 @@ export default {
         isLoading.value = false;
       } catch (error) {
         console.error(error);
-        alert('No se pudo cargar la información del usuario. Verifica tu sesión.');
+        notificar('No se pudo cargar la información del usuario. Verifica tu sesión.');
         router.push('/Users');
       }
     });

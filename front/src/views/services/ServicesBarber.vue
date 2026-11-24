@@ -1,9 +1,8 @@
 <template>
   <div class="container-scaled">
-    <div class="row mb-2">
-      <ul class="nav col-12 justify-content-center mx-auto">
-        <h1 class="titulo-header">Servicios</h1>
-      </ul>
+    <div class="page-top">
+      <button class="page-back" type="button" @click="goBack">Regresar</button>
+      <h1 class="titulo-header">Servicios</h1>
     </div>
     <div class="container">
 
@@ -67,9 +66,6 @@
         </ResumenSeleccion>
       </div>
 
-      <div class="btn-regresar mt-3 text-center">
-        <button class="btn back-button" @click="goBack">Regresar</button>
-      </div>
     </div>
   </div>
 </template>
@@ -80,6 +76,7 @@ import { useRouter } from 'vue-router';
 import { getAllServices, deleteService } from '@/services/servicesApi';
 import axios from 'axios';
 import ResumenSeleccion from '@/components/services/ResumenSeleccion.vue';
+import { confirmar, notificar } from '@/utils/alerts';
 
 const router = useRouter();
 const services = ref([]);
@@ -118,7 +115,7 @@ const fetchUserData = async () => {
     userRole.value = data.role || '';
   } catch (err) {
     console.error("❌ Error al obtener el usuario:", err);
-    alert("No se pudo obtener la información del usuario.");
+    notificar("No se pudo obtener la información del usuario.");
   }
 };
 
@@ -127,7 +124,7 @@ const fetchServices = async () => {
     services.value = await getAllServices();
   } catch (error) {
     console.error("Error al cargar servicios:", error);
-    alert("Hubo un problema al obtener los servicios.");
+    notificar("Hubo un problema al obtener los servicios.");
   }
 };
 
@@ -154,20 +151,20 @@ const clearAllSelected = () => selectedServices.value = [];
 
 // Eliminar servicio
 const confirmDelete = async (id) => {
-  if (!id) return alert("ID de servicio inválido.");
-  if (!confirm('¿Estás seguro de eliminar este servicio?')) return;
+  if (!id) return notificar("ID de servicio inválido.");
+  if (!(await confirmar('¿Estás seguro de eliminar este servicio?'))) return;
   try {
     await deleteService(id);
-    alert("✅ Servicio eliminado correctamente.");
+    notificar("✅ Servicio eliminado correctamente.");
     await fetchServices();
   } catch (error) {
     console.error("❌ Error al eliminar el servicio:", error);
-    alert("❌ No se pudo eliminar el servicio.");
+    notificar("❌ No se pudo eliminar el servicio.");
   }
 };
 
 const goToSelectBarbero = () => {
-  if (!user.value.user_id) return alert("No se ha podido obtener el ID del usuario.");
+  if (!user.value.user_id) return notificar("No se ha podido obtener el ID del usuario.");
 
   localStorage.setItem('selectedService', JSON.stringify(selectedServices.value));
   localStorage.setItem('userName', user.value.full_name);

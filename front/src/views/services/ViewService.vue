@@ -1,8 +1,7 @@
 <template>
-  <div class="row mb-2">
-    <ul class="nav col-12 justify-content-center mx-auto">
-      <h1 class="titulo-header">Detalles del Servicio</h1>
-    </ul>
+  <div class="page-top">
+    <router-link to="/Services" class="page-back">Regresar</router-link>
+    <h1 class="titulo-header">Detalles del Servicio</h1>
   </div>
 
   <div class="container-service mt-5 text-white">
@@ -23,10 +22,6 @@
         </div>
       </div>
 
-      <!-- Botón volver -->
-      <div class="text-center mt-4">
-        <router-link to="/Services" class="btn btn-volver">Volver a Servicios</router-link>
-      </div>
     </div>
   </div>
 </template>
@@ -35,6 +30,7 @@
 import { ref, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { getServiceById } from '@/services/servicesApi';
+import { notificar } from '@/utils/alerts';
 
 const route = useRoute();
 const router = useRouter();
@@ -48,7 +44,7 @@ const fetchService = async () => {
     service.value = await getServiceById(id);
   } catch (error) {
     console.error("Error al obtener el servicio:", error);
-    alert("No se pudo cargar el servicio.");
+    notificar("No se pudo cargar el servicio.");
     router.push('/Services');
   }
 };

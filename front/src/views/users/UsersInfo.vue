@@ -1,9 +1,8 @@
 <template>
   <div class="container usuarios-page my-3">
-    <div class="row mb-3">
-      <ul class="nav col-12 justify-content-center mx-auto">
-        <h1 class="titulo-header">Usuarios</h1>
-      </ul>
+    <div class="page-top">
+      <button class="page-back" type="button" @click="goBack">Regresar</button>
+      <h1 class="titulo-header">Usuarios</h1>
     </div>
 
     <div class="barra-usuarios">
@@ -62,9 +61,6 @@
       </div>
     </div>
 
-    <div class="btn-regresar mt-3">
-      <button class="btn back-button" @click="goBack">Regresar</button>
-    </div>
   </div>
 </template>
 
@@ -73,6 +69,7 @@ import { ref, computed, onMounted } from 'vue';
 import { useRouter } from "vue-router";
 import { getUsers, deleteUser, updateUserStatus, filterUsersByRole } from '@/services/api';
 import SelectCampo from '@/components/ui/SelectCampo.vue';
+import { confirmar, notificar } from '@/utils/alerts';
 
 const router = useRouter();
 const users = ref([]);
@@ -137,21 +134,21 @@ const toggleUserStatus = async (user) => {
     if (response && response.message) {
       user.userStatus_fk = newStatus;
     } else {
-      alert("Error al actualizar el estado del usuario.");
+      notificar("Error al actualizar el estado del usuario.");
     }
   } catch (error) {
-    alert("Hubo un error al cambiar el estado del usuario.");
+    notificar("Hubo un error al cambiar el estado del usuario.");
   }
 };
 
 const confirmDelete = async (id) => {
-  if (window.confirm("¿Estás seguro de que deseas eliminar este usuario?")) {
+  if (await confirmar("¿Estás seguro de que deseas eliminar este usuario?")) {
     try {
       await deleteUser(id);
       users.value = users.value.filter(user => user.user_id !== id);
-      alert("✅ Usuario eliminado exitosamente.");
+      notificar("Usuario eliminado exitosamente.", "success");
     } catch (error) {
-      alert("Hubo un error al intentar eliminar el usuario.");
+      notificar("Hubo un error al intentar eliminar el usuario.");
     }
   }
 };

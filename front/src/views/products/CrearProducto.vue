@@ -1,8 +1,7 @@
 <template>
-  <div class="row mb-2">
-    <ul class="nav col-12 justify-content-center mx-auto">
-      <h1 class="titulo-header">Agregar producto</h1>
-    </ul>
+  <div class="page-top">
+    <button class="page-back" type="button" @click="goBack">Regresar</button>
+    <h1 class="titulo-header">Agregar producto</h1>
   </div>
   <div class="container-create-prod">
     <div class="row edit-container">
@@ -74,14 +73,7 @@
       </div>
 
     </div>
-    <div class="text-center mt-3">
-      <button class="btn back-button" @click="goBack">Regresar</button>
-    </div>
 
-    <div class="text-center mt-3">
-      <p v-if="message" class="text-success">{{ message }}</p>
-      <p v-if="error" class="text-danger">{{ error }}</p>
-    </div>
   </div>
 </template>
 
@@ -90,6 +82,7 @@ import { ref } from 'vue';
 import SelectCampo from '@/components/ui/SelectCampo.vue';
 import { useRouter } from 'vue-router';
 import { createProduct } from '@/services/productsApi';
+import { notificar } from '@/utils/alerts';
 
 const goBack = () => router.push("/Products");
 
@@ -115,8 +108,6 @@ const categories = ref([
 ]);
 
 const imagePreview = ref(null);
-const message = ref('');
-const error = ref('');
 
 const handleFileChange = (e) => {
   const file = e.target.files[0];
@@ -130,9 +121,6 @@ const handleFileChange = (e) => {
 };
 
 const handleSubmit = async () => {
-  message.value = '';
-  error.value = '';
-
   if (
     !form.value.name.trim() ||
     !form.value.price ||
@@ -141,33 +129,27 @@ const handleSubmit = async () => {
     !form.value.id_category ||
     !form.value.image
   ) {
-    error.value = 'Por favor, complete todos los campos y seleccione una imagen antes de continuar.';
+    notificar('Por favor, complete todos los campos y seleccione una imagen antes de continuar.', 'warning');
     return;
   }
 
   if (form.value.price <= 0) {
-    error.value = 'El precio debe ser un valor positivo.';
+    notificar('El precio debe ser un valor positivo.', 'warning');
     return;
   }
   if (form.value.amount <= 0) {
-    error.value = 'La cantidad debe ser al menos 1.';
+    notificar('La cantidad debe ser al menos 1.', 'warning');
     return;
   }
 
   try {
     await createProduct(form.value);
-    message.value = 'Producto creado con éxito.';
-
-    setTimeout(() => {
-      router.push("/Products");
-    }, 1500);
-
+    await notificar('Producto creado con éxito.', 'success');
+    router.push("/Products");
   } catch (err) {
     console.error('Error al crear producto:', err);
-    error.value = 'Error al crear producto. Intente de nuevo.';
-    if (err.response && err.response.data && err.response.data.message) {
-      error.value += ` (${err.response.data.message})`;
-    }
+    const detalle = err.response?.data?.message ? ` (${err.response.data.message})` : '';
+    notificar(`Error al crear producto. Intente de nuevo.${detalle}`, 'error');
   }
 };
 </script>

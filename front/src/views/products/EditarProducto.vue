@@ -1,9 +1,8 @@
 <template>
   <div class="editar-producto">
-    <div class="row mb-2">
-      <ul class="nav col-12 justify-content-center mx-auto">
-        <h1 class="titulo-header">Editar producto</h1>
-      </ul>
+    <div class="page-top">
+      <button class="page-back" type="button" @click="goBack">Regresar</button>
+      <h1 class="titulo-header">Editar producto</h1>
     </div>
 
     <div class="row edit-product-container">
@@ -95,10 +94,6 @@
 
     </div>
 
-    <div class="text-center mt-3">
-      <p v-if="message" class="text-success">{{ message }}</p>
-      <p v-if="error" class="text-danger">{{ error }}</p>
-    </div>
   </div>
 </template>
 
@@ -107,6 +102,7 @@ import { ref, onMounted } from "vue";
 import SelectCampo from "@/components/ui/SelectCampo.vue";
 import { useRoute, useRouter } from "vue-router";
 import { getProductById, updateProduct } from "@/services/productsApi";
+import { notificar } from "@/utils/alerts";
 
 const route = useRoute();
 const router = useRouter();
@@ -123,9 +119,6 @@ const product = ref({
 });
 const newImage = ref(null);
 const newImagePreview = ref(null);
-
-const message = ref('');
-const error = ref('');
 
 const categories = ref([
   { id: 1, name: "Cabello" },
@@ -155,11 +148,11 @@ const loadProduct = async () => {
       newImage.value = null;
       newImagePreview.value = null;
     } else {
-      error.value = 'Producto no encontrado.';
+      notificar('Producto no encontrado.', 'error');
     }
   } catch (err) {
     console.error("Error al cargar el producto:", err);
-    error.value = 'Error al cargar el producto. Intente de nuevo.';
+    notificar('Error al cargar el producto. Intente de nuevo.', 'error');
   }
 };
 
@@ -175,10 +168,6 @@ const onImageSelected = (event) => {
 };
 
 const update = async () => {
-  message.value = '';
-  error.value = '';
-
-  // Validación básica
   if (
     !product.value.name.trim() ||
     !product.value.price ||
@@ -186,16 +175,16 @@ const update = async () => {
     !product.value.amount ||
     !product.value.id_category
   ) {
-    error.value = 'Por favor, complete todos los campos requeridos.';
+    notificar('Por favor, complete todos los campos requeridos.', 'warning');
     return;
   }
 
   if (product.value.price <= 0) {
-    error.value = 'El precio debe ser un valor positivo.';
+    notificar('El precio debe ser un valor positivo.', 'warning');
     return;
   }
   if (product.value.amount <= 0) {
-    error.value = 'La cantidad debe ser al menos 1.';
+    notificar('La cantidad debe ser al menos 1.', 'warning');
     return;
   }
 
@@ -213,18 +202,12 @@ const update = async () => {
     }
 
     await updateProduct(route.params.id, formData);
-    message.value = "Producto actualizado correctamente.";
-
-    setTimeout(() => {
-      router.push("/Products");
-    }, 1500);
-
+    await notificar("Producto actualizado correctamente.", "success");
+    router.push("/Products");
   } catch (err) {
     console.error("Error al actualizar producto:", err);
-    error.value = "Error al actualizar el producto. Intente de nuevo.";
-    if (err.response && err.response.data && err.response.data.message) {
-      error.value += ` (${err.response.data.message})`;
-    }
+    const detalle = err.response?.data?.message ? ` (${err.response.data.message})` : '';
+    notificar(`Error al actualizar el producto. Intente de nuevo.${detalle}`, "error");
   }
 };
 

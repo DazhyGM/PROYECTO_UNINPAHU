@@ -1,8 +1,8 @@
 <template>
-  <div class="row mb-2">
-    <ul class="nav col-12 justify-content-center mx-auto">
-      <h1 class="titulo-header">Perfil del Usuario</h1>
-    </ul>
+  <div class="page-top">
+    <button v-if="['Administrador', 'Cliente', 'Empleado'].includes(user.role)" class="page-back" type="button"
+      @click="goBack">Regresar</button>
+    <h1 class="titulo-header">Perfil del Usuario</h1>
   </div>
   <div class="container perfil-usuario">
     <div class="profile-container">
@@ -28,8 +28,6 @@
         citas</button>
       <button class="btn btn-delete" @click="confirmDelete"> Eliminar cuenta </button>
     </div>
-    <button v-if="['Administrador', 'Cliente', 'Empleado'].includes(user.role)" class="btn back-button"
-      @click="goBack">Regresar</button>
   </div>
 </template>
 
@@ -37,6 +35,7 @@
 import { ref, onMounted, onUnmounted } from 'vue';
 import { useRouter } from "vue-router";
 import { getUserData, deleteAccount } from "@/services/api";
+import { confirmar, notificar } from "@/utils/alerts";
 
 const router = useRouter();
 const isMenuOpen = ref(false);
@@ -91,18 +90,18 @@ onUnmounted(() => {
 });
 
 const confirmDelete = async () => {
-  const confirmed = window.confirm("¿Estás seguro de que deseas eliminar tu cuenta? Esta acción no se puede deshacer.");
+  const confirmed = await confirmar("¿Estás seguro de que deseas eliminar tu cuenta? Esta acción no se puede deshacer.");
   if (!confirmed) return;
 
   try {
     const token = localStorage.getItem("token");
     await deleteAccount(user.value.id, token);
-    alert("Cuenta eliminada exitosamente. ¡Hasta pronto!");
+    await notificar("Cuenta eliminada exitosamente. ¡Hasta pronto!");
     localStorage.removeItem("token");
     router.push("/");
   } catch (error) {
     console.error("❌ Error al eliminar la cuenta:", error);
-    alert("Hubo un problema al intentar eliminar tu cuenta.");
+    notificar("Hubo un problema al intentar eliminar tu cuenta.");
   }
 };
 

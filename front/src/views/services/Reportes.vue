@@ -1,9 +1,8 @@
 <template>
   <div class="container-reporte text-white">
-    <div class="row mb-3">
-      <ul class="nav col-12 justify-content-center mx-auto">
-        <h1 class="titulo-header">Reportes</h1>
-      </ul>
+    <div class="page-top">
+      <button class="page-back" type="button" @click="$router.push('/Home')">Regresar</button>
+      <h1 class="titulo-header">Reportes</h1>
     </div>
     <div class="mb-4">
       <div class="row g-3 align-items-end">
@@ -76,10 +75,6 @@
     </div>
     </div>
 
-    <div class="text-center my-4">
-      <button class="btn back-button" @click="$router.push('/Home')">Regresar</button>
-    </div>
-
   </div>
 </template>
 
@@ -87,6 +82,7 @@
 import axios from 'axios';
 import { getReportQuotes } from '@/services/quotesApi';
 import SelectCampo from '@/components/ui/SelectCampo.vue';
+import { notificar } from '@/utils/alerts';
 
 export default {
   name: 'CitasReportes',
@@ -155,7 +151,7 @@ export default {
       try {
         const token = localStorage.getItem('token');
         if (!token) {
-          alert("No se ha iniciado sesión.");
+          notificar("No se ha iniciado sesión.");
           this.$router.push('/');
           return false;
         }
@@ -174,7 +170,7 @@ export default {
         return true;
       } catch (error) {
         console.error('Error al verificar el rol del usuario:', error);
-        alert("Error al verificar la sesión. Por favor, inicie sesión de nuevo.");
+        notificar("Error al verificar la sesión. Por favor, inicie sesión de nuevo.");
         this.$router.push('/');
         return false;
       }
@@ -182,7 +178,7 @@ export default {
     async loadReport() {
       if (!this.startDate || !this.endDate) {
         if (this.selectedReportType === 'custom') {
-          alert("Por favor, selecciona las fechas de inicio y fin para el reporte personalizado.");
+          notificar("Por favor, selecciona las fechas de inicio y fin para el reporte personalizado.");
         }
         return;
       }
@@ -194,10 +190,10 @@ export default {
       } catch (error) {
         console.error('❌ Error al cargar el reporte de citas:', error);
         if (error.response && error.response.status === 403) {
-          alert("No tienes permisos para ver este reporte. Debes iniciar sesión.");
+          notificar("No tienes permisos para ver este reporte. Debes iniciar sesión.");
           this.$router.push('/');
         } else {
-          alert("No se pudo cargar el reporte de citas.");
+          notificar("No se pudo cargar el reporte de citas.");
         }
         this.citas = [];
       } finally {

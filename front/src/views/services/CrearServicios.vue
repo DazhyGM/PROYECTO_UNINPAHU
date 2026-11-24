@@ -1,8 +1,7 @@
 <template>
-  <div class="row mb-2">
-    <ul class="nav col-12 justify-content-center mx-auto">
-      <h1 class="titulo-header">Agregar servicio</h1>
-    </ul>
+  <div class="page-top">
+    <router-link to="/Services" class="page-back">Regresar</router-link>
+    <h1 class="titulo-header">Agregar servicio</h1>
   </div>
   <div class="container-create-service">
     <div class="row add-service-container">
@@ -65,16 +64,6 @@
       </div>
     </div>
 
-    <div class="text-center mt-3">
-      <router-link to="/Services" class="btn back-button">
-        Regresar
-      </router-link>
-    </div>
-
-    <div class="text-center mt-3">
-      <p v-if="message" class="text-success">{{ message }}</p>
-      <p v-if="error" class="text-danger">{{ error }}</p>
-    </div>
   </div>
 </template>
 
@@ -83,6 +72,7 @@ import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { createService } from '@/services/servicesApi';
 import SelectCampo from '@/components/ui/SelectCampo.vue';
+import { notificar } from '@/utils/alerts';
 
 export default {
   components: { SelectCampo },
@@ -101,8 +91,6 @@ export default {
       image: ''
     });
 
-    const message = ref('');
-    const error = ref('');
     const categoriasServicio = [
       { value: '1', label: 'Corte' },
       { value: '2', label: 'Barba' },
@@ -125,9 +113,6 @@ export default {
     };
 
     const handleSubmit = async () => {
-      message.value = '';
-      error.value = '';
-
       if (
         !form.value.name_service.trim() ||
         !form.value.description.trim() ||
@@ -136,7 +121,7 @@ export default {
         !form.value.id_category_services ||
         !selectedImageFile.value
       ) {
-        error.value = 'Por favor, complete todos los campos antes de continuar.';
+        notificar('Por favor, complete todos los campos antes de continuar.', 'warning');
         return;
       }
 
@@ -151,7 +136,7 @@ export default {
         formData.append('image', selectedImageFile.value);
 
         await createService(formData);
-        message.value = 'Servicio creado correctamente.';
+        notificar('Servicio creado correctamente.', 'success');
 
         form.value = {
           name_service: '',
@@ -167,7 +152,7 @@ export default {
 
       } catch (err) {
         console.error(err);
-        error.value = 'Error al crear el servicio.';
+        notificar('Error al crear el servicio.', 'error');
       }
     };
 
@@ -182,9 +167,7 @@ export default {
       imagePreview,
       handleSubmit,
       handleImageUpload,
-      regresar,
-      message,
-      error
+      regresar
     };
   }
 };
