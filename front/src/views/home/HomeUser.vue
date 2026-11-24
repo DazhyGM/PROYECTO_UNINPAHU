@@ -91,16 +91,19 @@
     <!--Seccion de servicios-->
 
     <div class="container section">
-      <h2 class="section-title">Servicios</h2>
-      <div class="row row-cols-1 row-cols-md-4 g-8">
-        <div v-for="service in services" :key="service.title" class="col">
-          <div class="card">
-            <a href="/services">
-              <img :src="service.image" class="card-img-top" :alt="service.title" />
-            </a>
+      <h2 class="section-title">Servicios más populares</h2>
+      <p v-if="cargandoServicios" class="text-center">Cargando servicios...</p>
+      <p v-else-if="!services.length" class="text-center">Todavía no hay servicios para mostrar.</p>
+      <div v-else class="row row-cols-1 row-cols-md-4 g-8">
+        <div v-for="service in services" :key="service.id_services" class="col">
+          <div class="card servicio-popular">
+            <router-link :to="`/View-Service/${service.id_services}`">
+              <img :src="imagenServicio(service.image)" class="card-img-top" :alt="service.name_service"
+                @error="usarImagenPredeterminada" />
+            </router-link>
             <div class="card-body">
-              <h5 class="card-title">{{ service.title }}</h5>
-              <p class="card-text">{{ service.text }}</p>
+              <h5 class="card-title">{{ service.name_service }}</h5>
+              <p class="card-text">{{ service.description }}</p>
             </div>
           </div>
         </div>
@@ -212,6 +215,7 @@ import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
 import { useRouter } from "vue-router";
 import { getUserData } from "@/services/api";
 import { getQuotesWithServiceDetails } from "@/services/quotesApi";
+import { getPopularServices } from "@/services/servicesApi";
 
 const router = useRouter();
 const isMenuOpen = ref(false);
@@ -220,6 +224,35 @@ const mostrarCitasDia = ref(false);
 const cargandoCitasDia = ref(false);
 const errorCitasDia = ref(false);
 const citasDelDia = ref([]);
+const services = ref([]);
+const cargandoServicios = ref(false);
+
+const imagenPredeterminada = '/img/background/combo01.png';
+
+const imagenServicio = (imagen) => {
+  const nombre = String(imagen || '').trim();
+  if (!nombre || nombre === 'null') return imagenPredeterminada;
+  if (nombre.startsWith('http') || nombre.startsWith('/')) return nombre;
+  return `http://localhost:5000/uploads/${nombre}`;
+};
+
+const usarImagenPredeterminada = (evento) => {
+  if (evento.target.src.endsWith(imagenPredeterminada)) return;
+  evento.target.src = imagenPredeterminada;
+};
+
+const cargarServiciosPopulares = async () => {
+  cargandoServicios.value = true;
+  try {
+    const data = await getPopularServices();
+    services.value = Array.isArray(data) ? data : [];
+  } catch (error) {
+    console.error('No se pudieron cargar los servicios populares:', error);
+    services.value = [];
+  } finally {
+    cargandoServicios.value = false;
+  }
+};
 
 const fechaClave = (valor) => {
   const fecha = new Date(valor);
@@ -302,6 +335,8 @@ onMounted(() => {
     }
   }
 
+  cargarServiciosPopulares();
+
   if (user.value.role === 'Employee' && sessionStorage.getItem('barberCitasModal') === '1') {
     sessionStorage.removeItem('barberCitasModal');
     cargarCitasDelDia();
@@ -361,14 +396,6 @@ const images = ref([
   { src: '/img/background/corte.jpeg', alt: 'Servicios', title: 'Nuestros servicios', text: 'Ofrecemos una gran variedad de servicios como: Cortes, barba, tintura.' }
 ]);
 
-// Lista de servicios
-const services = ref([
-  { image: '/img/background/BarbaCortaCuadrada.jpg', title: 'Barba Corta Cuadrada', text: 'Barba recortada con precisión.' },
-  { image: '/img/background/mullet.jpg', title: 'Mullet', text: 'Corte con dos extensiones diferenciadas.' },
-  { image: '/img/background/cejasflat.jpg', title: 'Cejas Flat', text: 'Cejas rectas con una curva sutil.' },
-  { image: '/img/background/tintebicolor.jpg', title: 'Tinte Bicolor', text: 'División de color en el cabello.' }
-]);
-
 // Lista de productos
 const products = ref([
   { image: '/img/background/ceramate.jpg', title: 'Cera', text: 'Cera mate para estilizar tu cabello.' },
@@ -400,4 +427,18 @@ export default {
 <style scoped>
 @import '@/assets/css/components/footer.css';
 @import '@/assets/css/home/citasDiaModal.css';
+
+.servicio-popular img {
+  width: 100%;
+  height: 180px;
+  object-fit: contain;
+  background-color: #f8f9fa;
+}
+
+.servicio-popular .card-text {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
 </style>
