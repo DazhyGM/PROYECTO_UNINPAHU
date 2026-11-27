@@ -3,10 +3,11 @@
     <div class="page-top">
       <button class="page-back" type="button" @click="goBack">Continuar comprando</button>
     </div>
-    <div v-if="products.length === 0" class="empty-cart-message">
+    <SkeletonCarga v-if="cargando" tipo="tarjetas" :cantidad="3" />
+    <div v-else-if="products.length === 0" class="empty-cart-message">
       <p>Tu carrito está vacío. ¡Agrega algunos productos!</p>
     </div>
-    <div class="product-grid-cart">
+    <div v-if="!cargando" class="product-grid-cart">
       <div class="product-card" v-for="product in products" :key="product.id_product">
         <img :src="getImageUrl(product.image)" alt="Imagen del producto" class="product-img-cart" />
         <h2 class="product-name-cart">{{ product.name }}</h2>
@@ -71,15 +72,18 @@ import { useRouter } from "vue-router";
 import { getProducts } from "@/services/productsApi";
 import { getCartAPI, updateCartItemAPI, removeFromCartAPI } from "@/services/shoppingCartApi";
 import { confirmar, notificar } from "@/utils/alerts";
+import SkeletonCarga from "@/components/ui/SkeletonCarga.vue";
 
 const router = useRouter();
 const products = ref([]);
+const cargando = ref(true);
 
 const goBack = () => router.push("/Products");
 
 const getImageUrl = (imageName) => `http://localhost:5000/uploads/${imageName}`;
 
 const loadProducts = async () => {
+  cargando.value = true;
   try {
     const allProducts = await getProducts();
     const userId = getUserIdFromToken();
@@ -117,6 +121,8 @@ const loadProducts = async () => {
   } catch (error) {
     console.error("Error al cargar productos del carrito:", error);
     notificar('Hubo un problema al cargar los productos de tu carrito. Por favor, intenta de nuevo.');
+  } finally {
+    cargando.value = false;
   }
 };
 

@@ -17,7 +17,8 @@
         </router-link>
       </div>
 
-      <div class="product-grid">
+      <SkeletonCarga v-if="cargando" tipo="tarjetas" :cantidad="4" />
+      <div v-else class="product-grid">
         <div class="product-card" v-for="product in products" :key="product.id_product">
           <img :src="getImageUrl(product.image)" alt="Imagen del producto" class="product-img" />
           <h2 class="product-name">{{ product.name }}</h2>
@@ -107,6 +108,7 @@ import { getProducts, updateProductStatus } from "@/services/productsApi";
 import { addToCartAPI, getCartAPI, updateCartItemAPI } from "@/services/shoppingCartApi";
 import axios from 'axios';
 import { confirmar, notificar } from '@/utils/alerts';
+import SkeletonCarga from '@/components/ui/SkeletonCarga.vue';
 
 const router = useRouter();
 const products = ref([]);
@@ -121,8 +123,15 @@ const getImageUrl = (imageName) => `http://localhost:5000/uploads/${imageName}`;
 
 
 
+const cargando = ref(true);
+
 const loadProducts = async () => {
-  products.value = await getProducts();
+  cargando.value = true;
+  try {
+    products.value = await getProducts();
+  } finally {
+    cargando.value = false;
+  }
 };
 
 const fetchUserRole = async () => {

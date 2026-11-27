@@ -37,14 +37,12 @@
       </div>
     </div>
 
-    <div v-if="loading" class="text-center my-4">
-      <p>Cargando citas...</p>
-    </div>
+    <SkeletonCarga v-if="loading" tipo="filas" :cantidad="5" />
     <div v-else-if="filteredCitas.length === 0" class="alert alert-info text-center">
       No hay citas registradas para los criterios seleccionados.
     </div>
     
-    <div class="reporte-form-container">
+    <div v-if="!loading" class="reporte-form-container">
     <div class="table-responsive">
       <table class="table table-dark table-striped">
         <thead>
@@ -82,11 +80,12 @@
 import axios from 'axios';
 import { getReportQuotes } from '@/services/quotesApi';
 import SelectCampo from '@/components/ui/SelectCampo.vue';
+import SkeletonCarga from '@/components/ui/SkeletonCarga.vue';
 import { notificar } from '@/utils/alerts';
 
 export default {
   name: 'CitasReportes',
-  components: { SelectCampo },
+  components: { SelectCampo, SkeletonCarga },
   data() {
     return {
       tiposReporte: [

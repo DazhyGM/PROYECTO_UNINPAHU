@@ -4,7 +4,8 @@
     <h1 class="titulo-header">Detalles del Servicio</h1>
   </div>
 
-  <div class="container-service mt-5 text-white">
+  <SkeletonCarga v-if="cargando" tipo="detalle" />
+  <div v-else class="container-service mt-5 text-white">
     <div class="card p-4 text-white">
       <h2 class="text-center mb-4">{{ service.name_service }}</h2>
 
@@ -31,13 +32,16 @@ import { ref, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { getServiceById } from '@/services/servicesApi';
 import { notificar } from '@/utils/alerts';
+import SkeletonCarga from '@/components/ui/SkeletonCarga.vue';
 
 const route = useRoute();
 const router = useRouter();
 const service = ref({});
+const cargando = ref(true);
 
 // Obtener datos del servicio
 const fetchService = async () => {
+  cargando.value = true;
   try {
     const id = route.params.id;
     if (!id) throw new Error("ID no proporcionado");
@@ -46,6 +50,8 @@ const fetchService = async () => {
     console.error("Error al obtener el servicio:", error);
     notificar("No se pudo cargar el servicio.");
     router.push('/Services');
+  } finally {
+    cargando.value = false;
   }
 };
 

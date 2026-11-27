@@ -3,7 +3,8 @@
     <HeaderComponent v-if="!$route.meta.hideLayout" :isHome="$route.meta.isHome" />
 
     <main class="app-main">
-      <router-view />
+      <SkeletonCarga v-if="cargandoRuta" tipo="pagina" />
+      <router-view v-show="!cargandoRuta" />
     </main>
 
     <FooterComponent v-if="!$route.meta.hideLayout" />
@@ -15,11 +16,32 @@
 <script>
 import HeaderComponent from '@/components/layout/HeaderComponent.vue'
 import FooterComponent from '@/components/layout/FooterComponent.vue'
+import SkeletonCarga from '@/components/ui/SkeletonCarga.vue'
+import router from '@/router'
 
 export default {
   components: {
     HeaderComponent,
-    FooterComponent
+    FooterComponent,
+    SkeletonCarga
+  },
+  data() {
+    return {
+      cargandoRuta: false
+    }
+  },
+  created() {
+    let espera
+    router.beforeEach(() => {
+      clearTimeout(espera)
+      espera = setTimeout(() => {
+        this.cargandoRuta = true
+      }, 160)
+    })
+    router.afterEach(() => {
+      clearTimeout(espera)
+      this.cargandoRuta = false
+    })
   }
 }
 </script>

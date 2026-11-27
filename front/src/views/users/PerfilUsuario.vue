@@ -4,7 +4,8 @@
       @click="goBack">Regresar</button>
     <h1 class="titulo-header">Perfil del Usuario</h1>
   </div>
-  <div class="container perfil-usuario">
+  <SkeletonCarga v-if="cargando" tipo="detalle" />
+  <div v-else class="container perfil-usuario">
     <div class="profile-container">
       <div class="profile-image">
         <img src="/img/background/Icono usuario.png" width="100px" alt="Usuario">
@@ -36,6 +37,7 @@ import { ref, onMounted, onUnmounted } from 'vue';
 import { useRouter } from "vue-router";
 import { getUserData, deleteAccount } from "@/services/api";
 import { confirmar, notificar } from "@/utils/alerts";
+import SkeletonCarga from "@/components/ui/SkeletonCarga.vue";
 
 const router = useRouter();
 const isMenuOpen = ref(false);
@@ -47,7 +49,10 @@ const roleMapping = {
   "Client": "Cliente"
 };
 
+const cargando = ref(true);
+
 const fetchUserData = async () => {
+  cargando.value = true;
   try {
     const token = localStorage.getItem("token");
     if (!token) {
@@ -71,6 +76,8 @@ const fetchUserData = async () => {
   } catch (error) {
     console.error("Error al obtener los datos del usuario:", error);
     router.push('/login');
+  } finally {
+    cargando.value = false;
   }
 };
 

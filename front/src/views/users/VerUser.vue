@@ -35,9 +35,7 @@
         </div>
       </div>
 
-      <div v-else>
-        <p>Cargando datos del usuario...</p>
-      </div>
+      <SkeletonCarga v-else tipo="detalle" />
 
     </form>
   </div>
@@ -49,9 +47,11 @@
 import { reactive, computed, onMounted } from 'vue';
 import axios from 'axios';
 import { useRoute, useRouter } from 'vue-router';
+import SkeletonCarga from '@/components/ui/SkeletonCarga.vue';
 import { notificar } from '@/utils/alerts';
 
 export default {
+  components: { SkeletonCarga },
   setup() {
     const user = reactive({
       fullName: '',

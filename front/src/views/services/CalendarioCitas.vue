@@ -39,7 +39,7 @@
 
         <div class="time-list">
           <p v-if="scheduleLabel" class="schedule-label">{{ scheduleLabel }}</p>
-          <p v-if="loadingTimes" class="time-empty">Cargando horarios...</p>
+          <SkeletonCarga v-if="loadingTimes" tipo="filas" :cantidad="4" />
           <p v-else-if="timeMessage" class="time-empty">{{ timeMessage }}</p>
           <p v-else-if="!selectedDate" class="time-empty">Selecciona un día para ver los horarios del barbero.</p>
           <div v-else class="time-scroll">
@@ -70,10 +70,11 @@
 import ResumenSeleccion from '@/components/services/ResumenSeleccion.vue';
 import { getAvailability, getBarberSchedule } from '@/services/quotesApi';
 import { notificar } from '@/utils/alerts';
+import SkeletonCarga from '@/components/ui/SkeletonCarga.vue';
 
 export default {
   name: 'CalendarioCitas',
-  components: { ResumenSeleccion },
+  components: { ResumenSeleccion, SkeletonCarga },
   data() {
     return {
       selectedDate: '',

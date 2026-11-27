@@ -73,7 +73,7 @@
         <p class="citas-rango">{{ textoRango }}</p>
       </div>
 
-      <div v-if="cargando" class="citas-state">Cargando citas...</div>
+      <SkeletonCarga v-if="cargando" tipo="filas" :cantidad="5" />
       <div v-else-if="!citas.length" class="citas-state">No hay citas registradas.</div>
       <div v-else-if="!citasFiltradas.length" class="citas-state">No hay citas para ese filtro.</div>
       <div v-else class="citas-scroll">
@@ -153,10 +153,11 @@ import axios from 'axios';
 import { getQuotesWithServiceDetails, cancelQuote, finishQuote } from '@/services/quotesApi';
 import SelectCampo from '@/components/ui/SelectCampo.vue';
 import { notificar } from '@/utils/alerts';
+import SkeletonCarga from '@/components/ui/SkeletonCarga.vue';
 
 export default {
   name: 'CitasPendientes',
-  components: { SelectCampo },
+  components: { SelectCampo, SkeletonCarga },
   data() {
     return {
       opcionesPagina: [

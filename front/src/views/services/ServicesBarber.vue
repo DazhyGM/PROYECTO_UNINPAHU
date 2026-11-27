@@ -24,7 +24,8 @@
         <router-link to="/Services-Inactivos" class="btn btn-agregar">Servicios Inactivos</router-link>
       </div>
 
-      <div class="d-flex flex-wrap justify-content-center gap-4 align-items-start">
+      <SkeletonCarga v-if="cargandoServicios" tipo="filas" :cantidad="4" />
+      <div v-else class="d-flex flex-wrap justify-content-center gap-4 align-items-start">
         <div class="col-lg-8">
           <div v-for="(services, category) in servicesByCategory" :key="category" class="service-category">
             <h3 :id="getCategoryId(category)" class="text-center text-uppercase category-title">{{ category }}</h3>
@@ -77,6 +78,7 @@ import { getAllServices, deleteService } from '@/services/servicesApi';
 import axios from 'axios';
 import ResumenSeleccion from '@/components/services/ResumenSeleccion.vue';
 import { confirmar, notificar } from '@/utils/alerts';
+import SkeletonCarga from '@/components/ui/SkeletonCarga.vue';
 
 const router = useRouter();
 const services = ref([]);
@@ -119,12 +121,17 @@ const fetchUserData = async () => {
   }
 };
 
+const cargandoServicios = ref(true);
+
 const fetchServices = async () => {
+  cargandoServicios.value = true;
   try {
     services.value = await getAllServices();
   } catch (error) {
     console.error("Error al cargar servicios:", error);
     notificar("Hubo un problema al obtener los servicios.");
+  } finally {
+    cargandoServicios.value = false;
   }
 };
 

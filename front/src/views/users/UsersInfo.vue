@@ -27,7 +27,8 @@
       </div>
     </div>
 
-    <div class="pedido-container">
+    <SkeletonCarga v-if="cargando" tipo="filas" :cantidad="6" />
+    <div v-else class="pedido-container">
       <div v-for="user in filteredUsers" :key="user.user_id" class="pedido-box">
         <div class="icon-usuario-container">
           <img src="/img/logos/person-circle.svg" class="btn icon-usuario">
@@ -70,9 +71,11 @@ import { useRouter } from "vue-router";
 import { getUsers, deleteUser, updateUserStatus, filterUsersByRole } from '@/services/api';
 import SelectCampo from '@/components/ui/SelectCampo.vue';
 import { confirmar, notificar } from '@/utils/alerts';
+import SkeletonCarga from '@/components/ui/SkeletonCarga.vue';
 
 const router = useRouter();
 const users = ref([]);
+const cargando = ref(true);
 const searchQuery = ref("");
 const selectedRole = ref("");
 const sortOrder = ref("");
@@ -84,10 +87,13 @@ const roles = [
 ];
 
 const loadUsers = async () => {
+  cargando.value = true;
   try {
     users.value = await getUsers();
   } catch (error) {
     console.error("Error al obtener usuarios:", error);
+  } finally {
+    cargando.value = false;
   }
 };
 

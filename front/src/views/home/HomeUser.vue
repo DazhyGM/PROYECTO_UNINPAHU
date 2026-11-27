@@ -92,7 +92,7 @@
 
     <div class="container section">
       <h2 class="section-title">Servicios más populares</h2>
-      <p v-if="cargandoServicios" class="text-center">Cargando servicios...</p>
+      <SkeletonCarga v-if="cargandoServicios" tipo="tarjetas" :cantidad="4" />
       <p v-else-if="!services.length" class="text-center">Todavía no hay servicios para mostrar.</p>
       <div v-else class="row row-cols-1 row-cols-md-4 g-8">
         <div v-for="service in services" :key="service.id_services" class="col">
@@ -178,7 +178,7 @@
         <h2 id="citas-dia-titulo">Citas del día</h2>
         <p class="citas-dia-fecha">{{ fechaHoyTexto }}</p>
 
-        <p v-if="cargandoCitasDia" class="citas-dia-vacio">Cargando citas...</p>
+        <SkeletonCarga v-if="cargandoCitasDia" tipo="filas" :cantidad="3" />
         <p v-else-if="errorCitasDia" class="citas-dia-vacio">No se pudieron cargar las citas de hoy.</p>
         <p v-else-if="!citasDelDia.length" class="citas-dia-vacio">No tienes citas para hoy.</p>
         <div v-else class="citas-dia-tabla-wrap">
@@ -216,6 +216,7 @@ import { useRouter } from "vue-router";
 import { getUserData } from "@/services/api";
 import { getQuotesWithServiceDetails } from "@/services/quotesApi";
 import { getPopularServices } from "@/services/servicesApi";
+import SkeletonCarga from "@/components/ui/SkeletonCarga.vue";
 
 const router = useRouter();
 const isMenuOpen = ref(false);
