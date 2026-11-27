@@ -161,9 +161,11 @@
           <!-- Ubicación en Google Maps -->
           <div class="footer-map">
             <h5>Ubicación</h5>
-            <iframe width="300" height="200" frameborder="0" style="border: 0; border-radius: 10px" allowfullscreen
-              loading="lazy" referrerpolicy="no-referrer-when-downgrade"
-              src="https://www.google.com/maps/embed?pb=!1m14!1m8!1m3!1d320.7485814835074!2d-74.11363336743096!3d4.566516616706714!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x8e3f98b7eaad79d7%3A0xd3bcb757e2f470a5!2sBoxter%20Barber%20Shop!5e1!3m2!1ses!2sco!4v1743355924822!5m2!1ses!2sco"></iframe>
+            <div class="footer-map-frame">
+              <iframe class="footer-map-embed" title="Ubicación de la barbería" loading="lazy"
+                referrerpolicy="no-referrer-when-downgrade"
+                src="https://www.google.com/maps/embed?pb=!1m14!1m8!1m3!1d320.7485814835074!2d-74.11363336743096!3d4.566516616706714!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x8e3f98b7eaad79d7%3A0xd3bcb757e2f470a5!2sBoxter%20Barber%20Shop!5e1!3m2!1ses!2sco!4v1743355924822!5m2!1ses!2sco"></iframe>
+            </div>
           </div>
         </div>
 

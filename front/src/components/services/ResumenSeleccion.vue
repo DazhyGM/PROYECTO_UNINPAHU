@@ -181,6 +181,32 @@ export default {
   font-size: 0.95rem;
   font-weight: 400;
   text-align: right;
+  min-width: 0;
+  overflow-wrap: break-word;
+}
+
+@media (max-width: 991px) {
+  .resumen-flujo {
+    padding: 18px 16px 16px;
+  }
+
+  .resumen-flujo-note {
+    line-height: 1.45;
+  }
+
+  .resumen-fila {
+    align-items: flex-start;
+    gap: 18px;
+  }
+
+  .resumen-fila span {
+    flex: 0 0 auto;
+    padding-top: 3px;
+  }
+
+  .resumen-fila strong {
+    flex: 1;
+  }
 }
 
 .pendiente {

@@ -25,8 +25,8 @@
       </div>
 
       <SkeletonCarga v-if="cargandoServicios" tipo="filas" :cantidad="4" />
-      <div v-else class="d-flex flex-wrap justify-content-center gap-4 align-items-start">
-        <div class="col-lg-8">
+      <div v-else class="servicios-layout">
+        <div class="servicios-lista">
           <div v-for="(services, category) in servicesByCategory" :key="category" class="service-category">
             <h3 :id="getCategoryId(category)" class="text-center text-uppercase category-title">{{ category }}</h3>
             <div class="d-flex flex-column align-items-center">
@@ -71,7 +71,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted } from 'vue';
+import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue';
 import { useRouter } from 'vue-router';
 import { getAllServices, deleteService } from '@/services/servicesApi';
 import axios from 'axios';
@@ -149,9 +149,14 @@ const getCategoryId = (category) => category.toLowerCase().replace(/\s+/g, '-').
 const getServiceImage = (image) =>
   image ? `/uploads/${image}` : '/img/background/combo01.png';
 
-const selectService = (service) => {
-  console.log("Servicio seleccionado:", service);
+const selectService = async (service) => {
   selectedServices.value = [service];
+  if (!window.matchMedia('(max-width: 720px)').matches) return;
+  await nextTick();
+  document.querySelector('.selected-service-box')?.scrollIntoView({
+    behavior: 'smooth',
+    block: 'start'
+  });
 };
 const clearAllSelected = () => selectedServices.value = [];
 
