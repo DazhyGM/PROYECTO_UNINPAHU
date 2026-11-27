@@ -121,6 +121,10 @@ exports.cancelQuote = async (req, res) => {
 exports.finishQuote = async (req, res) => {
   const quoteId = req.params.id;
 
+  if (req.user.role === 'Client') {
+    return res.status(403).json({ message: 'Solo el personal puede finalizar una cita.' });
+  }
+
   try {
     const quote = await Quote.findDetailedById(quoteId);
 

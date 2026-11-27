@@ -39,8 +39,9 @@
         </div>
       </label>
       <label class="filtro-campo filtro-buscar">
-        <span>Cliente</span>
-        <input type="search" v-model="busqueda" placeholder="Buscar por nombre o cédula">
+        <span>{{ userRole === 'Client' ? 'Barbero' : 'Cliente' }}</span>
+        <input type="search" v-model="busqueda"
+          :placeholder="userRole === 'Client' ? 'Buscar por barbero' : 'Buscar por nombre o cédula'">
       </label>
       <button class="btn-limpiar" type="button" @click="limpiarFiltros">Limpiar</button>
     </section>
@@ -120,7 +121,7 @@
                       <path d="M3.2 3.2l9.6 9.6M12.8 3.2l-9.6 9.6" />
                     </svg>
                   </button>
-                  <button class="btn-icono btn-finalizar" type="button" title="Finalizar" aria-label="Finalizar cita"
+                  <button v-if="userRole !== 'Client'" class="btn-icono btn-finalizar" type="button" title="Finalizar" aria-label="Finalizar cita"
                     @click="finalizarCita(cita.id_quotes)">
                     <svg viewBox="0 0 16 16" aria-hidden="true">
                       <path d="M3.2 8.4l3 3.1 6.6-7" />
@@ -400,6 +401,9 @@ export default {
     coincideBusqueda(cita) {
       const consulta = this.busqueda.trim().toLowerCase();
       if (!consulta) return true;
+      if (this.userRole === 'Client') {
+        return (cita.barber_name || '').toLowerCase().includes(consulta);
+      }
       const nombre = (cita.client_name || '').toLowerCase();
       const cedula = String(cita.client_document || '');
       const digitos = consulta.replace(/\D/g, '');

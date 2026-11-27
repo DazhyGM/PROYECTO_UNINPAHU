@@ -66,6 +66,9 @@ router.post('/users/register', userController.registerUser);
  */
 router.post('/login', userController.loginUser);
 
+router.get('/session', authenticate, userController.sessionStatus);
+router.post('/logout', authenticate, userController.logoutUser);
+
 /**
  * @swagger
  * /api/users/forgot-password:

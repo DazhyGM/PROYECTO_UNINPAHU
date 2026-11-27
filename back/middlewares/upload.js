@@ -14,17 +14,16 @@ const storage = multer.diskStorage({
   }
 });
 
-// Filtro para aceptar solo imágenes
-const fileFilter = (req, file, cb) => {
-  const allowedTypes = /jpeg|jpg|png|gif/;
-  const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
-  const mimetype = allowedTypes.test(file.mimetype);
+const extensiones = ['.jpeg', '.jpg', '.png', '.gif', '.webp', '.bmp', '.jfif'];
 
-  if (extname && mimetype) {
-    return cb(null, true);
-  } else {
-    cb(new Error('Solo se permiten imágenes'));
-  }
+// Acepta la imagen por tipo o por extensión. En Windows el tipo a veces llega vacío.
+const fileFilter = (req, file, cb) => {
+  const extension = path.extname(file.originalname || '').toLowerCase();
+  const tipo = String(file.mimetype || '').toLowerCase();
+  const esImagen = tipo.startsWith('image/') || extensiones.includes(extension);
+
+  if (esImagen) return cb(null, true);
+  cb(new Error('Solo se permiten imágenes'));
 };
 
 const upload = multer({

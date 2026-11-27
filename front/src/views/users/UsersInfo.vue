@@ -1,9 +1,9 @@
 <template>
   <div class="container usuarios-page my-3">
-    <div class="page-top">
-      <button class="page-back" type="button" @click="goBack">Regresar</button>
+    <header class="usuarios-cabecera">
       <h1 class="titulo-header">Usuarios</h1>
-    </div>
+      <button class="usuarios-regresar" type="button" @click="goBack">Regresar</button>
+    </header>
 
     <div class="barra-usuarios">
       <router-link to="/AgregarUser" class="btn btn-agregar">

@@ -101,6 +101,16 @@ exports.create = async (req, res) => {
   }
 };
 
+exports.barberos = async (req, res) => {
+  try {
+    const filas = await Rating.getPublicByBarber();
+    res.status(200).json(filas);
+  } catch (error) {
+    console.error('Error al consultar calificaciones de barberos:', error);
+    res.status(500).json({ message: 'No se pudieron consultar las calificaciones.' });
+  }
+};
+
 exports.metrics = async (req, res) => {
   if (!esAdmin(req.user)) {
     return res.status(403).json({ message: 'Solo el administrador puede ver las métricas de calidad.' });

@@ -9,6 +9,7 @@ import {
 } from '@/services/quotesApi';
 import { claveDe, consultarYDescargarInforme } from '@/services/descargarReporte';
 import { leerConModelo } from '@/services/cisoIa';
+import { getBarberRatings } from '@/services/ratingsApi';
 
 export const NOMBRE_CISO = 'Ciso';
 
@@ -94,32 +95,40 @@ function esEmpleado(sesion) {
   return rol === 'employee' || rol === 'empleado';
 }
 
-export function sugerenciasDe(rol) {
-  const papel = String(rol || '').toLowerCase();
-  if (papel === 'admin') {
-    return [
-      { etiqueta: 'Reporte de citas', envio: 'Quiero el reporte de citas' },
-      { etiqueta: 'Reporte de calidad', envio: 'Quiero el reporte de calidad' },
-      { etiqueta: 'Citas de hoy', envio: 'Qué citas hay hoy' },
-    ];
-  }
-  if (papel === 'employee' || papel === 'empleado') {
-    return [
-      { etiqueta: 'Mis citas de hoy', envio: 'Qué citas tengo hoy' },
-      { etiqueta: 'Mi agenda de mañana', envio: 'Qué citas tengo mañana' },
-    ];
-  }
-  return [
-    { etiqueta: 'Agendar una cita', envio: 'Quiero agendar una cita' },
-    { etiqueta: 'Ver mis citas', envio: 'Qué citas tengo' },
-  ];
+function pideInforme(n) {
+  if (/\b(reporte|informes?|excel|descarg\w*|estadistic\w*)\b/.test(n)) return true;
+  if (/\b(cuesta|vale|precio|precios)\b/.test(n)) return false;
+  return /\b(cuanto|cuanta)\b/.test(n) && /\b(vend\w*|hic\w*|factur\w*|ingres\w*|servicio\w*)\b/.test(n);
+}
+
+function esCalificacionHablada(texto) {
+  const n = normalizar(texto);
+  if (/\b(reporte|informes?|excel|descarg\w*)\b/.test(n)) return false;
+  return /\b(calificacion\w*|estrellas?|puntaje|recomend\w*|calidad)\b/.test(n);
+}
+
+function pideRecomendacion(n) {
+  if (/\b(calificacion\w*|estrellas?|puntaje|mejor barbero)\b/.test(n)) return false;
+  return /\b(sugier\w*|recomend\w*|look|estilo|cambio de|que me conviene|que me queda|no se que|que puedo hacerme|asesor\w*)\b/.test(n);
+}
+
+function pideGuia(n) {
+  if (/\b(reporte|informes?|excel|descarg\w*)\b/.test(n)) return false;
+  if (/\b(mi calificacion|mis estrellas|mi puntaje|como estoy)\b/.test(n)) return true;
+  if (/\b(que servicios|cuales servicios|servicios hay|servicios tienes|servicios ofrecen|cuanto cuesta|cuanto vale|precio|precios)\b/.test(n)) return true;
+  if (/\b(quienes son|que barberos|barberos hay|lista de barberos|barberos tienen|barberos trabajan)\b/.test(n)) return true;
+  if (!/\b(calificacion\w*|estrellas?|puntaje|recomend\w*|mejor barbero)\b/.test(n)) return false;
+  const preguntaPersona = /\b(barbero|barberos|tiene|tienen|esta|estan|mejor|peor|quien|quienes|recomiend)\b/.test(n);
+  const periodo = /\b(hoy|ayer|semana|mes|desde|hasta|enero|febrero|marzo|abril|mayo|junio|julio|agosto|septiembre|octubre|noviembre|diciembre)\b/.test(n);
+  if (periodo && !preguntaPersona) return false;
+  return true;
 }
 
 function intencionDe(texto) {
   const n = normalizar(texto);
-  const reporte = /\b(reporte|informes?|excel|descarg\w*|estadistic\w*|calificacion\w*|calidad|estrella\w*)\b/.test(n)
-    || (/\b(cuanto|cuanta)\b/.test(n) && /\b(vend\w*|hic\w*|factur\w*|ingres\w*|servicio\w*)\b/.test(n));
-  if (reporte) return 'reporte';
+  if (pideInforme(n)) return 'reporte';
+  if (pideRecomendacion(n) || pideGuia(n)) return 'guia';
+  if (/\b(calidad|calificacion\w*|estrella\w*)\b/.test(n)) return 'reporte';
 
   const agendar = /\b(agendar|agendame|agendeme|reserv\w*|nueva cita|sacar una cita|pedir una cita|programar)\b/.test(n)
     || (/\b(quiero|necesito|busco|hazme|haceme)\b/.test(n) && /\b(cita|corte|barba|ceja\w*|tinte\w*|fade|afeit\w*|perfil\w*|combo)\b/.test(n))
@@ -155,11 +164,7 @@ export function crearSesionCiso(usuario = {}) {
 
 export function saludoCiso(sesion) {
   const nombre = sesion.usuario.full_name || 'bienvenido';
-  return decir(
-    sesion,
-    `Hola, ${nombre}. Soy ${NOMBRE_CISO}.\n¿En qué te puedo ayudar?`,
-    sugerenciasDe(sesion.usuario.role),
-  );
+  return decir(sesion, `Hola, ${nombre}. Soy ${NOMBRE_CISO}.\n¿En qué te puedo ayudar?`);
 }
 
 function cerrarCon(sesion, texto) {
@@ -167,15 +172,34 @@ function cerrarCon(sesion, texto) {
   sesion.cita = citaVacia();
   sesion.reporte = reporteVacio();
   sesion.horarios = [];
-  return decir(sesion, texto, sugerenciasDe(sesion.usuario.role), true);
+  return decir(sesion, texto, [], true);
 }
 
 function esReinicio(texto) {
   return /^(cancelar|cancela|mejor no|dejalo|olvidalo|volver al inicio|menu|inicio|otra cosa|salir)$/.test(texto);
 }
 
-function esComandoNuevo(texto) {
-  return Boolean(intencionDe(texto));
+function tareaActual(paso) {
+  if (String(paso).startsWith('cita')) return 'cita';
+  if (String(paso).startsWith('reporte')) return 'reporte';
+  if (String(paso).startsWith('guia')) return 'guia';
+  return '';
+}
+
+function esOtraTarea(paso, intencion) {
+  const actual = tareaActual(paso);
+  if (!actual || (intencion !== 'reporte' && intencion !== 'cita' && intencion !== 'citas' && intencion !== 'guia')) return false;
+  if (intencion === 'guia') return false;
+  if (actual === 'cita' && intencion === 'cita') return false;
+  if (actual === 'reporte' && intencion === 'reporte') return false;
+  if (actual === 'guia' && intencion === 'guia') return false;
+  return true;
+}
+
+function pareceDeLaBarberia(texto) {
+  const n = normalizar(texto);
+  return /\b(cita|citas|agenda|reporte|informe|excel|servicio|barber|corte|barba|ceja|tinte|fade|afeit|perfil|combo|horario|hora|hoy|manana|semana|mes|calidad|calificacion|estrella|agendar|reserv|precio|cuesta|puntaje|recomiend|sugier|look|estilo)\b/.test(n)
+    || Boolean(interpretarFechas(texto, 'reporte'));
 }
 
 function opcionPorTexto(sesion, texto) {
@@ -644,14 +668,9 @@ function sinPermisoCita(sesion) {
     return decir(
       sesion,
       'El administrador no agenda citas. Ese proceso lo hace el cliente.\nPuedo generarte un reporte o mostrarte las citas.',
-      sugerenciasDe(sesion.usuario.role),
     );
   }
-  return decir(
-    sesion,
-    'Las citas las agenda el cliente desde su cuenta.\nPuedo mostrarte tu agenda.',
-    sugerenciasDe(sesion.usuario.role),
-  );
+  return decir(sesion, 'Las citas las agenda el cliente desde su cuenta.\nPuedo mostrarte tu agenda.');
 }
 
 function aplicarCitaModelo(sesion, extra) {
@@ -1014,8 +1033,8 @@ async function seguirReporte(sesion, texto) {
   }
   if (!esAdmin(sesion)) {
     const alternativa = esCliente(sesion)
-      ? 'Puedo agendarte una cita o mostrarte las que ya tienes.'
-      : 'Puedo mostrarte tu agenda.';
+      ? 'Puedo agendarte una cita, mostrarte las que ya tienes o decirte la calificación de un barbero.'
+      : 'Puedo mostrarte tu agenda o la calificación de los barberos.';
     return cerrarCon(sesion, `Los reportes los genera el administrador. ${alternativa}`);
   }
   if (!sesion.reporte.vista) {
@@ -1080,36 +1099,29 @@ function textoAyuda(sesion) {
     return 'Puedo armarte el reporte de servicios o el de calidad, de las fechas que escribas y de un barbero si lo nombras. Por ejemplo: «reporte de servicios de este mes de Alberto Díaz» o «calificaciones de la semana pasada».\nTambién te digo qué citas hay un día.\n¿En qué te ayudo?';
   }
   if (esEmpleado(sesion)) {
-    return 'Puedo decirte tu agenda. Por ejemplo: «qué citas tengo hoy», «mi agenda de mañana» o «quién viene el viernes».\n¿En qué te ayudo?';
+    return 'Puedo decirte tu agenda y tu calificación. Por ejemplo: «qué citas tengo hoy», «mi agenda de mañana» o «cuál es mi calificación».\n¿En qué te ayudo?';
   }
-  return 'Puedo agendarte una cita o revisar las que ya tienes. Por ejemplo: «necesito un corte mañana a las 3» o «qué citas tengo el viernes».\n¿En qué te ayudo?';
+  return 'Puedo agendarte una cita, revisar las que ya tienes, contarte los servicios y decirte la calificación de un barbero. Por ejemplo: «necesito un corte mañana a las 3», «qué citas tengo el viernes» o «qué calificación tiene Alberto Díaz».\n¿En qué te ayudo?';
+}
+
+const LIMITE_TEMA = 'Solo puedo ayudarte con lo de MysticalCut: citas, servicios, barberos, sus calificaciones y reportes.';
+
+function recordarHilo(sesion, aviso) {
+  const opciones = [...(sesion.opciones || [])];
+  if (sesion.paso === 'inicio' || !opciones.length) {
+    return decir(sesion, aviso);
+  }
+  return decir(sesion, `${aviso}\nSeguimos con lo que estábamos haciendo.`, opciones);
 }
 
 function noEntendi(sesion) {
-  if (esAdmin(sesion)) {
-    return decir(
-      sesion,
-      'No me quedó claro. Puedes escribir, por ejemplo, «reporte de citas de hoy» o «qué citas hay esta semana».',
-      sugerenciasDe(sesion.usuario.role),
-    );
-  }
-  if (esEmpleado(sesion)) {
-    return decir(
-      sesion,
-      'No me quedó claro. Puedes escribir, por ejemplo, «qué citas tengo hoy» o «mi agenda de mañana».',
-      sugerenciasDe(sesion.usuario.role),
-    );
-  }
-  return decir(
-    sesion,
-    'No me quedó claro. Puedes escribir, por ejemplo, «quiero un corte el viernes a las 4» o «qué citas tengo».',
-    sugerenciasDe(sesion.usuario.role),
-  );
+  return recordarHilo(sesion, 'No me quedó claro, pero sigo en lo de la barbería. Dime la cita, el servicio, la calificación o el reporte que necesitas.');
 }
 
 async function atenderInicio(sesion, texto) {
   const intencion = intencionDe(texto);
   if (intencion === 'reporte') {
+    if (!esAdmin(sesion) && esCalificacionHablada(texto)) return responderGuia(sesion, texto);
     sesion.reporte = reporteVacio();
     sesion.paso = 'reporte_tipo';
     return seguirReporte(sesion, texto);
@@ -1120,19 +1132,251 @@ async function atenderInicio(sesion, texto) {
   }
   if (intencion === 'citas') return listarCitas(sesion, texto);
   if (/\b(hola|ayuda|que puedes|que haces|menu)\b/.test(normalizar(texto))) {
-    return decir(sesion, textoAyuda(sesion), sugerenciasDe(sesion.usuario.role));
+    return decir(sesion, textoAyuda(sesion));
   }
+  if (/^(gracias|ok|vale|perfecto|listo|bueno|dale)$/.test(normalizar(texto))) {
+    return recordarHilo(sesion, 'Cuando quieras seguimos con tus citas, servicios o reportes.');
+  }
+  if (!pareceDeLaBarberia(texto)) return recordarHilo(sesion, LIMITE_TEMA);
   return noEntendi(sesion);
 }
 
-async function responderLocal(sesion, texto) {
-  const n = normalizar(texto);
-  if (sesion.paso !== 'inicio' && esComandoNuevo(n)) {
-    sesion.cita = citaVacia();
-    sesion.reporte = reporteVacio();
-    sesion.horarios = [];
-    sesion.paso = 'inicio';
+function soltarTarea(sesion) {
+  sesion.cita = citaVacia();
+  sesion.reporte = reporteVacio();
+  sesion.horarios = [];
+  sesion.paso = 'inicio';
+}
+
+function notaCorta(fila) {
+  const nota = Number(fila.promedio).toLocaleString('es-CO', { minimumFractionDigits: 1, maximumFractionDigits: 2 });
+  const veces = fila.total === 1 ? '1 calificación' : `${fila.total} calificaciones`;
+  return `${nota} de 5 (${veces})`;
+}
+
+function textoNota(fila) {
+  if (!fila || !fila.total || fila.promedio == null) {
+    return `${fila?.full_name || 'Ese barbero'} todavía no tiene calificaciones de clientes.`;
   }
+  return `${fila.full_name} tiene ${notaCorta(fila)}.`;
+}
+
+function textoRanking(filas) {
+  const conNota = filas
+    .filter((fila) => fila.total > 0 && fila.promedio != null)
+    .sort((a, b) => b.promedio - a.promedio || a.full_name.localeCompare(b.full_name, 'es'));
+  const sinNota = filas.filter((fila) => !fila.total);
+  if (!conNota.length) return 'Todavía no hay calificaciones de los barberos.';
+  const lineas = conNota.map((fila, indice) => `${indice + 1}. ${fila.full_name}: ${notaCorta(fila)}`);
+  const extra = sinNota.length
+    ? `\nSin calificaciones todavía: ${sinNota.map((fila) => fila.full_name).join(', ')}.`
+    : '';
+  return `Así van las calificaciones de los barberos:\n${lineas.join('\n')}${extra}`;
+}
+
+function avisoDeFechas(texto) {
+  if (!interpretarFechas(texto, 'reporte')) return '';
+  return '\nEse promedio junta todas las calificaciones, no solo las de esas fechas. El informe por fechas lo genera el administrador.';
+}
+
+function pideLaPropia(texto) {
+  return /\b(mi calificacion|mis estrellas|mi puntaje|como estoy)\b/.test(normalizar(texto));
+}
+
+function pideRanking(texto) {
+  return /\b(todos|todas|el mejor|la mejor|mejor barbero|mejor calificad\w*|quien tiene|quienes tienen|ranking)\b/.test(normalizar(texto));
+}
+
+function tipoGuia(texto, paso, lectura) {
+  const n = normalizar(texto);
+  if (pideRecomendacion(n)) return 'recomendacion';
+  if (paso === 'guia_barbero') return 'calificacion';
+  if (/\b(calificacion\w*|estrellas?|puntaje|mejor barbero|como estoy)\b/.test(n)) return 'calificacion';
+  if (/\b(cuesta|vale|precio|precios|que servicios|servicios hay|servicios tienes)\b/.test(n)) return 'servicios';
+  if (/\b(quienes son|que barberos|barberos hay|lista de barberos)\b/.test(n)) return 'barberos';
+  const tema = lectura?.guia;
+  if (tema === 'recomendacion' || tema === 'servicios' || tema === 'barberos' || tema === 'calificacion') return tema;
+  if (paso === 'guia_servicio') return 'recomendacion';
+  return 'servicios';
+}
+
+async function notasDeBarberos(sesion) {
+  await asegurarBarberos(sesion);
+  const notas = await getBarberRatings();
+  const porId = new Map((Array.isArray(notas) ? notas : []).map((fila) => [Number(fila.id_barbero), fila]));
+  return sesion.barberos.map((barbero) => {
+    const fila = porId.get(Number(barbero.user_id));
+    return {
+      user_id: barbero.user_id,
+      full_name: barbero.full_name,
+      promedio: fila ? fila.promedio : null,
+      total: fila ? fila.total : 0,
+    };
+  });
+}
+
+function opcionesDeNotas(filas) {
+  const opciones = opcionesDe(filas, 'barbero', (fila) => fila.full_name);
+  opciones.push({ etiqueta: 'El mejor calificado', envio: 'El mejor calificado', tipo: 'barbero', valor: null });
+  return opciones;
+}
+
+function entregarGuia(sesion, texto, opciones, listo, abierta) {
+  if (abierta) return { texto };
+  if (listo) return cerrarCon(sesion, texto);
+  return decir(sesion, texto, opciones);
+}
+
+function recortar(texto, limite) {
+  const limpio = String(texto || '').replace(/\s+/g, ' ').trim();
+  if (limpio.length <= limite) return limpio;
+  return `${limpio.slice(0, limite - 1).trim()}…`;
+}
+
+function sumarServicios(destino, vistos, lista) {
+  lista.forEach((servicio) => {
+    const id = servicio.id_services || servicio.id || servicio.name_service;
+    if (vistos.has(id) || destino.length >= 4) return;
+    vistos.add(id);
+    destino.push(servicio);
+  });
+}
+
+function serviciosParaProponer(servicios, texto, propuesta) {
+  const elegidos = [];
+  const vistos = new Set();
+  const nombrados = (propuesta || []).flatMap((nombre) => serviciosMencionados(servicios, nombre));
+  sumarServicios(elegidos, vistos, nombrados);
+  sumarServicios(elegidos, vistos, serviciosMencionados(servicios, texto));
+  if (elegidos.length) return elegidos;
+  const porCategoria = [];
+  const categorias = new Set();
+  servicios.forEach((servicio) => {
+    const clave = servicio.category_name || 'general';
+    if (categorias.has(clave)) return;
+    categorias.add(clave);
+    porCategoria.push(servicio);
+  });
+  sumarServicios(elegidos, vistos, porCategoria);
+  sumarServicios(elegidos, vistos, servicios);
+  return elegidos;
+}
+
+async function textoRecomendacion(sesion, texto, lectura) {
+  await asegurarServicios(sesion);
+  const lista = serviciosParaProponer(sesion.servicios, texto, lectura?.propuesta);
+  if (!lista.length) return { texto: 'Ahora no hay servicios activos para proponerte.', opciones: [] };
+  const lineas = lista.map((servicio) => {
+    const nombre = servicio.name_service || servicio.name;
+    const detalle = recortar(servicio.description, 90);
+    return `• ${nombre}: ${pesos(servicio.price)}${detalle ? `. ${detalle}` : ''}`;
+  });
+  const intro = pideRecomendacion(normalizar(texto))
+    ? 'Para un cambio de look, con lo que hay en la barbería te propongo:'
+    : 'Te propongo estos servicios:';
+  const cierre = esCliente(sesion) ? '\nElige uno y te lo agendo.' : '';
+  const opciones = esCliente(sesion)
+    ? lista.map((servicio) => {
+      const nombre = servicio.name_service || servicio.name;
+      return { etiqueta: nombre, envio: `Quiero agendar ${nombre}` };
+    })
+    : [];
+  return { texto: `${intro}\n${lineas.join('\n')}${cierre}`, opciones };
+}
+
+async function textoServicios(sesion, texto) {
+  await asegurarServicios(sesion);
+  const mencionados = serviciosMencionados(sesion.servicios, texto);
+  const lista = mencionados.length ? mencionados : sesion.servicios;
+  if (!lista.length) return 'Ahora no hay servicios activos.';
+  const lineas = lista.slice(0, 8).map((servicio) => `• ${servicio.name_service || servicio.name}: ${pesos(servicio.price)}`);
+  const resto = lista.length > 8 ? `\nY ${lista.length - 8} más en el módulo de servicios.` : '';
+  const titulo = mencionados.length ? 'Esto es lo que coincide:' : 'Estos son los servicios:';
+  const cierre = esCliente(sesion) ? '\nSi quieres, te agendo uno.' : '';
+  return `${titulo}\n${lineas.join('\n')}${resto}${cierre}`;
+}
+
+async function textoBarberos(sesion) {
+  await asegurarBarberos(sesion);
+  if (!sesion.barberos.length) return 'Ahora no hay barberos disponibles.';
+  const nombres = sesion.barberos.map((barbero) => barbero.full_name).join(', ');
+  return `Los barberos son: ${nombres}.\nPuedo decirte la calificación de cualquiera.`;
+}
+
+async function guiaCalificacion(sesion, texto, abierta) {
+  const notas = await notasDeBarberos(sesion);
+  if (!notas.length) return entregarGuia(sesion, 'Ahora no hay barberos para consultar.', [], true, abierta);
+  const cierreCliente = !abierta && esCliente(sesion) ? '\nSi te gusta alguno, te agendo la cita.' : '';
+
+  if (pideLaPropia(texto)) {
+    if (esEmpleado(sesion)) {
+      await cargarPerfil(sesion);
+      const propia = notas.find((fila) => Number(fila.user_id) === Number(sesion.usuario.user_id));
+      const frase = propia ? textoNota(propia) : 'No encontré tu perfil entre los barberos activos.';
+      return entregarGuia(sesion, frase, [], true, abierta);
+    }
+    if (abierta) return entregarGuia(sesion, `${textoRanking(notas)}${cierreCliente}`, [], true, true);
+    sesion.paso = 'guia_barbero';
+    return entregarGuia(sesion, 'Las calificaciones que puedo contarte son las de los barberos. ¿De cuál quieres saber?', opcionesDeNotas(notas), false, false);
+  }
+
+  if (pideRanking(texto)) {
+    return entregarGuia(sesion, `${textoRanking(notas)}${avisoDeFechas(texto)}${cierreCliente}`, [], true, abierta);
+  }
+
+  const opcion = opcionPorTexto(sesion, texto);
+  if (opcion?.tipo === 'barbero' && !opcion.valor) {
+    return entregarGuia(sesion, `${textoRanking(notas)}${cierreCliente}`, [], true, abierta);
+  }
+  if (opcion?.tipo === 'barbero' && opcion.valor) {
+    const fila = notas.find((item) => Number(item.user_id) === Number(opcion.valor.user_id))
+      || { full_name: opcion.etiqueta, promedio: null, total: 0 };
+    return entregarGuia(sesion, `${textoNota(fila)}${avisoDeFechas(texto)}`, [], true, abierta);
+  }
+
+  const hallados = mejorBarbero(notas, texto);
+  if (hallados.length === 1) {
+    return entregarGuia(sesion, `${textoNota(hallados[0])}${avisoDeFechas(texto)}`, [], true, abierta);
+  }
+  if (hallados.length > 1) {
+    if (abierta) {
+      return entregarGuia(sesion, hallados.map((fila) => textoNota(fila)).join('\n'), [], true, true);
+    }
+    sesion.paso = 'guia_barbero';
+    return entregarGuia(sesion, 'Encontré varios barberos. ¿De cuál quieres la calificación?', opcionesDe(hallados, 'barbero', (fila) => fila.full_name), false, false);
+  }
+  if (abierta) return entregarGuia(sesion, `${textoRanking(notas)}${cierreCliente}`, [], true, true);
+  sesion.paso = 'guia_barbero';
+  return entregarGuia(sesion, '¿De qué barbero quieres la calificación?', opcionesDeNotas(notas), false, false);
+}
+
+async function guiaRecomendacion(sesion, texto, lectura, abierta) {
+  const cuerpo = await textoRecomendacion(sesion, texto, lectura);
+  if (!abierta) sesion.paso = 'guia_servicio';
+  return entregarGuia(sesion, cuerpo.texto, cuerpo.opciones, false, abierta);
+}
+
+async function armarGuia(sesion, texto, abierta, lectura) {
+  const tipo = tipoGuia(texto, sesion.paso, lectura);
+  if (tipo === 'recomendacion') return guiaRecomendacion(sesion, texto, lectura, abierta);
+  if (tipo === 'servicios') return entregarGuia(sesion, await textoServicios(sesion, texto), [], true, abierta);
+  if (tipo === 'barberos') return entregarGuia(sesion, await textoBarberos(sesion), [], true, abierta);
+  return guiaCalificacion(sesion, texto, abierta);
+}
+
+async function responderGuia(sesion, texto, lectura = null) {
+  const abierta = sesion.paso !== 'inicio' && !String(sesion.paso).startsWith('guia');
+  const opcionesAbiertas = abierta ? [...(sesion.opciones || [])] : null;
+  const resultado = await armarGuia(sesion, texto, abierta, lectura);
+  if (!abierta) return resultado;
+  return decir(sesion, `${resultado.texto}\nSeguimos con lo que estábamos haciendo.`, opcionesAbiertas);
+}
+
+async function responderLocal(sesion, texto) {
+  const intencion = intencionDe(texto);
+  if (intencion === 'guia') return responderGuia(sesion, texto);
+  if (String(sesion.paso).startsWith('guia') && !intencion) return responderGuia(sesion, texto);
+  if (esOtraTarea(sesion.paso, intencion)) soltarTarea(sesion);
   if (sesion.paso === 'inicio') return atenderInicio(sesion, texto);
   if (sesion.paso === 'cita_servicio') return elegirServicio(sesion, texto);
   if (sesion.paso === 'cita_barbero') return elegirBarbero(sesion, texto);
@@ -1158,7 +1402,7 @@ function fechasDeLista(listar) {
 }
 
 async function prepararContexto(sesion) {
-  if (esAdmin(sesion) || esCliente(sesion)) await asegurarBarberos(sesion);
+  if (esAdmin(sesion) || esCliente(sesion) || esEmpleado(sesion)) await asegurarBarberos(sesion);
   if (esCliente(sesion)) await asegurarServicios(sesion);
 }
 
@@ -1179,11 +1423,18 @@ function completarReporte(sesion, lectura) {
 async function responderConLectura(sesion, texto, lectura) {
   const intencion = lectura.intencion;
   if (intencion === 'cancelar') return cerrarCon(sesion, lectura.respuesta || 'Listo. ¿En qué más te ayudo?');
-  if (intencion === 'charla' || intencion === 'ayuda') {
-    return decir(sesion, lectura.respuesta || textoAyuda(sesion), sugerenciasDe(sesion.usuario.role));
+  if (intencion === 'fuera' && !pideRecomendacion(normalizar(texto))) return recordarHilo(sesion, LIMITE_TEMA);
+  if ((intencion === 'charla' || intencion === 'ayuda') && !pideRecomendacion(normalizar(texto)) && sesion.paso !== 'inicio') {
+    return recordarHilo(sesion, lectura.respuesta || textoAyuda(sesion));
+  }
+  if ((intencion === 'charla' || intencion === 'ayuda') && !pideRecomendacion(normalizar(texto))) {
+    return decir(sesion, lectura.respuesta || textoAyuda(sesion));
   }
   if (intencion === 'confirmar' && sesion.paso === 'cita_confirmar') return confirmarCita(sesion, 'si');
   if (intencion === 'rechazar' && sesion.paso === 'cita_confirmar') return confirmarCita(sesion, texto);
+  if (pideRecomendacion(normalizar(texto)) || intencionDe(texto) === 'guia' || (intencion === 'guia' && (sesion.paso === 'inicio' || String(sesion.paso).startsWith('guia')))) {
+    return responderGuia(sesion, texto, lectura);
+  }
 
   if (String(sesion.paso).startsWith('reporte') && (intencion === 'reporte' || intencion === 'seguir')) {
     completarReporte(sesion, lectura);
@@ -1195,17 +1446,17 @@ async function responderConLectura(sesion, texto, lectura) {
     return responderLocal(sesion, texto);
   }
 
-  const nueva = intencion === 'reporte' || intencion === 'cita' || intencion === 'citas';
-  if (sesion.paso !== 'inicio' && !nueva) return responderLocal(sesion, texto);
-  if (sesion.paso !== 'inicio' && nueva) {
-    sesion.cita = citaVacia();
-    sesion.reporte = reporteVacio();
-    sesion.horarios = [];
-    sesion.paso = 'inicio';
-  }
+  if (sesion.paso !== 'inicio' && !esOtraTarea(sesion.paso, intencion)) return responderLocal(sesion, texto);
+  if (esOtraTarea(sesion.paso, intencion)) soltarTarea(sesion);
 
   if (intencion === 'reporte') {
-    if (!esAdmin(sesion)) return cerrarCon(sesion, lectura.respuesta || 'Los reportes los genera el administrador.');
+    if (!esAdmin(sesion)) {
+      if (pideGuia(normalizar(texto)) || esCalificacionHablada(texto)) return responderGuia(sesion, texto);
+      const alternativa = esCliente(sesion)
+        ? 'Puedo agendarte una cita, mostrarte las que ya tienes o decirte la calificación de un barbero.'
+        : 'Puedo mostrarte tu agenda o la calificación de los barberos.';
+      return cerrarCon(sesion, `Los reportes los genera el administrador. ${alternativa}`);
+    }
     sesion.reporte = reporteVacio();
     sesion.paso = 'reporte_tipo';
     completarReporte(sesion, lectura);
@@ -1223,8 +1474,8 @@ async function responderConLectura(sesion, texto, lectura) {
 function recordar(sesion, usuario, respuesta) {
   if (!sesion.historial) sesion.historial = [];
   sesion.historial.push({ rol: 'usuario', texto: usuario });
-  if (respuesta) sesion.historial.push({ rol: 'ciso', texto: String(respuesta).slice(0, 500) });
-  if (sesion.historial.length > 12) sesion.historial = sesion.historial.slice(-12);
+  if (respuesta) sesion.historial.push({ rol: 'ciso', texto: String(respuesta).slice(0, 700) });
+  if (sesion.historial.length > 16) sesion.historial = sesion.historial.slice(-16);
 }
 
 export async function responderCiso(sesion, texto) {
@@ -1238,17 +1489,53 @@ export async function responderCiso(sesion, texto) {
     }
     await prepararContexto(sesion);
     const lectura = await leerConModelo(sesion, texto);
-    const respuesta = lectura
+    const cruda = lectura
       ? await responderConLectura(sesion, texto, lectura)
       : await responderLocal(sesion, texto);
+    const respuesta = vestirSugerencias(sesion, cruda, lectura);
     recordar(sesion, texto, respuesta?.texto);
     return respuesta;
   } catch (error) {
     console.error('Ciso:', error);
-    return decir(
-      sesion,
-      'Se me atravesó un problema al consultar el sistema. Inténtalo otra vez.',
-      sugerenciasDe(sesion.usuario.role),
-    );
+    return decir(sesion, 'Se me atravesó un problema al consultar el sistema. Inténtalo otra vez.');
+  }
+}
+
+function sugerenciaPermitida(texto, sesion) {
+  const n = normalizar(texto);
+  if (/\b(agendar|reserv\w*|nueva cita|sacar una cita)\b/.test(n) && !esCliente(sesion)) return false;
+  if (/\b(reporte|informes?|excel)\b/.test(n) && !esAdmin(sesion)) return false;
+  if (pareceDeLaBarberia(texto)) return true;
+  if (mejorBarbero(sesion.barberos || [], texto).length) return true;
+  return serviciosMencionados(sesion.servicios || [], texto).length > 0;
+}
+
+function chipsDeLectura(lectura, sesion) {
+  return (lectura?.sugerencias || [])
+    .filter((texto) => sugerenciaPermitida(texto, sesion))
+    .slice(0, 4)
+    .map((etiqueta) => ({ etiqueta, envio: etiqueta }));
+}
+
+function vestirSugerencias(sesion, respuesta, lectura) {
+  if (!respuesta) return respuesta;
+  const enCurso = sesion.paso !== 'inicio' && !respuesta.listo && (respuesta.opciones || []).length > 0;
+  if (enCurso) return respuesta;
+  const chips = chipsDeLectura(lectura, sesion);
+  if (!chips.length) {
+    if (respuesta.listo) return { ...respuesta, opciones: [] };
+    return respuesta;
+  }
+  sesion.opciones = chips;
+  return { ...respuesta, opciones: chips };
+}
+
+export async function sugerenciasIniciales(sesion) {
+  try {
+    await prepararContexto(sesion);
+    const lectura = await leerConModelo(sesion, '', { arranque: true });
+    return chipsDeLectura(lectura, sesion);
+  } catch (error) {
+    return [];
   }
 }

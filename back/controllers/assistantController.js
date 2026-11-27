@@ -14,19 +14,21 @@ function hoyLocal() {
 }
 
 exports.entender = async (req, res) => {
+  const arranque = req.body?.arranque === true;
   const mensaje = String(req.body?.mensaje || '').trim().slice(0, 1000);
-  if (!mensaje) return res.status(400).json({ ok: false, motivo: 'vacio' });
+  if (!mensaje && !arranque) return res.status(400).json({ ok: false, motivo: 'vacio' });
 
   const historial = Array.isArray(req.body?.historial)
-    ? req.body.historial.slice(-8).map((turno) => ({
+    ? req.body.historial.slice(-12).map((turno) => ({
       rol: turno?.rol === 'ciso' ? 'ciso' : 'usuario',
-      texto: String(turno?.texto || '').slice(0, 400),
+      texto: String(turno?.texto || '').slice(0, 700),
     }))
     : [];
 
   try {
     const lectura = await entenderMensaje({
-      mensaje,
+      mensaje: mensaje || 'Acabo de abrir el chat.',
+      arranque,
       historial,
       rol: String(req.body?.rol || '').slice(0, 40),
       nombre: String(req.body?.nombre || '').slice(0, 80),

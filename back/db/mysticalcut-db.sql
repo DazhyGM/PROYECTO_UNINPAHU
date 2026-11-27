@@ -316,9 +316,23 @@ CREATE TABLE IF NOT EXISTS `dotacion` (
   `id_dotacion` int(11) NOT NULL AUTO_INCREMENT,
   `id_product` int(11) NOT NULL,
   `id_barbero` int(11) NOT NULL,
+  `cantidad` int(11) NOT NULL DEFAULT 0,
   PRIMARY KEY (`id_dotacion`),
-  KEY `fk_dotacion_product` (`id_product`),
-  KEY `fk_dotacion_barbero` (`id_barbero`)
+  UNIQUE KEY `uk_dotacion_barbero_product` (`id_barbero`, `id_product`),
+  KEY `fk_dotacion_product` (`id_product`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+DROP TABLE IF EXISTS `consumo_insumo`;
+CREATE TABLE IF NOT EXISTS `consumo_insumo` (
+  `id_consumo` int(11) NOT NULL AUTO_INCREMENT,
+  `id_product` int(11) NOT NULL,
+  `id_barbero` int(11) NOT NULL,
+  `cantidad` int(11) NOT NULL,
+  `fecha` date NOT NULL,
+  `creado_en` datetime NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`id_consumo`),
+  UNIQUE KEY `uk_consumo_dia` (`id_barbero`, `id_product`, `fecha`),
+  KEY `fk_consumo_product` (`id_product`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -748,6 +762,10 @@ ALTER TABLE `calificaciones_cliente`
 ALTER TABLE `dotacion`
   ADD CONSTRAINT `fk_dotacion_barbero` FOREIGN KEY (`id_barbero`) REFERENCES `user` (`user_id`),
   ADD CONSTRAINT `fk_dotacion_product` FOREIGN KEY (`id_product`) REFERENCES `product` (`id_product`);
+
+ALTER TABLE `consumo_insumo`
+  ADD CONSTRAINT `fk_consumo_barbero` FOREIGN KEY (`id_barbero`) REFERENCES `user` (`user_id`),
+  ADD CONSTRAINT `fk_consumo_product` FOREIGN KEY (`id_product`) REFERENCES `product` (`id_product`);
 
 --
 -- Filtros para la tabla `product`

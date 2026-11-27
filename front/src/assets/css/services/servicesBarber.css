@@ -43,8 +43,50 @@
   z-index: 999;
 }
 
-.service-image img {
+.service-image img,
+.service-thumb {
+  width: 150px;
+  height: 150px;
+  object-fit: contain;
+  background-color: #f8f9fa;
+  margin-right: 15px;
   border-radius: 10px;
+}
+
+@media (max-width: 720px) {
+  .category-nav {
+    top: 48px;
+  }
+
+  .category-nav .nav-link {
+    font-size: 0.82rem;
+    padding: 6px 10px;
+  }
+
+  .service-section .card-body {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+
+  .service-thumb {
+    width: 140px;
+    height: 140px;
+    margin: 0 0 12px;
+  }
+
+  .service-section .card-actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px;
+  }
+
+  .selected-service-box {
+    position: static;
+    min-width: 0;
+    max-width: 100%;
+  }
 }
 
 .service-details .card-description {
@@ -146,6 +188,17 @@
 .category-nav .nav-link:hover {
   color: #f4e7c4;
   text-decoration: none;
+}
+
+@media (max-width: 720px) {
+  .category-nav {
+    top: 48px;
+  }
+
+  .category-nav .nav-link {
+    font-size: 0.82rem;
+    padding: 6px 10px;
+  }
 }
 
 

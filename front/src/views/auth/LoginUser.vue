@@ -35,6 +35,7 @@
 import { ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { login } from "@/services/api";
+import { confirmarSesionLocal } from "@/services/sesionLocal";
 import { notificar } from "@/utils/alerts";
 
 const router = useRouter();
@@ -52,7 +53,6 @@ const logIn = async () => {
 
   try {
     loading.value = true;
-    console.log("📩 Enviando datos:", email.value, password.value);
 
     const data = await login(email.value, password.value);
 
@@ -62,6 +62,7 @@ const logIn = async () => {
 
     localStorage.setItem("token", data.token);
     localStorage.setItem("user", JSON.stringify(data.user));
+    confirmarSesionLocal(data.token);
 
     if (data.user?.role === "Employee") {
       sessionStorage.setItem("barberCitasModal", "1");

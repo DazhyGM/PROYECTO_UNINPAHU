@@ -36,6 +36,7 @@
 import { ref, onMounted, onUnmounted } from 'vue';
 import { useRouter } from "vue-router";
 import { getUserData, deleteAccount } from "@/services/api";
+import { cerrarSesion } from "@/services/sesion";
 import { confirmar, notificar } from "@/utils/alerts";
 import SkeletonCarga from "@/components/ui/SkeletonCarga.vue";
 
@@ -104,7 +105,7 @@ const confirmDelete = async () => {
     const token = localStorage.getItem("token");
     await deleteAccount(user.value.id, token);
     await notificar("Cuenta eliminada exitosamente. ¡Hasta pronto!");
-    localStorage.removeItem("token");
+    await cerrarSesion();
     router.push("/");
   } catch (error) {
     console.error("❌ Error al eliminar la cuenta:", error);
