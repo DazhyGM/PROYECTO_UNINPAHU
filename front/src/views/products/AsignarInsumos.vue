@@ -79,7 +79,7 @@ const puedeGuardar = computed(() => insumos.value.every((insumo) => {
 
 const cargarEmpleados = async () => {
   const token = localStorage.getItem('token');
-  const { data } = await axios.get('http://localhost:5000/api/users/barbers', {
+  const { data } = await axios.get('/api/users/barbers', {
     headers: { Authorization: `Bearer ${token}` },
   });
   empleados.value = Array.isArray(data) ? data : [];

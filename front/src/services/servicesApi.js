@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const SERVICE_API_URL = 'http://localhost:5000/api/services';
+const SERVICE_API_URL = '/api/services';
 
 const getAuthHeaders = () => ({
   headers: {

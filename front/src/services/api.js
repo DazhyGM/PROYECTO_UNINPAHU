@@ -1,9 +1,9 @@
 import axios from 'axios';
 import { cerrarSesionLocal, confirmarSesionLocal, invalidarConfirmacion } from '@/services/sesionLocal';
 
-const API_URL = 'http://localhost:5000/api/users';
+const API_URL = '/api/users';
 const API = axios.create({
-  baseURL: 'http://localhost:5000/api',
+  baseURL: '/api',
 });
 
 // 🔐 Interceptor para agregar token a cada request
@@ -233,7 +233,7 @@ export const getBarbers = async () => {
 // 🔹 Obtener usuario por email (sin token)
 export const getUserByEmail = async (email) => {
   try {
-    const response = await axios.post('http://localhost:5000/api/users/profile-by-email', { email });
+    const response = await axios.post('/api/users/profile-by-email', { email });
     return response.data;
   } catch (error) {
     console.error("Error al obtener el usuario por email:", error);

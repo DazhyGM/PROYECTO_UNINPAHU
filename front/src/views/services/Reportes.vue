@@ -440,7 +440,7 @@ export default {
         return false;
       }
       try {
-        await axios.get('http://localhost:5000/api/users/profile', {
+        await axios.get('/api/users/profile', {
           headers: { Authorization: `Bearer ${token}` },
         });
         return true;

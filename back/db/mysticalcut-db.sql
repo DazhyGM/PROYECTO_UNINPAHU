@@ -46,7 +46,7 @@ END$$
 
 DROP PROCEDURE IF EXISTS `sp_user_all_paginated`$$
 CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_user_all_paginated` (IN `offset` INT, IN `limit_rows` INT)   BEGIN
-    SET @query = CONCAT('SELECT * FROM user LIMIT ', offset, ', ', limit_rows);
+    SET @query = CONCAT('SELECT * FROM user LIMIT ', `offset`, ', ', limit_rows);
     PREPARE stmt FROM @query;
     EXECUTE stmt;
     DEALLOCATE PREPARE stmt;

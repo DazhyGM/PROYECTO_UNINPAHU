@@ -117,7 +117,7 @@ export default {
         return imageName;
       }
       // De lo contrario, usa la URL base de tu API o axios configurado
-      return `http://localhost:5000/uploads/${imageName}`;
+      return `/uploads/${imageName}`;
     };
 
     const loadService = async () => {

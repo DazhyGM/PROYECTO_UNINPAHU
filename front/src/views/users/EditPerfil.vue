@@ -104,7 +104,7 @@ export default {
           return;
         }
 
-        const response = await axios.get(`http://localhost:5000/api/users/users/${userId}`, {
+        const response = await axios.get(`/api/users/users/${userId}`, {
           headers: { Authorization: `Bearer ${token}` }
         });
 
@@ -147,7 +147,7 @@ export default {
         }
 
         const response = await axios.put(
-          `http://localhost:5000/api/users/users/${userId}`,
+          `/api/users/users/${userId}`,
           updateData,
           { headers: { Authorization: `Bearer ${token}` } }
         );

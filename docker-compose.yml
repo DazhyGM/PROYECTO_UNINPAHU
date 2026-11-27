@@ -1,0 +1,80 @@
+# Solo para trabajar en tu computador.
+# En Amazon usa docker-compose.prod.yml.
+
+services:
+  db:
+    image: mariadb:10.11
+    container_name: mysticalcut-db
+    restart: unless-stopped
+    environment:
+      MARIADB_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+      MARIADB_DATABASE: ${DB_NAME:-mysticalcut-db}
+    ports:
+      - "127.0.0.1:3306:3306"
+    volumes:
+      - mysticalcut_data:/var/lib/mysql
+      - ./back/db/mysticalcut-db.sql:/sql/mysticalcut-db.sql:ro
+      - ./docker/db/import.sh:/docker-entrypoint-initdb.d/import.sh:ro
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 5s
+      timeout: 5s
+      retries: 40
+      start_period: 60s
+
+  back:
+    build: ./back
+    container_name: mysticalcut-back
+    restart: unless-stopped
+    env_file:
+      - ./back/.env
+    environment:
+      DB_HOST: db
+      DB_USER: root
+      DB_PASSWORD: ${DB_ROOT_PASSWORD}
+      DB_NAME: ${DB_NAME:-mysticalcut-db}
+      CHOKIDAR_USEPOLLING: "true"
+    ports:
+      - "127.0.0.1:5000:5000"
+    volumes:
+      - ./back:/app
+      - back_node_modules:/app/node_modules
+    depends_on:
+      db:
+        condition: service_healthy
+
+  front:
+    build: ./front
+    container_name: mysticalcut-front
+    restart: unless-stopped
+    environment:
+      CHOKIDAR_USEPOLLING: "true"
+      API_PROXY_TARGET: http://back:5000
+    ports:
+      - "127.0.0.1:8080:8080"
+    volumes:
+      - ./front:/app
+      - front_node_modules:/app/node_modules
+    depends_on:
+      - back
+
+  phpmyadmin:
+    image: phpmyadmin:5
+    container_name: mysticalcut-phpmyadmin
+    restart: unless-stopped
+    environment:
+      PMA_HOST: db
+      PMA_PORT: 3306
+      PMA_USER: root
+      PMA_PASSWORD: ${DB_ROOT_PASSWORD}
+      UPLOAD_LIMIT: 64M
+    ports:
+      - "127.0.0.1:8081:80"
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  mysticalcut_data:
+  back_node_modules:
+  front_node_modules:

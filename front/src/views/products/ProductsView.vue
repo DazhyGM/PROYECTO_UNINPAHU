@@ -83,7 +83,7 @@ const showProductModal = ref(false);
 const selectedProduct = ref(null);
 
 const goBack = () => router.push("/Home");
-const getImageUrl = (imageName) => imageName ? `http://localhost:5000/uploads/${imageName}` : '/img/background/signointerrogacion.jpg';
+const getImageUrl = (imageName) => imageName ? `/uploads/${imageName}` : '/img/background/signointerrogacion.jpg';
 
 const loadProducts = async () => {
   cargando.value = true;
@@ -97,7 +97,7 @@ const loadProducts = async () => {
 const fetchUserRole = async () => {
   const token = localStorage.getItem('token');
   if (!token) return;
-  const { data } = await axios.get('http://localhost:5000/api/users/profile', {
+  const { data } = await axios.get('/api/users/profile', {
     headers: { Authorization: `Bearer ${token}` }
   });
   userRole.value = data.role;

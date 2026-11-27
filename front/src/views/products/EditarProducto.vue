@@ -123,7 +123,7 @@ const getImageUrl = (imageName) => {
   const nombre = String(imageName || '').trim();
   if (!nombre) return '/img/background/signointerrogacion.jpg';
   if (nombre.startsWith('http') || nombre.startsWith('/')) return nombre;
-  return `http://localhost:5000/uploads/${nombre}`;
+  return `/uploads/${nombre}`;
 };
 
 const loadProduct = async () => {

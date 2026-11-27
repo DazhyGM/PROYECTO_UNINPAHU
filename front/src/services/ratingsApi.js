@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const RATINGS_API_URL = 'http://localhost:5000/api/ratings';
+const RATINGS_API_URL = '/api/ratings';
 
 const getAuthHeaders = () => ({
   headers: {

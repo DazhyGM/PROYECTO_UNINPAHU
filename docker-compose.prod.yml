@@ -1,0 +1,70 @@
+# Despliegue. Solo el puerto 80 sale a internet.
+# La base, el API y phpMyAdmin no se publican.
+
+services:
+  db:
+    image: mariadb:10.11
+    restart: unless-stopped
+    environment:
+      MARIADB_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+      MARIADB_DATABASE: ${DB_NAME:-mysticalcut-db}
+    volumes:
+      - mysticalcut_data:/var/lib/mysql
+      - ./back/db/mysticalcut-db.sql:/sql/mysticalcut-db.sql:ro
+      - ./docker/db/import.sh:/docker-entrypoint-initdb.d/import.sh:ro
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 5s
+      timeout: 5s
+      retries: 40
+      start_period: 60s
+
+  back:
+    build: ./back
+    restart: unless-stopped
+    env_file:
+      - ./back/.env
+    environment:
+      NODE_ENV: production
+      PORT: 5000
+      DB_HOST: db
+      DB_USER: root
+      DB_PASSWORD: ${DB_ROOT_PASSWORD}
+      DB_NAME: ${DB_NAME:-mysticalcut-db}
+      BASE_URL: ${PUBLIC_URL}
+      FRONTEND_URL: ${PUBLIC_URL}
+    command: ["sh", "-c", "node scripts/wait-for-db.js && node server.js"]
+    volumes:
+      - uploads_data:/app/uploads
+    expose:
+      - "5000"
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "node",
+          "-e",
+          "require('http').get('http://127.0.0.1:5000/api/',(r)=>process.exit(r.statusCode===200?0:1)).on('error',()=>process.exit(1))",
+        ]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 20s
+
+  web:
+    build:
+      context: ./front
+      dockerfile: Dockerfile.prod
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    depends_on:
+      back:
+        condition: service_healthy
+
+volumes:
+  mysticalcut_data:
+  uploads_data:

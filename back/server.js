@@ -1,4 +1,12 @@
 require('dotenv').config();
+
+const requiredEnv = ['JWT_SECRET', 'DB_HOST', 'DB_USER', 'DB_NAME'];
+const missingEnv = requiredEnv.filter((key) => !String(process.env[key] || '').trim());
+if (missingEnv.length > 0) {
+  console.error(`Faltan variables de entorno: ${missingEnv.join(', ')}`);
+  process.exit(1);
+}
+
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
@@ -35,7 +43,7 @@ const swaggerOptions = {
     },
     servers: [
       {
-        url: 'http://localhost:5000',
+        url: '/',
       },
     ],
     components: {
@@ -70,8 +78,8 @@ app.get('/api/', (req, res) => {
   res.send('API funcionando correctamente 🚀');
 });
 
-const PORT = 5000;
-app.listen(PORT, () => {
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, '0.0.0.0', () => {
   console.log(`Server is running on port ${PORT}`);
   console.log(`📚 Swagger disponible en: http://localhost:${PORT}/api-docs`);
 });

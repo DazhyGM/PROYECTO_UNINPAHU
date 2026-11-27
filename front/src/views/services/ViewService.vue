@@ -60,7 +60,7 @@ const getImage = (image) => {
   if (image.startsWith('http') || image.startsWith('blob')) {
     return image;
   }
-  return `http://localhost:5000/uploads/${image}`;
+  return `/uploads/${image}`;
 };
 
 onMounted(fetchService);

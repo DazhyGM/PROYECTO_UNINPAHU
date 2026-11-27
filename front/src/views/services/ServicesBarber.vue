@@ -103,7 +103,7 @@ onUnmounted(() => document.removeEventListener('click', closeMenu));
 const fetchUserData = async () => {
   try {
     const token = localStorage.getItem('token');
-    const { data } = await axios.get('http://localhost:5000/api/users/profile', {
+    const { data } = await axios.get('/api/users/profile', {
       headers: { Authorization: `Bearer ${token}` }
     });
     user.value = {
@@ -147,7 +147,7 @@ const servicesByCategory = computed(() => {
 const getCategoryId = (category) => category.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]+/g, '');
 
 const getServiceImage = (image) =>
-  image ? `http://localhost:5000/uploads/${image}` : '/img/background/combo01.png';
+  image ? `/uploads/${image}` : '/img/background/combo01.png';
 
 const selectService = (service) => {
   console.log("Servicio seleccionado:", service);

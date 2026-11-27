@@ -61,7 +61,7 @@ const activateProductHandler = async (product) => {
 };
 
 const getImageUrl = (imageName) => {
-  return `http://localhost:5000/uploads/${imageName}`;
+  return `/uploads/${imageName}`;
 };
 
 const goBack = () => {

@@ -501,7 +501,7 @@ function opcionesFecha() {
 async function cargarPerfil(sesion) {
   if (sesion.usuario.user_id) return sesion.usuario;
   const token = localStorage.getItem('token');
-  const { data } = await axios.get('http://localhost:5000/api/users/profile', {
+  const { data } = await axios.get('/api/users/profile', {
     headers: { Authorization: `Bearer ${token}` },
   });
   sesion.usuario = {
@@ -869,7 +869,7 @@ function horaDeCita(valor) {
 
 async function citasDeTodos() {
   const token = localStorage.getItem('token');
-  const response = await axios.get('http://localhost:5000/api/quotes/detalles', {
+  const response = await axios.get('/api/quotes/detalles', {
     headers: { Authorization: `Bearer ${token}` },
   });
   return response.data;

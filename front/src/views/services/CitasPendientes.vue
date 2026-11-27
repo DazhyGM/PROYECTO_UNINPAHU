@@ -312,7 +312,7 @@ export default {
           return;
         }
 
-        const { data: userData } = await axios.get('http://localhost:5000/api/users/profile', {
+        const { data: userData } = await axios.get('/api/users/profile', {
           headers: { Authorization: `Bearer ${token}` }
         });
 

@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const QUOTES_API_URL = 'http://localhost:5000/api/quotes';
+const QUOTES_API_URL = '/api/quotes';
 
 const getAuthHeaders = () => {
   const token = localStorage.getItem('token');
@@ -81,7 +81,7 @@ export const finishQuote = async (quoteId) => {
 // 🔹 Obtener citas de un barbero en una fecha específica
 export const getBarberSchedule = async (barberId) => {
   try {
-    const response = await axios.get(`http://localhost:5000/api/users/users/${barberId}/schedule`, getAuthHeaders());
+    const response = await axios.get(`/api/users/users/${barberId}/schedule`, getAuthHeaders());
     return response.data;
   } catch (error) {
     console.error('Error al obtener el horario del barbero:', error.response?.data || error.message);

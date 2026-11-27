@@ -4,7 +4,7 @@ export async function leerConModelo(sesion, texto, extra = {}) {
   const token = localStorage.getItem('token');
   if (!token) return null;
   try {
-    const { data } = await axios.post('http://localhost:5000/api/assistant/entender', {
+    const { data } = await axios.post('/api/assistant/entender', {
       mensaje: extra.arranque ? 'Acabo de abrir el chat.' : texto,
       arranque: Boolean(extra.arranque),
       historial: (sesion.historial || []).slice(-12),
