@@ -48,6 +48,35 @@ const timeToMinutes = (value) => {
 
 const minutesToClock = (minutes) => `${pad(Math.floor(minutes / 60))}:${pad(minutes % 60)}`;
 
+function query(sql, params = []) {
+  return new Promise((resolve, reject) => {
+    db.query(sql, params, (err, results) => {
+      if (err) reject(err);
+      else resolve(results);
+    });
+  });
+}
+
+function escapeHtml(value) {
+  return String(value ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+function formatFechaCita(value) {
+  const fecha = new Date(value);
+  if (Number.isNaN(fecha.getTime())) return '';
+  return fecha.toLocaleString('es-CO', {
+    day: '2-digit',
+    month: 'long',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+}
+
 class Quote {
   // 🔹 Verificar que el barbero no tenga otra cita activa en ese rango
   static async checkAvailability(barberId, startTime, endTime) {
@@ -258,13 +287,18 @@ class Quote {
         s.price,
         s.estimated_time,
         q.barber_id,
+        q.user_id,
         barberos.full_name AS barber_name,
         clientes.full_name AS client_name,
-        clientes.document_number AS client_document
+        clientes.document_number AS client_document,
+        CASE WHEN cal.id_calificacion IS NULL THEN 0 ELSE 1 END AS calificada,
+        CASE WHEN cc.id_calificacion_cliente IS NULL THEN 0 ELSE 1 END AS calificada_cliente
       FROM quotes q
       JOIN services s ON q.id_services = s.id_services
       LEFT JOIN user barberos ON q.barber_id = barberos.user_id
       LEFT JOIN user clientes ON q.user_id = clientes.user_id
+      LEFT JOIN calificaciones cal ON cal.id_quotes = q.id_quotes
+      LEFT JOIN calificaciones_cliente cc ON cc.id_quotes = q.id_quotes
     `;
 
     const params = [];
@@ -325,6 +359,29 @@ class Quote {
     return result.affectedRows > 0;
   }
 
+  static async findDetailedById(quoteId) {
+    const results = await query(`
+      SELECT
+        q.id_quotes,
+        q.date_time,
+        q.state_quotes,
+        q.user_id,
+        q.barber_id,
+        q.id_services,
+        s.name_service,
+        barberos.full_name AS barber_name,
+        clientes.full_name AS client_name,
+        clientes.user_email AS client_email
+      FROM quotes q
+      JOIN services s ON q.id_services = s.id_services
+      LEFT JOIN user barberos ON q.barber_id = barberos.user_id
+      LEFT JOIN user clientes ON q.user_id = clientes.user_id
+      WHERE q.id_quotes = ?
+    `, [quoteId]);
+
+    return results[0] || null;
+  }
+
 static async sendConfirmationEmail(email, servicio, fecha, hora, total, barbero) {
   try {
     const { user: emailUser } = getMailConfig();
@@ -359,6 +416,50 @@ static async sendConfirmationEmail(email, servicio, fecha, hora, total, barbero)
   }
 }
 
+  static async sendSatisfactionEmail(quote) {
+    if (!quote.client_email) {
+      throw new Error('El cliente no tiene correo registrado.');
+    }
+
+    const { user: emailUser, pass } = getMailConfig();
+    if (!emailUser || !pass) {
+      throw new Error('El envío de correos no está configurado.');
+    }
+
+    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:8080';
+    const enlace = `${frontendUrl}/Calificar/${quote.id_quotes}?origen=correo`;
+    const cliente = escapeHtml(quote.client_name || 'cliente');
+    const servicio = escapeHtml(quote.name_service || 'tu servicio');
+    const barbero = escapeHtml(quote.barber_name || 'tu barbero');
+    const fecha = escapeHtml(formatFechaCita(quote.date_time));
+    const transporter = createTransporter();
+
+    await transporter.sendMail({
+      from: `"Mystical Cut" <${emailUser}>`,
+      to: quote.client_email,
+      subject: '¿Cómo fue tu servicio? - MysticalCut',
+      html: `
+        <div style="font-family: Arial, sans-serif; background:#111111; color:#f4e7c4; padding:28px;">
+          <h2 style="margin:0 0 12px;">Tu servicio en MysticalCut ya terminó</h2>
+          <p>Hola ${cliente}, queremos conocer tu experiencia. Son dos preguntas, de 1 a 5 estrellas.</p>
+          <p><strong>Servicio:</strong> ${servicio}<br>
+             <strong>Barbero:</strong> ${barbero}<br>
+             <strong>Fecha:</strong> ${fecha}</p>
+          <p>1. En un rango de 1 a 5 estrellas, donde 1 es muy malo y 5 es muy bueno, califica la calidad del servicio prestado.</p>
+          <p>2. En un rango de 1 a 5 estrellas, donde 1 es muy malo y 5 es muy bueno, califica la calidad de la barbería en general.</p>
+          <p style="margin:24px 0;">
+            <a href="${enlace}" style="background:#ccaf54; color:#111111; text-decoration:none; padding:12px 18px; border-radius:8px; font-weight:bold;">
+              Responder encuesta
+            </a>
+          </p>
+          <p style="color:#bdbdbd;">También puedes calificarla al ingresar al sistema. La encuesta queda ligada a esta cita.</p>
+        </div>
+      `,
+    });
+
+    return true;
+  }
+
 // 🔹 Nuevo método: Obtener citas con detalles filtradas por rango de fechas
   static async getQuotesForReports(startDate, endDate) {
     const query = `
@@ -367,16 +468,20 @@ static async sendConfirmationEmail(email, servicio, fecha, hora, total, barbero)
         q.date_time,
         q.end_time,
         q.state_quotes,
+        q.barber_id,
+        q.user_id,
         s.name_service,
         s.price,
         s.estimated_time,
         barberos.full_name AS barber_name,
-        clientes.full_name AS client_name
+        clientes.full_name AS client_name,
+        cal.calificacion_servicio
       FROM quotes q
       JOIN services s ON q.id_services = s.id_services
       LEFT JOIN user barberos ON q.barber_id = barberos.user_id
       LEFT JOIN user clientes ON q.user_id = clientes.user_id
-      WHERE q.date_time BETWEEN ? AND ?
+      LEFT JOIN calificaciones cal ON cal.id_quotes = q.id_quotes
+      WHERE DATE(q.date_time) BETWEEN ? AND ?
       ORDER BY q.date_time ASC;
     `;
 

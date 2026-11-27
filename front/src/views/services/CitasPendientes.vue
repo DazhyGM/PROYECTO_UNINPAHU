@@ -127,7 +127,15 @@
                     </svg>
                   </button>
                 </div>
-                <span v-else-if="cita.state_quotes === 'finalizada'" class="accion-nota">Completada</span>
+                <div v-else-if="cita.state_quotes === 'finalizada'" class="acciones">
+                  <button v-if="puedeCalificar(cita)" class="btn-calificar" type="button" @click="irACalificar(cita.id_quotes)">
+                    Calificar
+                  </button>
+                  <button v-if="puedeCalificarCliente(cita)" class="btn-calificar" type="button" @click="abrirCalificacionCliente(cita)">
+                    Calificar cliente
+                  </button>
+                  <span v-if="!puedeCalificar(cita) && !puedeCalificarCliente(cita)" class="accion-nota">{{ notaFinalizada(cita) }}</span>
+                </div>
                 <span v-else-if="cita.state_quotes === 'cancelada'" class="accion-nota">Cerrada</span>
               </td>
             </tr>
@@ -145,6 +153,20 @@
       </div>
     </section>
 
+<<<<<<< HEAD
+=======
+    <div class="citas-footer">
+      <button class="btn back-button" type="button" @click="$router.push('/Home')">Regresar</button>
+    </div>
+
+    <CalificarCliente
+      v-if="citaCliente"
+      :cita="citaCliente"
+      :mensaje="mensajeCierre"
+      @guardada="alCalificarCliente"
+      @cerrar="cerrarCalificacionCliente"
+    />
+>>>>>>> 69c8b0b1cb2248b10e6d8f0136764461b46540dd
   </div>
 </template>
 
@@ -152,12 +174,20 @@
 import axios from 'axios';
 import { getQuotesWithServiceDetails, cancelQuote, finishQuote } from '@/services/quotesApi';
 import SelectCampo from '@/components/ui/SelectCampo.vue';
+<<<<<<< HEAD
 import { notificar } from '@/utils/alerts';
 import SkeletonCarga from '@/components/ui/SkeletonCarga.vue';
 
 export default {
   name: 'CitasPendientes',
   components: { SelectCampo, SkeletonCarga },
+=======
+import CalificarCliente from '@/components/ratings/CalificarCliente.vue';
+
+export default {
+  name: 'CitasPendientes',
+  components: { SelectCampo, CalificarCliente },
+>>>>>>> 69c8b0b1cb2248b10e6d8f0136764461b46540dd
   data() {
     return {
       opcionesPagina: [
@@ -182,6 +212,8 @@ export default {
       pagina: 1,
       sortKey: '',
       sortDir: 'asc',
+      citaCliente: null,
+      mensajeCierre: '',
       columnas: [
         { key: 'numero', label: '#' },
         { key: 'fecha', label: 'Fecha' },
@@ -454,14 +486,65 @@ export default {
         notificar('No se pudo cancelar la cita.');
       }
     },
+    puedeCalificar(cita) {
+      return cita.state_quotes === 'finalizada'
+        && !Number(cita.calificada)
+        && Number(cita.user_id) === Number(this.userId);
+    },
+    puedeCalificarCliente(cita) {
+      return cita.state_quotes === 'finalizada'
+        && !Number(cita.calificada_cliente)
+        && Number(cita.barber_id) === Number(this.userId);
+    },
+    notaFinalizada(cita) {
+      if (Number(cita.barber_id) === Number(this.userId) && Number(cita.calificada_cliente)) {
+        return 'Cliente calificado';
+      }
+      if (Number(cita.calificada)) return 'Calificada';
+      return 'Completada';
+    },
+    abrirCalificacionCliente(cita, mensaje = '') {
+      this.mensajeCierre = mensaje;
+      this.citaCliente = cita;
+    },
+    cerrarCalificacionCliente() {
+      this.citaCliente = null;
+      this.mensajeCierre = '';
+    },
+    async alCalificarCliente() {
+      this.cerrarCalificacionCliente();
+      await this.cargarCitas();
+    },
+    irACalificar(id) {
+      this.$router.push(`/Calificar/${id}`);
+    },
     async finalizarCita(id) {
+      const cita = this.citas.find((item) => Number(item.id_quotes) === Number(id));
       try {
+<<<<<<< HEAD
         await finishQuote(id);
         await notificar('Cita finalizada con éxito', 'success');
         this.$router.push('/Home');
       } catch (error) {
         console.error('❌ Error al finalizar cita:', error);
         notificar('No se pudo finalizar la cita.');
+=======
+        const respuesta = await finishQuote(id);
+        const esSuCita = cita && Number(cita.barber_id) === Number(this.userId);
+        if (esSuCita) {
+          this.abrirCalificacionCliente(
+            { ...cita, state_quotes: 'finalizada', calificada_cliente: 0 },
+            respuesta.message || 'Cita finalizada.'
+          );
+          await this.cargarCitas();
+          return;
+        }
+        alert(respuesta.message || 'Cita finalizada con éxito');
+        this.$router.push('/Home');
+      } catch (error) {
+        console.error('❌ Error al finalizar cita:', error);
+        alert(error.response?.data?.message || 'No se pudo finalizar la cita.');
+>>>>>>> 69c8b0b1cb2248b10e6d8f0136764461b46540dd
       }
     }
   },

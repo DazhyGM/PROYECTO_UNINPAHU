@@ -1,4 +1,5 @@
 <template>
+<<<<<<< HEAD
   <div class="container-reporte text-white">
     <div class="page-top">
       <button class="page-back" type="button" @click="$router.push('/Home')">Regresar</button>
@@ -8,33 +9,99 @@
       <div class="row g-3 align-items-end">
         <div class="col-md-3">
           <label for="reportType" class="form-label">Tipo de Reporte:</label>
+=======
+  <div class="reportes-page">
+    <header class="reportes-header">
+      <h1>Reportes</h1>
+    </header>
+
+    <nav class="reportes-nav" aria-label="Tipo de reporte">
+      <button type="button" :class="{ activo: vista === 'citas' }" @click="vista = 'citas'">Por citas</button>
+      <button type="button" :class="{ activo: vista === 'calidad' }" @click="vista = 'calidad'">Por calidad del servicio</button>
+    </nav>
+
+    <section class="dashboard">
+      <article class="torta-card">
+        <h2>{{ tituloDashboard }}</h2>
+        <p class="torta-rango">{{ textoRango }}</p>
+
+        <div v-if="cargando" class="torta-vacio">Cargando reporte...</div>
+        <div v-else-if="!segmentos.length" class="torta-vacio">No hay información para ese filtro.</div>
+        <div v-else class="torta-cuerpo">
+          <svg class="torta" viewBox="0 0 200 200" role="img" :aria-label="tituloDashboard">
+            <path v-for="segmento in segmentos" :key="segmento.nombre" :d="segmento.d" :fill="segmento.color" />
+            <circle cx="100" cy="100" r="46" fill="#0c0c0c" />
+            <text x="100" y="96" text-anchor="middle" class="torta-total">{{ totalFiltrado }}</text>
+            <text x="100" y="114" text-anchor="middle" class="torta-etiqueta">{{ etiquetaCentro }}</text>
+          </svg>
+          <ul class="torta-leyenda">
+            <li v-for="segmento in segmentos" :key="`leyenda-${segmento.nombre}`">
+              <span class="muestra" :style="{ background: segmento.color }"></span>
+              <span>{{ segmento.nombre }}</span>
+              <strong>{{ segmento.valor }}</strong>
+            </li>
+          </ul>
+        </div>
+      </article>
+
+      <div class="dashboard-controles">
+        <label class="control">
+          <span>Rango de fechas</span>
+          <div class="fecha-picker">
+            <button class="fecha-trigger" type="button" @click.stop="calendarioAbierto = !calendarioAbierto">
+              <span>{{ textoRango }}</span>
+              <svg viewBox="0 0 16 16" aria-hidden="true">
+                <rect x="2" y="3" width="12" height="11" rx="1.5" />
+                <path d="M2 6.5h12M5.5 2v2.5M10.5 2v2.5" />
+              </svg>
+            </button>
+            <div v-if="calendarioAbierto" class="calendario-pop" @click.stop>
+              <div class="calendario-head">
+                <button type="button" aria-label="Mes anterior" @click="cambiarMes(-1)">‹</button>
+                <p>{{ tituloMes }}</p>
+                <button type="button" aria-label="Mes siguiente" @click="cambiarMes(1)">›</button>
+              </div>
+              <div class="calendario-grid">
+                <span v-for="dia in diasSemana" :key="dia" class="calendario-dow">{{ dia }}</span>
+                <button
+                  v-for="(celda, indice) in celdasCalendario"
+                  :key="indice"
+                  type="button"
+                  class="calendario-dia"
+                  :class="claseDia(celda)"
+                  :disabled="!celda"
+                  @click="elegirDia(celda)"
+                >{{ celda ? celda.dia : '' }}</button>
+              </div>
+              <div class="calendario-foot">
+                <button type="button" @click="elegirHoy">Hoy</button>
+              </div>
+            </div>
+          </div>
+        </label>
+
+        <label class="control">
+          <span>{{ vista === 'citas' ? 'Barbero' : 'Calificación' }}</span>
+>>>>>>> 69c8b0b1cb2248b10e6d8f0136764461b46540dd
           <SelectCampo
-            v-model="selectedReportType"
-            :options="tiposReporte"
-            @change="updateDatesForReportType"
+            v-if="vista === 'citas'"
+            v-model="barberoId"
+            :options="opcionesBarbero"
+            placeholder="Todos los barberos"
           />
-        </div>
-        <div class="col-md-3" v-if="selectedReportType === 'custom'">
-          <label for="startDate" class="form-label">Fecha de Inicio:</label>
-          <input type="date" id="startDate" class="form-control bg-dark text-white" v-model="startDate">
-        </div>
-        <div class="col-md-3" v-if="selectedReportType === 'custom'">
-          <label for="endDate" class="form-label">Fecha de Fin:</label>
-          <input type="date" id="endDate" class="form-control bg-dark text-white" v-model="endDate">
-        </div>
+          <SelectCampo
+            v-else
+            v-model="calificacion"
+            :options="opcionesCalificacion"
+            placeholder="Todas las calificaciones"
+          />
+        </label>
 
-        <div class="col-md-3">
-          <label for="searchText" class="form-label">Buscar por texto:</label>
-          <input type="text" id="searchText" class="form-control bg-dark text-white" v-model="searchText"
-            placeholder="Barbero, Cliente, Servicio..." @input="applyFilters">
-        </div>
-
-        <div class="col-md-6 offset-md-3 d-flex justify-content-center mt-3">
-          <button class="btn btn-reporte w-50 me-2" @click="loadReport"
-            :disabled="selectedReportType !== 'custom' && !searchText">Generar Reporte / Aplicar Filtro</button>
-          <button class="btn btn-reporte w-50" @click="resetFilters">Reiniciar Filtros</button>
-        </div>
+        <button class="btn-descarga" type="button" :disabled="!filasInforme.length" @click="descargarExcel">
+          Descargar informe
+        </button>
       </div>
+<<<<<<< HEAD
     </div>
 
     <SkeletonCarga v-if="loading" tipo="filas" :cantidad="5" />
@@ -73,81 +140,222 @@
     </div>
     </div>
 
+=======
+    </section>
+
+    <div class="text-center my-4">
+      <button class="btn back-button" type="button" @click="$router.push('/Home')">Regresar</button>
+    </div>
+>>>>>>> 69c8b0b1cb2248b10e6d8f0136764461b46540dd
   </div>
 </template>
 
 <script>
 import axios from 'axios';
 import { getReportQuotes } from '@/services/quotesApi';
+import { getBarbers } from '@/services/api';
 import SelectCampo from '@/components/ui/SelectCampo.vue';
+<<<<<<< HEAD
 import SkeletonCarga from '@/components/ui/SkeletonCarga.vue';
 import { notificar } from '@/utils/alerts';
+=======
+import {
+  claveDe,
+  filtrarCitasReporte,
+  resumenReporte,
+  filasDelInforme,
+  textoRangoInforme,
+  tituloInforme,
+  descargarInforme,
+} from '@/services/descargarReporte';
+
+const COLORES = ['#ccaf54', '#f4e7c4', '#8d7340', '#e8d5a3', '#5c4a28', '#fff6dc', '#a89060', '#6e5b34'];
+
+function arco(cx, cy, radio, inicio, fin) {
+  if (fin - inicio >= Math.PI * 2 - 0.001) {
+    return `M ${cx} ${cy - radio} A ${radio} ${radio} 0 1 1 ${cx - 0.01} ${cy - radio} Z`;
+  }
+  const x0 = cx + radio * Math.cos(inicio);
+  const y0 = cy + radio * Math.sin(inicio);
+  const x1 = cx + radio * Math.cos(fin);
+  const y1 = cy + radio * Math.sin(fin);
+  const grande = fin - inicio > Math.PI ? 1 : 0;
+  return `M ${cx} ${cy} L ${x0} ${y0} A ${radio} ${radio} 0 ${grande} 1 ${x1} ${y1} Z`;
+}
+>>>>>>> 69c8b0b1cb2248b10e6d8f0136764461b46540dd
 
 export default {
   name: 'CitasReportes',
   components: { SelectCampo, SkeletonCarga },
   data() {
+    const hoy = claveDe(new Date());
     return {
-      tiposReporte: [
-        { value: 'custom', label: 'Todas las Citas' },
-        { value: 'daily', label: 'Hoy' },
-        { value: 'weekly', label: 'Esta Semana' },
-        { value: 'monthly', label: 'Este Mes' }
-      ],
+      vista: 'citas',
       citas: [],
-      selectedReportType: 'custom',
-      startDate: null,
-      endDate: null,
-      loading: false,
-      userRole: null,
-      user: null,
-      isMenuOpen: false,
-      searchText: '',
+      barberos: [],
+      barberoId: '',
+      calificacion: '',
+      fechaDesde: hoy,
+      fechaHasta: hoy,
+      fechaPendiente: '',
+      calendarioAbierto: false,
+      mesVista: new Date(new Date().getFullYear(), new Date().getMonth(), 1),
+      diasSemana: ['DO', 'LU', 'MA', 'MI', 'JU', 'VI', 'SA'],
+      cargando: true,
+      opcionesCalificacion: [
+        { value: '', label: 'Todas las calificaciones' },
+        { value: '1', label: '1 estrella' },
+        { value: '2', label: '2 estrellas' },
+        { value: '3', label: '3 estrellas' },
+        { value: '4', label: '4 estrellas' },
+        { value: '5', label: '5 estrellas' },
+      ],
     };
   },
   computed: {
-    filteredCitas() {
-      if (!this.searchText) {
-        return this.citas;
-      }
-
-      const normalizeText = (text) => {
-        if (!text) return '';
-        return String(text)
-          .normalize("NFD")
-          .replace(/[\u0300-\u036f]/g, "")
-          .toLowerCase();
-      };
-
-      const searchNormalized = normalizeText(this.searchText);
-
-      return this.citas.filter(cita => {
-        const clientNameNormalized = normalizeText(cita.client_name);
-        const barberNameNormalized = normalizeText(cita.barber_name);
-        const serviceNameNormalized = normalizeText(cita.name_service);
-
-        const clientMatch = clientNameNormalized.includes(searchNormalized);
-        const barberMatch = barberNameNormalized.includes(searchNormalized);
-        const serviceMatch = serviceNameNormalized.includes(searchNormalized);
-
-        return clientMatch || barberMatch || serviceMatch;
+    opcionesBarbero() {
+      return [
+        { value: '', label: 'Todos los barberos' },
+        ...this.barberos.map((barbero) => ({ value: String(barbero.user_id), label: barbero.full_name })),
+      ];
+    },
+    citasFiltradas() {
+      return filtrarCitasReporte(this.citas, {
+        vista: this.vista,
+        barberoId: this.barberoId,
+        calificacion: this.calificacion,
       });
-    }
+    },
+    segmentos() {
+      const lista = resumenReporte(this.citasFiltradas, this.vista);
+      const total = lista.reduce((suma, item) => suma + item.valor, 0);
+      let angulo = -Math.PI / 2;
+      return lista.map((item, indice) => {
+        const porcion = total ? (item.valor / total) * Math.PI * 2 : 0;
+        const inicio = angulo;
+        angulo += porcion;
+        return { ...item, color: COLORES[indice % COLORES.length], d: arco(100, 100, 78, inicio, angulo) };
+      });
+    },
+    totalFiltrado() {
+      if (this.vista === 'calidad') {
+        return new Set(this.citasFiltradas.map((cita) => cita.user_id || cita.id_quotes)).size;
+      }
+      return this.citasFiltradas.length;
+    },
+    etiquetaCentro() {
+      return this.vista === 'calidad' ? 'clientes' : 'servicios';
+    },
+    tituloDashboard() {
+      return tituloInforme({
+        vista: this.vista,
+        calificacion: this.calificacion,
+        fechaDesde: this.fechaDesde,
+        fechaHasta: this.fechaHasta,
+      });
+    },
+    textoRango() {
+      return textoRangoInforme(this.fechaDesde, this.fechaHasta);
+    },
+    tituloMes() {
+      const titulo = this.mesVista.toLocaleDateString('es-CO', { month: 'long', year: 'numeric' });
+      return titulo.charAt(0).toUpperCase() + titulo.slice(1);
+    },
+    celdasCalendario() {
+      const year = this.mesVista.getFullYear();
+      const month = this.mesVista.getMonth();
+      const inicio = new Date(year, month, 1).getDay();
+      const total = new Date(year, month + 1, 0).getDate();
+      const celdas = Array.from({ length: inicio }, () => null);
+      for (let dia = 1; dia <= total; dia += 1) {
+        const clave = `${year}-${String(month + 1).padStart(2, '0')}-${String(dia).padStart(2, '0')}`;
+        celdas.push({ dia, clave });
+      }
+      return celdas;
+    },
+    filasInforme() {
+      return filasDelInforme(this.citasFiltradas);
+    },
   },
   methods: {
-    toggleMenu() {
-      this.isMenuOpen = !this.isMenuOpen;
+    claseDia(celda) {
+      if (!celda) return 'vacio';
+      const dentro = celda.clave >= this.fechaDesde && celda.clave <= this.fechaHasta;
+      return {
+        rango: dentro,
+        extremo: celda.clave === this.fechaDesde || celda.clave === this.fechaHasta,
+      };
     },
-    logout() {
-      localStorage.clear();
-      this.$router.push("/");
+    cambiarMes(delta) {
+      this.mesVista = new Date(this.mesVista.getFullYear(), this.mesVista.getMonth() + delta, 1);
     },
-    goToProfile() {
-      this.$router.push("/perfil");
-      this.isMenuOpen = false;
+    elegirDia(celda) {
+      if (!celda) return;
+      if (!this.fechaPendiente) {
+        this.fechaPendiente = celda.clave;
+        this.fechaDesde = celda.clave;
+        this.fechaHasta = celda.clave;
+        this.cargarCitas();
+        return;
+      }
+      const inicio = this.fechaPendiente < celda.clave ? this.fechaPendiente : celda.clave;
+      const fin = this.fechaPendiente < celda.clave ? celda.clave : this.fechaPendiente;
+      this.fechaDesde = inicio;
+      this.fechaHasta = fin;
+      this.fechaPendiente = '';
+      this.calendarioAbierto = false;
+      this.cargarCitas();
+    },
+    elegirHoy() {
+      const hoy = claveDe(new Date());
+      this.fechaDesde = hoy;
+      this.fechaHasta = hoy;
+      this.fechaPendiente = '';
+      this.mesVista = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
+      this.calendarioAbierto = false;
+      this.cargarCitas();
+    },
+    cerrarCalendario(event) {
+      if (!event.target.closest('.fecha-picker')) this.calendarioAbierto = false;
+    },
+    async cargarCitas() {
+      this.cargando = true;
+      try {
+        this.citas = await getReportQuotes(this.fechaDesde, this.fechaHasta);
+      } catch (error) {
+        console.error('No se pudo cargar el reporte:', error);
+        this.citas = [];
+      } finally {
+        this.cargando = false;
+      }
+    },
+    async cargarBarberos() {
+      try {
+        this.barberos = await getBarbers();
+      } catch (error) {
+        console.error('No se pudieron cargar los barberos:', error);
+        this.barberos = [];
+      }
+    },
+    async descargarExcel() {
+      await descargarInforme({
+        vista: this.vista,
+        citas: this.citas,
+        fechaDesde: this.fechaDesde,
+        fechaHasta: this.fechaHasta,
+        barberoId: this.barberoId,
+        barberos: this.barberos,
+        calificacion: this.calificacion,
+      });
     },
     async checkUserRole() {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        this.$router.push('/');
+        return false;
+      }
       try {
+<<<<<<< HEAD
         const token = localStorage.getItem('token');
         if (!token) {
           notificar("No se ha iniciado sesión.");
@@ -157,23 +365,23 @@ export default {
 
         const { data: userData } = await axios.get('http://localhost:5000/api/users/profile', {
           headers: { Authorization: `Bearer ${token}` }
+=======
+        await axios.get('http://localhost:5000/api/users/profile', {
+          headers: { Authorization: `Bearer ${token}` },
+>>>>>>> 69c8b0b1cb2248b10e6d8f0136764461b46540dd
         });
-
-        this.userRole = userData.role;
-        this.user = {
-          full_name: userData.full_name || 'Usuario',
-          user_id: userData.user_id,
-          user_email: userData.user_email || '',
-          role: userData.role
-        };
         return true;
       } catch (error) {
+<<<<<<< HEAD
         console.error('Error al verificar el rol del usuario:', error);
         notificar("Error al verificar la sesión. Por favor, inicie sesión de nuevo.");
+=======
+>>>>>>> 69c8b0b1cb2248b10e6d8f0136764461b46540dd
         this.$router.push('/');
         return false;
       }
     },
+<<<<<<< HEAD
     async loadReport() {
       if (!this.startDate || !this.endDate) {
         if (this.selectedReportType === 'custom') {
@@ -287,16 +495,18 @@ export default {
         hour: '2-digit', minute: '2-digit'
       });
     },
+=======
+>>>>>>> 69c8b0b1cb2248b10e6d8f0136764461b46540dd
   },
   async mounted() {
-    const hasAccess = await this.checkUserRole();
-    if (hasAccess) {
-      this.selectedReportType = 'custom';
-      this.startDate = '2000-01-01';
-      this.endDate = '2099-12-31';
-      await this.loadReport();
-    }
-  }
+    const acceso = await this.checkUserRole();
+    if (!acceso) return;
+    document.addEventListener('click', this.cerrarCalendario);
+    await Promise.all([this.cargarBarberos(), this.cargarCitas()]);
+  },
+  beforeUnmount() {
+    document.removeEventListener('click', this.cerrarCalendario);
+  },
 };
 </script>
 

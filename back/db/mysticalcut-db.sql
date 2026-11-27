@@ -3,9 +3,14 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: 127.0.0.1
--- Tiempo de generación: 18-11-2026 a las 19:37:03
+-- Tiempo de generación: 19-11-2026 a las 06:10:29
 -- Versión del servidor: 10.4.32-MariaDB
 -- Versión de PHP: 8.2.12
+--
+-- Base centralizada (19-11-2026):
+-- Tu dump (citas, calificaciones, usuario 47, stock) + dump de Diana
+-- mysticalcut-db (1).sql (fotos de servicios, barber_schedule, perfil de Diana Ramirez
+-- y 4 citas reenumeradas a 53-56 para no chocar con las tuyas).
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
@@ -20,11 +25,15 @@ SET time_zone = "+00:00";
 --
 -- Base de datos: `mysticalcut-db`
 --
+CREATE DATABASE IF NOT EXISTS `mysticalcut-db` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
+USE `mysticalcut-db`;
+SET FOREIGN_KEY_CHECKS = 0;
 
 DELIMITER $$
 --
 -- Procedimientos
 --
+DROP PROCEDURE IF EXISTS `sp_role_module`$$
 CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_role_module` (IN `idRole` INT)   BEGIN
 SELECT ROL.role_name AS `role_fk`,MD.module_name AS `role_module`,MD.module_icon,MD.module_description, MD.module_route FROM role_module AS RM 
 INNER JOIN role AS ROL ON RM.role_fk=ROL.role_id
@@ -32,6 +41,7 @@ INNER JOIN module AS MD ON RM.module_fk=MD.module_id
 WHERE ROL.role_id=idRole;
 END$$
 
+DROP PROCEDURE IF EXISTS `sp_user_all`$$
 CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_user_all` ()   BEGIN
 SELECT `user_email`, `user_id`,`full_name`,`user_password`, UST.userStatus_name AS `userStatus_fk`, ROL.role_name AS `role_fk` FROM `user` AS US  
 INNER JOIN role AS ROL ON US.role_fk=ROL.role_id
@@ -40,6 +50,7 @@ WHERE US.userStatus_fk=1
 ;
 END$$
 
+DROP PROCEDURE IF EXISTS `sp_user_all_paginated`$$
 CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_user_all_paginated` (IN `offset` INT, IN `limit_rows` INT)   BEGIN
     SET @query = CONCAT('SELECT * FROM user LIMIT ', offset, ', ', limit_rows);
     PREPARE stmt FROM @query;
@@ -47,11 +58,13 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_user_all_paginated` (IN `offset`
     DEALLOCATE PREPARE stmt;
 END$$
 
+DROP PROCEDURE IF EXISTS `sp_user_count`$$
 CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_user_count` ()   BEGIN
     SELECT COUNT(*) AS total_users 
     FROM user;
 END$$
 
+DROP PROCEDURE IF EXISTS `sp_user_create`$$
 CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_user_create` (IN `p_user_email` VARCHAR(100), IN `p_user_password` VARCHAR(255), IN `p_full_name` VARCHAR(100), IN `p_userStatus_fk` VARCHAR(20), IN `p_role_fk` INT)   BEGIN
 -- Si no se pasa el estado, se asigna el valor predeterminado 'activo'
     IF p_userStatus_fk IS NULL THEN
@@ -77,6 +90,7 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_user_create` (IN `p_user_email` 
     );
 END$$
 
+DROP PROCEDURE IF EXISTS `sp_user_search`$$
 CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_user_search` (IN `dataSearch` VARCHAR(60))   BEGIN
 SELECT `user_id`,`user_email`,`user_password`, UST.userStatus_name AS `userStatus_fk`, ROL.role_name AS `role_fk` FROM `user` AS US  
 INNER JOIN role AS ROL ON US.role_fk=ROL.role_id
@@ -92,15 +106,19 @@ DELIMITER ;
 -- Estructura de tabla para la tabla `barber_schedule`
 --
 
-CREATE TABLE `barber_schedule` (
-  `id` int(11) NOT NULL,
+DROP TABLE IF EXISTS `barber_schedule`;
+CREATE TABLE IF NOT EXISTS `barber_schedule` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
   `barber_id` int(11) NOT NULL,
   `day_of_week` tinyint(4) NOT NULL,
   `start_time` time NOT NULL,
   `end_time` time NOT NULL,
   `break_start` time DEFAULT NULL,
-  `break_end` time DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+  `break_end` time DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `unique_barber_day` (`barber_id`,`day_of_week`),
+  KEY `idx_barber_schedule_barber` (`barber_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=79 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Volcado de datos para la tabla `barber_schedule`
@@ -154,12 +172,68 @@ INSERT INTO `barber_schedule` (`id`, `barber_id`, `day_of_week`, `start_time`, `
 -- Estructura de tabla para la tabla `calificaciones`
 --
 
-CREATE TABLE `calificaciones` (
-  `id_calificacion` int(11) NOT NULL,
-  `calificacion_barbero` decimal(3,1) NOT NULL,
-  `calificacion_general` decimal(3,1) NOT NULL,
-  `id_barbero` int(11) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS `calificaciones`;
+CREATE TABLE IF NOT EXISTS `calificaciones` (
+  `id_calificacion` int(11) NOT NULL AUTO_INCREMENT,
+  `id_quotes` int(11) NOT NULL,
+  `id_barbero` int(11) NOT NULL,
+  `id_servicio` int(11) NOT NULL,
+  `id_cliente` int(11) NOT NULL,
+  `calificacion_servicio` tinyint(4) NOT NULL,
+  `calificacion_barberia` tinyint(4) NOT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`id_calificacion`),
+  UNIQUE KEY `uq_calificacion_cita` (`id_quotes`),
+  KEY `fk_calificacion_barbero` (`id_barbero`),
+  KEY `fk_calificacion_servicio` (`id_servicio`),
+  KEY `fk_calificacion_cliente` (`id_cliente`),
+  CONSTRAINT `chk_calificacion_servicio` CHECK (`calificacion_servicio` BETWEEN 1 AND 5),
+  CONSTRAINT `chk_calificacion_barberia` CHECK (`calificacion_barberia` BETWEEN 1 AND 5)
+) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Volcado de datos para la tabla `calificaciones`
+--
+
+INSERT INTO `calificaciones` (`id_calificacion`, `id_quotes`, `id_barbero`, `id_servicio`, `id_cliente`, `calificacion_servicio`, `calificacion_barberia`, `created_at`) VALUES
+(2, 46, 11, 6, 47, 5, 5, '2026-11-08 02:19:46'),
+(3, 47, 11, 6, 47, 5, 5, '2026-11-08 02:20:10'),
+(4, 48, 43, 6, 47, 5, 5, '2026-11-08 02:21:00'),
+(5, 42, 12, 7, 47, 5, 4, '2026-11-08 02:22:01'),
+(7, 41, 12, 7, 47, 5, 5, '2026-11-08 02:29:09'),
+(8, 40, 12, 6, 47, 5, 5, '2026-11-08 02:29:28'),
+(9, 52, 43, 6, 47, 5, 5, '2026-11-08 03:33:50');
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `calificaciones_cliente`
+--
+
+DROP TABLE IF EXISTS `calificaciones_cliente`;
+CREATE TABLE IF NOT EXISTS `calificaciones_cliente` (
+  `id_calificacion_cliente` int(11) NOT NULL AUTO_INCREMENT,
+  `id_quotes` int(11) NOT NULL,
+  `id_barbero` int(11) NOT NULL,
+  `id_cliente` int(11) NOT NULL,
+  `id_servicio` int(11) NOT NULL,
+  `calificacion_cliente` tinyint(4) NOT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`id_calificacion_cliente`),
+  UNIQUE KEY `uq_calificacion_cliente_cita` (`id_quotes`),
+  KEY `fk_calcli_barbero` (`id_barbero`),
+  KEY `fk_calcli_cliente` (`id_cliente`),
+  KEY `fk_calcli_servicio` (`id_servicio`),
+  CONSTRAINT `chk_calificacion_cliente` CHECK (`calificacion_cliente` BETWEEN 1 AND 5)
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Volcado de datos para la tabla `calificaciones_cliente`
+--
+
+INSERT INTO `calificaciones_cliente` (`id_calificacion_cliente`, `id_quotes`, `id_barbero`, `id_cliente`, `id_servicio`, `calificacion_cliente`, `created_at`) VALUES
+(2, 48, 43, 47, 6, 5, '2026-11-08 02:40:12'),
+(3, 52, 43, 47, 6, 5, '2026-11-08 03:32:43');
 
 -- --------------------------------------------------------
 
@@ -167,9 +241,11 @@ CREATE TABLE `calificaciones` (
 -- Estructura de tabla para la tabla `category_product`
 --
 
-CREATE TABLE `category_product` (
+DROP TABLE IF EXISTS `category_product`;
+CREATE TABLE IF NOT EXISTS `category_product` (
   `id_category` int(11) NOT NULL,
-  `name` varchar(100) DEFAULT NULL
+  `name` varchar(100) DEFAULT NULL,
+  PRIMARY KEY (`id_category`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
@@ -189,9 +265,11 @@ INSERT INTO `category_product` (`id_category`, `name`) VALUES
 -- Estructura de tabla para la tabla `category_services`
 --
 
-CREATE TABLE `category_services` (
+DROP TABLE IF EXISTS `category_services`;
+CREATE TABLE IF NOT EXISTS `category_services` (
   `id_category_services` int(11) NOT NULL,
-  `name` varchar(100) DEFAULT NULL
+  `name` varchar(100) DEFAULT NULL,
+  PRIMARY KEY (`id_category_services`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
@@ -211,10 +289,12 @@ INSERT INTO `category_services` (`id_category_services`, `name`) VALUES
 -- Estructura de tabla para la tabla `document_type`
 --
 
-CREATE TABLE `document_type` (
-  `id_doctypes` int(11) NOT NULL,
-  `doctype_name` varchar(50) DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS `document_type`;
+CREATE TABLE IF NOT EXISTS `document_type` (
+  `id_doctypes` int(11) NOT NULL AUTO_INCREMENT,
+  `doctype_name` varchar(50) DEFAULT NULL,
+  PRIMARY KEY (`id_doctypes`)
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Volcado de datos para la tabla `document_type`
@@ -231,10 +311,14 @@ INSERT INTO `document_type` (`id_doctypes`, `doctype_name`) VALUES
 -- Estructura de tabla para la tabla `dotacion`
 --
 
-CREATE TABLE `dotacion` (
-  `id_dotacion` int(11) NOT NULL,
+DROP TABLE IF EXISTS `dotacion`;
+CREATE TABLE IF NOT EXISTS `dotacion` (
+  `id_dotacion` int(11) NOT NULL AUTO_INCREMENT,
   `id_product` int(11) NOT NULL,
-  `id_barbero` int(11) NOT NULL
+  `id_barbero` int(11) NOT NULL,
+  PRIMARY KEY (`id_dotacion`),
+  KEY `fk_dotacion_product` (`id_product`),
+  KEY `fk_dotacion_barbero` (`id_barbero`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -243,13 +327,17 @@ CREATE TABLE `dotacion` (
 -- Estructura de tabla para la tabla `module`
 --
 
-CREATE TABLE `module` (
-  `module_id` int(11) NOT NULL,
+DROP TABLE IF EXISTS `module`;
+CREATE TABLE IF NOT EXISTS `module` (
+  `module_id` int(11) NOT NULL AUTO_INCREMENT,
   `module_name` varchar(20) NOT NULL,
   `module_route` varchar(20) NOT NULL,
   `module_icon` varchar(40) NOT NULL,
-  `module_description` varchar(200) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+  `module_description` varchar(200) NOT NULL,
+  PRIMARY KEY (`module_id`),
+  UNIQUE KEY `module_name` (`module_name`),
+  UNIQUE KEY `module_route` (`module_route`)
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Volcado de datos para la tabla `module`
@@ -266,8 +354,9 @@ INSERT INTO `module` (`module_id`, `module_name`, `module_route`, `module_icon`,
 -- Estructura de tabla para la tabla `product`
 --
 
-CREATE TABLE `product` (
-  `id_product` int(11) NOT NULL,
+DROP TABLE IF EXISTS `product`;
+CREATE TABLE IF NOT EXISTS `product` (
+  `id_product` int(11) NOT NULL AUTO_INCREMENT,
   `name` varchar(100) NOT NULL,
   `price` float NOT NULL,
   `description` varchar(255) DEFAULT NULL,
@@ -275,15 +364,18 @@ CREATE TABLE `product` (
   `id_category` int(11) DEFAULT NULL,
   `id_status` int(11) NOT NULL DEFAULT 1,
   `image` varchar(255) DEFAULT NULL,
-  `comprobante` varchar(255) DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+  `comprobante` varchar(255) DEFAULT NULL,
+  PRIMARY KEY (`id_product`),
+  KEY `fk_categoria` (`id_category`),
+  KEY `fk_product_status` (`id_status`)
+) ENGINE=InnoDB AUTO_INCREMENT=12 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Volcado de datos para la tabla `product`
 --
 
 INSERT INTO `product` (`id_product`, `name`, `price`, `description`, `amount`, `id_category`, `id_status`, `image`, `comprobante`) VALUES
-(1, 'Cepillo capilar', 15000, 'Cepillo para cabello delicado', 5, 1, 1, 'cepillo.jpg', NULL),
+(1, 'Cepillo capilar', 15000, 'Cepillo para cabello delicado', 10, 1, 1, 'cepillo.jpg', NULL),
 (2, 'Cepillo barba', 10000, 'Cepillo para barbas bellas y bonitas', 15, 2, 1, 'image-1770153078459-820017996.jpg', NULL),
 (3, 'Cera para cabello', 30000, 'Cera para cabello de macho bello', 5, 1, 1, 'image-1770175934248-67742671.png', NULL),
 (4, 'Crema de barba', 50000, 'Crema para depilacion de barba', 3, 2, 1, 'image-1770176008054-234384581.jpg', NULL),
@@ -300,10 +392,12 @@ INSERT INTO `product` (`id_product`, `name`, `price`, `description`, `amount`, `
 -- Estructura de tabla para la tabla `product_status`
 --
 
-CREATE TABLE `product_status` (
-  `id_status` int(11) NOT NULL,
-  `name_status` varchar(50) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS `product_status`;
+CREATE TABLE IF NOT EXISTS `product_status` (
+  `id_status` int(11) NOT NULL AUTO_INCREMENT,
+  `name_status` varchar(50) NOT NULL,
+  PRIMARY KEY (`id_status`)
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Volcado de datos para la tabla `product_status`
@@ -320,15 +414,20 @@ INSERT INTO `product_status` (`id_status`, `name_status`) VALUES
 -- Estructura de tabla para la tabla `quotes`
 --
 
-CREATE TABLE `quotes` (
-  `id_quotes` int(11) NOT NULL,
+DROP TABLE IF EXISTS `quotes`;
+CREATE TABLE IF NOT EXISTS `quotes` (
+  `id_quotes` int(11) NOT NULL AUTO_INCREMENT,
   `date_time` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
   `end_time` timestamp NOT NULL DEFAULT current_timestamp(),
   `state_quotes` varchar(50) DEFAULT NULL,
   `user_id` int(11) DEFAULT NULL,
   `barber_id` int(11) NOT NULL,
-  `id_services` int(11) DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+  `id_services` int(11) DEFAULT NULL,
+  PRIMARY KEY (`id_quotes`),
+  KEY `fk_appointment_user` (`user_id`),
+  KEY `fk_quotes_services` (`id_services`),
+  KEY `fk_barber_user` (`barber_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=57 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Volcado de datos para la tabla `quotes`
@@ -368,10 +467,23 @@ INSERT INTO `quotes` (`id_quotes`, `date_time`, `end_time`, `state_quotes`, `use
 (34, '2026-02-28 23:00:00', '2026-02-28 23:30:00', 'pendiente', 6, 11, 6),
 (35, '2026-03-01 00:00:00', '2026-03-01 00:30:00', 'pendiente', 6, 11, 6),
 (36, '2026-03-02 13:00:00', '2026-03-02 13:30:00', 'pendiente', 6, 11, 6),
-(37, '2026-11-10 16:00:00', '2026-11-10 17:10:00', 'pendiente', 46, 12, 23),
-(38, '2026-11-09 13:00:00', '2026-11-09 13:25:00', 'pendiente', 46, 14, 9),
-(41, '2026-11-11 17:00:00', '2026-11-11 17:30:00', 'pendiente', 46, 14, 18),
-(42, '2026-11-11 13:00:00', '2026-11-11 13:30:00', 'pendiente', 46, 11, 6);
+(37, '2026-08-28 03:30:32', '2026-08-28 15:10:00', 'cancelada', 46, 14, 17),
+(38, '2026-08-28 03:32:16', '2026-08-28 17:10:00', 'finalizada', 46, 14, 17),
+(39, '2026-08-28 16:00:00', '2026-08-28 16:15:00', 'pendiente', 44, 14, 16),
+(40, '2026-11-08 02:29:20', '2026-08-31 13:30:00', 'finalizada', 47, 12, 6),
+(41, '2026-11-08 02:28:49', '2026-08-31 14:35:00', 'finalizada', 47, 12, 7),
+(42, '2026-11-08 02:21:49', '2026-08-31 15:35:00', 'finalizada', 47, 12, 7),
+(43, '2026-11-06 01:56:26', '2026-08-31 13:25:00', 'cancelada', 47, 13, 9),
+(44, '2026-08-31 13:00:00', '2026-08-31 13:30:00', 'pendiente', 47, 11, 10),
+(45, '2026-10-15 13:00:00', '2026-10-15 13:30:00', 'pendiente', 44, 11, 6),
+(46, '2026-11-08 01:18:09', '2026-11-08 01:30:00', 'finalizada', 47, 11, 6),
+(47, '2026-11-08 02:19:57', '2026-11-07 13:30:00', 'finalizada', 47, 11, 6),
+(48, '2026-11-08 02:20:38', '2026-11-07 13:30:00', 'finalizada', 47, 43, 6),
+(52, '2026-11-08 03:32:03', '2026-11-09 23:30:00', 'finalizada', 47, 43, 6),
+(53, '2026-11-10 16:00:00', '2026-11-10 17:10:00', 'pendiente', 46, 12, 23),
+(54, '2026-11-09 13:00:00', '2026-11-09 13:25:00', 'pendiente', 46, 14, 9),
+(55, '2026-11-11 17:00:00', '2026-11-11 17:30:00', 'pendiente', 46, 14, 18),
+(56, '2026-11-11 13:00:00', '2026-11-11 13:30:00', 'pendiente', 46, 11, 6);
 
 -- --------------------------------------------------------
 
@@ -379,10 +491,13 @@ INSERT INTO `quotes` (`id_quotes`, `date_time`, `end_time`, `state_quotes`, `use
 -- Estructura de tabla para la tabla `role`
 --
 
-CREATE TABLE `role` (
-  `role_id` int(11) NOT NULL,
-  `role_name` varchar(20) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS `role`;
+CREATE TABLE IF NOT EXISTS `role` (
+  `role_id` int(11) NOT NULL AUTO_INCREMENT,
+  `role_name` varchar(20) NOT NULL,
+  PRIMARY KEY (`role_id`),
+  UNIQUE KEY `role_name` (`role_name`)
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Volcado de datos para la tabla `role`
@@ -399,11 +514,15 @@ INSERT INTO `role` (`role_id`, `role_name`) VALUES
 -- Estructura de tabla para la tabla `role_module`
 --
 
-CREATE TABLE `role_module` (
-  `roleModule_id` int(11) NOT NULL,
+DROP TABLE IF EXISTS `role_module`;
+CREATE TABLE IF NOT EXISTS `role_module` (
+  `roleModule_id` int(11) NOT NULL AUTO_INCREMENT,
   `role_fk` int(11) NOT NULL,
-  `module_fk` int(11) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+  `module_fk` int(11) NOT NULL,
+  PRIMARY KEY (`roleModule_id`),
+  KEY `role_module_role` (`role_fk`),
+  KEY `role_module_module` (`module_fk`)
+) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Volcado de datos para la tabla `role_module`
@@ -422,22 +541,31 @@ INSERT INTO `role_module` (`roleModule_id`, `role_fk`, `module_fk`) VALUES
 -- Estructura de tabla para la tabla `services`
 --
 
-CREATE TABLE `services` (
-  `id_services` int(11) NOT NULL,
+DROP TABLE IF EXISTS `services`;
+CREATE TABLE IF NOT EXISTS `services` (
+  `id_services` int(11) NOT NULL AUTO_INCREMENT,
   `name_service` varchar(255) DEFAULT NULL,
   `description` varchar(255) NOT NULL,
   `estimated_time` time DEFAULT NULL,
   `price` float DEFAULT NULL,
   `id_category_services` int(11) NOT NULL,
   `image` varchar(255) DEFAULT NULL,
-  `id_status` int(11) DEFAULT 1
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+  `id_status` int(11) DEFAULT 1,
+  PRIMARY KEY (`id_services`),
+  KEY `fk_categoria_Servicios` (`id_category_services`),
+  KEY `fk_status` (`id_status`)
+) ENGINE=InnoDB AUTO_INCREMENT=31 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Volcado de datos para la tabla `services`
 --
 
 INSERT INTO `services` (`id_services`, `name_service`, `description`, `estimated_time`, `price`, `id_category_services`, `image`, `id_status`) VALUES
+(1, 'Corte Clásico', 'Corte clasico para gente wapa', '00:30:00', 15000, 1, 'barbero1.jpg', 2),
+(2, 'Afeitado Tradicional', 'Afeitado tranquilon para gente wapa', '00:20:00', 10, 2, NULL, 2),
+(3, 'Tinte Capilar', 'Tinte bien mamalon para gente wapa', '01:00:00', 40, 4, NULL, 1),
+(4, 'Tratamiento Hidratan', 'Tratamiento que hidrata para gente wapa', '00:45:00', 25, 4, NULL, 2),
+(5, 'Corte Infantil', 'Corte infantil para niños bien wapos', '00:25:00', 12000, 5, NULL, 2),
 (6, 'Corte Clásico', 'Corte tradicional con acabado limpio y elegante.', '00:30:00', 20000, 1, 'image-1794106202854-18505472.jpg', 1),
 (7, 'Fade Bajo', 'Degradado bajo con diseño moderno y perfilado incluido.', '00:35:00', 22000, 1, 'image-1794106331653-25981107.jpg', 1),
 (8, 'Corte con Tijera', 'Corte completo realizado solo con tijera, ideal para cabello largo.', '00:40:00', 25000, 1, 'image-1794106439825-295825754.jpg', 1),
@@ -446,9 +574,13 @@ INSERT INTO `services` (`id_services`, `name_service`, `description`, `estimated
 (11, 'Perfilado de Barba', 'Perfilado de contorno con máquina y navaja.', '01:30:00', 12000, 2, 'image-1794106914544-863990355.jpg', 1),
 (12, 'Afeitado Tradicional', 'Afeitado completo con toalla caliente y crema especial.', '00:55:00', 15000, 2, 'image-1794106975987-668165062.jpg', 1),
 (13, 'Diseño de Barba', 'Estilizado personalizado con formas y detalles.', '00:50:00', 18000, 2, 'image-1794107055295-906275346.jpg', 1),
+(14, 'Mantenimiento de Barba', 'Recorte y limpieza general de barba.', '01:40:00', 10000, 2, NULL, 1),
+(15, 'Diseño Barba', 'Tratamiento de barba con hidratación y aceites esenciales.', '01:30:00', 60000, 2, NULL, 1),
 (16, 'Diseño de Cejas Masculino', 'Limpieza y forma natural, adaptado al rostro masculino.', '00:15:00', 10000, 3, 'image-1794107143285-379939214.jpg', 1),
 (17, 'Depilación con Cera', 'Eliminación de exceso de vello con cera fría o caliente.', '00:10:00', 8000, 3, 'image-1794107353224-439995405.jpg', 1),
 (18, 'Cejas con Pinza', 'Eliminación de exceso de vello con cera fría o caliente.', '00:30:00', 9000, 3, 'image-1794107405754-985239378.jpg', 1),
+(19, 'Diseño Artístico de Cejas', 'Forma más estilizada y estética con simetría.', '00:20:00', 12000, 3, NULL, 1),
+(20, 'Retoque de Cejas', 'Descripción: Mantenimiento rápido para conservar el diseño.', '00:10:00', 10000, 3, NULL, 1),
 (21, 'Tinte para Canas', 'Cobertura total de canas con color natural.', '00:45:00', 30000, 4, 'image-1794107577451-984995418.jpg', 1),
 (22, 'Color Fantasía', 'Aplicación de colores vivos como azul, rojo o verde.', '01:00:00', 45000, 4, 'image-1794107618785-679989777.jpg', 1),
 (23, 'Reflejos o Iluminaciones', 'Aclaración parcial para dar brillo y textura.', '01:10:00', 50000, 4, 'image-1794107889589-227912312.jpg', 1),
@@ -466,9 +598,11 @@ INSERT INTO `services` (`id_services`, `name_service`, `description`, `estimated
 -- Estructura de tabla para la tabla `service_status`
 --
 
-CREATE TABLE `service_status` (
+DROP TABLE IF EXISTS `service_status`;
+CREATE TABLE IF NOT EXISTS `service_status` (
   `id_status` int(11) NOT NULL,
-  `name_status` varchar(50) DEFAULT NULL
+  `name_status` varchar(50) DEFAULT NULL,
+  PRIMARY KEY (`id_status`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
@@ -485,10 +619,13 @@ INSERT INTO `service_status` (`id_status`, `name_status`) VALUES
 -- Estructura de tabla para la tabla `type_of_quotes`
 --
 
-CREATE TABLE `type_of_quotes` (
+DROP TABLE IF EXISTS `type_of_quotes`;
+CREATE TABLE IF NOT EXISTS `type_of_quotes` (
   `id_quotes` int(11) NOT NULL,
   `id_services` int(11) NOT NULL,
-  `barber_id` int(11) DEFAULT NULL
+  `barber_id` int(11) DEFAULT NULL,
+  KEY `fk_type_citation_citation` (`id_quotes`),
+  KEY `fk_type_appointment_service` (`id_services`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -497,8 +634,9 @@ CREATE TABLE `type_of_quotes` (
 -- Estructura de tabla para la tabla `user`
 --
 
-CREATE TABLE `user` (
-  `user_id` int(11) NOT NULL,
+DROP TABLE IF EXISTS `user`;
+CREATE TABLE IF NOT EXISTS `user` (
+  `user_id` int(11) NOT NULL AUTO_INCREMENT,
   `user_email` varchar(30) NOT NULL,
   `user_password` varchar(256) NOT NULL,
   `full_name` varchar(100) NOT NULL,
@@ -510,8 +648,14 @@ CREATE TABLE `user` (
   `phone` varchar(20) NOT NULL,
   `reset_token` varchar(64) DEFAULT NULL,
   `reset_token_expires` bigint(20) DEFAULT NULL,
-  `profile_image` varchar(255) DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+  `profile_image` varchar(255) DEFAULT NULL,
+  PRIMARY KEY (`user_id`),
+  UNIQUE KEY `user_email` (`user_email`),
+  UNIQUE KEY `unique_document` (`document_number`),
+  KEY `user_role` (`role_fk`),
+  KEY `user_status` (`userStatus_fk`),
+  KEY `fk_id_tipo_docuemnto_User` (`type_document_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=48 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Volcado de datos para la tabla `user`
@@ -543,7 +687,8 @@ INSERT INTO `user` (`user_id`, `user_email`, `user_password`, `full_name`, `docu
 (43, 'usuario.employee@gmail.com', '$2b$10$X8Q1ACKOiE1VdGEuI.DVzuNS49Y7kws6uioeMjRRppYrQ7pH3/zC.', 'Usuario Empleado', '1000112012', 1, 2, 1, 'Trans 12 C Bis #43-40', '3003113203', NULL, NULL, NULL),
 (44, 'usuario.client@gmail.com', '$2b$10$AbR9/71fcwjO5q0KIyUVueR5RHH4YuDIe/rw82ZLFAE4YliYbnKdC', 'Usuario Cliente', '1001001000', 1, 3, 1, 'Carrera 11 bis # 43 sur', '12345678', NULL, NULL, NULL),
 (45, 'usuario.admin@gmail.com', '$2b$10$wPjShyqSiGwRAha1ETWYfewMqM6k2vAZDRy2gn0QxwzfbGeVn57gi', 'Usuario Admin', '1000002323', 1, 1, 1, 'Trans 12 Bis #43', '3003113203', NULL, NULL, NULL),
-(46, 'dr4356752@gmail.com', '$2b$10$0Oj300J2MqTIAOKpPo8MHuOQx24/0whXzONi7mmbJHLHJl/bayujS', 'Diana Ramirez', '1032677560', 1, 3, 1, 'CRA 12 A Este #44 B 04 Sur', '3027195267', NULL, NULL, NULL);
+(46, 'dr4356752@gmail.com', '$2b$10$0Oj300J2MqTIAOKpPo8MHuOQx24/0whXzONi7mmbJHLHJl/bayujS', 'Diana Ramirez', '1032677560', 1, 3, 1, 'CRA 12 A Este #44 B 04 Sur', '3027195267', NULL, NULL, NULL),
+(47, 'kevinsabogal24@gmail.com', '$2b$10$uo0mFnJrBWS3v3VJGCFlDueQpKypLV5QkfetzvmZiddkPHiZ5S2aC', 'Pruebas Cliente', '103698541', 1, 3, 1, 'Tv. 12b Bis B #43-58', '3003113203', NULL, NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -551,10 +696,13 @@ INSERT INTO `user` (`user_id`, `user_email`, `user_password`, `full_name`, `docu
 -- Estructura de tabla para la tabla `userstatus`
 --
 
-CREATE TABLE `userstatus` (
-  `userStatus_id` int(11) NOT NULL,
-  `userStatus_name` varchar(20) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS `userstatus`;
+CREATE TABLE IF NOT EXISTS `userstatus` (
+  `userStatus_id` int(11) NOT NULL AUTO_INCREMENT,
+  `userStatus_name` varchar(20) NOT NULL,
+  PRIMARY KEY (`userStatus_id`),
+  UNIQUE KEY `userStatus_name` (`userStatus_name`)
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Volcado de datos para la tabla `userstatus`
@@ -567,226 +715,32 @@ INSERT INTO `userstatus` (`userStatus_id`, `userStatus_name`) VALUES
 (3, 'Inactive');
 
 --
--- Índices para tablas volcadas
---
-
---
--- Indices de la tabla `barber_schedule`
---
-ALTER TABLE `barber_schedule`
-  ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `unique_barber_day` (`barber_id`,`day_of_week`),
-  ADD KEY `idx_barber_schedule_barber` (`barber_id`);
-
---
--- Indices de la tabla `calificaciones`
---
-ALTER TABLE `calificaciones`
-  ADD PRIMARY KEY (`id_calificacion`),
-  ADD KEY `fk_calificacion_barbero` (`id_barbero`);
-
---
--- Indices de la tabla `category_product`
---
-ALTER TABLE `category_product`
-  ADD PRIMARY KEY (`id_category`);
-
---
--- Indices de la tabla `category_services`
---
-ALTER TABLE `category_services`
-  ADD PRIMARY KEY (`id_category_services`);
-
---
--- Indices de la tabla `document_type`
---
-ALTER TABLE `document_type`
-  ADD PRIMARY KEY (`id_doctypes`);
-
---
--- Indices de la tabla `dotacion`
---
-ALTER TABLE `dotacion`
-  ADD PRIMARY KEY (`id_dotacion`),
-  ADD KEY `fk_dotacion_product` (`id_product`),
-  ADD KEY `fk_dotacion_barbero` (`id_barbero`);
-
---
--- Indices de la tabla `module`
---
-ALTER TABLE `module`
-  ADD PRIMARY KEY (`module_id`),
-  ADD UNIQUE KEY `module_name` (`module_name`),
-  ADD UNIQUE KEY `module_route` (`module_route`);
-
---
--- Indices de la tabla `product`
---
-ALTER TABLE `product`
-  ADD PRIMARY KEY (`id_product`),
-  ADD KEY `fk_categoria` (`id_category`),
-  ADD KEY `fk_product_status` (`id_status`);
-
---
--- Indices de la tabla `product_status`
---
-ALTER TABLE `product_status`
-  ADD PRIMARY KEY (`id_status`);
-
---
--- Indices de la tabla `quotes`
---
-ALTER TABLE `quotes`
-  ADD PRIMARY KEY (`id_quotes`),
-  ADD KEY `fk_appointment_user` (`user_id`),
-  ADD KEY `fk_quotes_services` (`id_services`),
-  ADD KEY `fk_barber_user` (`barber_id`);
-
---
--- Indices de la tabla `role`
---
-ALTER TABLE `role`
-  ADD PRIMARY KEY (`role_id`),
-  ADD UNIQUE KEY `role_name` (`role_name`);
-
---
--- Indices de la tabla `role_module`
---
-ALTER TABLE `role_module`
-  ADD PRIMARY KEY (`roleModule_id`),
-  ADD KEY `role_module_role` (`role_fk`),
-  ADD KEY `role_module_module` (`module_fk`);
-
---
--- Indices de la tabla `services`
---
-ALTER TABLE `services`
-  ADD PRIMARY KEY (`id_services`),
-  ADD KEY `fk_categoria_Servicios` (`id_category_services`),
-  ADD KEY `fk_status` (`id_status`);
-
---
--- Indices de la tabla `service_status`
---
-ALTER TABLE `service_status`
-  ADD PRIMARY KEY (`id_status`);
-
---
--- Indices de la tabla `type_of_quotes`
---
-ALTER TABLE `type_of_quotes`
-  ADD KEY `fk_type_citation_citation` (`id_quotes`),
-  ADD KEY `fk_type_appointment_service` (`id_services`);
-
---
--- Indices de la tabla `user`
---
-ALTER TABLE `user`
-  ADD PRIMARY KEY (`user_id`),
-  ADD UNIQUE KEY `user_email` (`user_email`),
-  ADD UNIQUE KEY `unique_document` (`document_number`),
-  ADD KEY `user_role` (`role_fk`),
-  ADD KEY `user_status` (`userStatus_fk`),
-  ADD KEY `fk_id_tipo_docuemnto_User` (`type_document_id`);
-
---
--- Indices de la tabla `userstatus`
---
-ALTER TABLE `userstatus`
-  ADD PRIMARY KEY (`userStatus_id`),
-  ADD UNIQUE KEY `userStatus_name` (`userStatus_name`);
-
---
--- AUTO_INCREMENT de las tablas volcadas
---
-
---
--- AUTO_INCREMENT de la tabla `barber_schedule`
---
-ALTER TABLE `barber_schedule`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=79;
-
---
--- AUTO_INCREMENT de la tabla `calificaciones`
---
-ALTER TABLE `calificaciones`
-  MODIFY `id_calificacion` int(11) NOT NULL AUTO_INCREMENT;
-
---
--- AUTO_INCREMENT de la tabla `document_type`
---
-ALTER TABLE `document_type`
-  MODIFY `id_doctypes` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
-
---
--- AUTO_INCREMENT de la tabla `dotacion`
---
-ALTER TABLE `dotacion`
-  MODIFY `id_dotacion` int(11) NOT NULL AUTO_INCREMENT;
-
---
--- AUTO_INCREMENT de la tabla `module`
---
-ALTER TABLE `module`
-  MODIFY `module_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
-
---
--- AUTO_INCREMENT de la tabla `product`
---
-ALTER TABLE `product`
-  MODIFY `id_product` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
-
---
--- AUTO_INCREMENT de la tabla `product_status`
---
-ALTER TABLE `product_status`
-  MODIFY `id_status` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
-
---
--- AUTO_INCREMENT de la tabla `quotes`
---
-ALTER TABLE `quotes`
-  MODIFY `id_quotes` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=43;
-
---
--- AUTO_INCREMENT de la tabla `role`
---
-ALTER TABLE `role`
-  MODIFY `role_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
-
---
--- AUTO_INCREMENT de la tabla `role_module`
---
-ALTER TABLE `role_module`
-  MODIFY `roleModule_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
-
---
--- AUTO_INCREMENT de la tabla `services`
---
-ALTER TABLE `services`
-  MODIFY `id_services` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=32;
-
---
--- AUTO_INCREMENT de la tabla `user`
---
-ALTER TABLE `user`
-  MODIFY `user_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=47;
-
---
--- AUTO_INCREMENT de la tabla `userstatus`
---
-ALTER TABLE `userstatus`
-  MODIFY `userStatus_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
-
---
 -- Restricciones para tablas volcadas
 --
+
+--
+-- Filtros para la tabla `barber_schedule`
+--
+ALTER TABLE `barber_schedule`
+  ADD CONSTRAINT `fk_barber_schedule_user` FOREIGN KEY (`barber_id`) REFERENCES `user` (`user_id`);
 
 --
 -- Filtros para la tabla `calificaciones`
 --
 ALTER TABLE `calificaciones`
-  ADD CONSTRAINT `fk_calificacion_barbero` FOREIGN KEY (`id_barbero`) REFERENCES `user` (`user_id`);
+  ADD CONSTRAINT `fk_calificacion_barbero` FOREIGN KEY (`id_barbero`) REFERENCES `user` (`user_id`),
+  ADD CONSTRAINT `fk_calificacion_cita` FOREIGN KEY (`id_quotes`) REFERENCES `quotes` (`id_quotes`),
+  ADD CONSTRAINT `fk_calificacion_cliente` FOREIGN KEY (`id_cliente`) REFERENCES `user` (`user_id`),
+  ADD CONSTRAINT `fk_calificacion_servicio` FOREIGN KEY (`id_servicio`) REFERENCES `services` (`id_services`);
+
+--
+-- Filtros para la tabla `calificaciones_cliente`
+--
+ALTER TABLE `calificaciones_cliente`
+  ADD CONSTRAINT `fk_calcli_barbero` FOREIGN KEY (`id_barbero`) REFERENCES `user` (`user_id`),
+  ADD CONSTRAINT `fk_calcli_cita` FOREIGN KEY (`id_quotes`) REFERENCES `quotes` (`id_quotes`),
+  ADD CONSTRAINT `fk_calcli_cliente` FOREIGN KEY (`id_cliente`) REFERENCES `user` (`user_id`),
+  ADD CONSTRAINT `fk_calcli_servicio` FOREIGN KEY (`id_servicio`) REFERENCES `services` (`id_services`);
 
 --
 -- Filtros para la tabla `dotacion`
@@ -838,6 +792,7 @@ ALTER TABLE `user`
   ADD CONSTRAINT `fk_id_tipo_docuemnto_User` FOREIGN KEY (`type_document_id`) REFERENCES `document_type` (`id_doctypes`),
   ADD CONSTRAINT `user_role` FOREIGN KEY (`role_fk`) REFERENCES `role` (`role_id`),
   ADD CONSTRAINT `user_status` FOREIGN KEY (`userStatus_fk`) REFERENCES `userstatus` (`userStatus_id`);
+SET FOREIGN_KEY_CHECKS = 1;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

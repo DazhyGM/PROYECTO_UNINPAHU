@@ -7,6 +7,10 @@
       <router-view v-show="!cargandoRuta" />
     </main>
 
+    <AlertaCalificacion />
+
+    <CisoChat />
+
     <FooterComponent v-if="!$route.meta.hideLayout" />
   </div>
 </template>
@@ -16,13 +20,19 @@
 <script>
 import HeaderComponent from '@/components/layout/HeaderComponent.vue'
 import FooterComponent from '@/components/layout/FooterComponent.vue'
+<<<<<<< HEAD
 import SkeletonCarga from '@/components/ui/SkeletonCarga.vue'
 import router from '@/router'
+=======
+import AlertaCalificacion from '@/components/ratings/AlertaCalificacion.vue'
+import CisoChat from '@/components/assistant/CisoChat.vue'
+>>>>>>> 69c8b0b1cb2248b10e6d8f0136764461b46540dd
 
 export default {
   components: {
     HeaderComponent,
     FooterComponent,
+<<<<<<< HEAD
     SkeletonCarga
   },
   data() {
@@ -42,6 +52,10 @@ export default {
       clearTimeout(espera)
       this.cargandoRuta = false
     })
+=======
+    AlertaCalificacion,
+    CisoChat
+>>>>>>> 69c8b0b1cb2248b10e6d8f0136764461b46540dd
   }
 }
 </script>
