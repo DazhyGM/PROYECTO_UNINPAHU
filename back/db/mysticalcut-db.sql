@@ -3,14 +3,9 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: 127.0.0.1
--- Tiempo de generación: 19-11-2026 a las 06:10:29
+-- Tiempo de generación: 27-11-2026 a las 06:51:58
 -- Versión del servidor: 10.4.32-MariaDB
 -- Versión de PHP: 8.2.12
---
--- Base centralizada (19-11-2026):
--- Tu dump (citas, calificaciones, usuario 47, stock) + dump de Diana
--- mysticalcut-db (1).sql (fotos de servicios, barber_schedule, perfil de Diana Ramirez
--- y 4 citas reenumeradas a 53-56 para no chocar con las tuyas).
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
@@ -27,7 +22,6 @@ SET time_zone = "+00:00";
 --
 CREATE DATABASE IF NOT EXISTS `mysticalcut-db` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
 USE `mysticalcut-db`;
-SET FOREIGN_KEY_CHECKS = 0;
 
 DELIMITER $$
 --
@@ -121,6 +115,11 @@ CREATE TABLE IF NOT EXISTS `barber_schedule` (
 ) ENGINE=InnoDB AUTO_INCREMENT=79 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
+-- Truncar tablas antes de insertar `barber_schedule`
+--
+
+TRUNCATE TABLE `barber_schedule`;
+--
 -- Volcado de datos para la tabla `barber_schedule`
 --
 
@@ -186,11 +185,14 @@ CREATE TABLE IF NOT EXISTS `calificaciones` (
   UNIQUE KEY `uq_calificacion_cita` (`id_quotes`),
   KEY `fk_calificacion_barbero` (`id_barbero`),
   KEY `fk_calificacion_servicio` (`id_servicio`),
-  KEY `fk_calificacion_cliente` (`id_cliente`),
-  CONSTRAINT `chk_calificacion_servicio` CHECK (`calificacion_servicio` BETWEEN 1 AND 5),
-  CONSTRAINT `chk_calificacion_barberia` CHECK (`calificacion_barberia` BETWEEN 1 AND 5)
-) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+  KEY `fk_calificacion_cliente` (`id_cliente`)
+) ;
 
+--
+-- Truncar tablas antes de insertar `calificaciones`
+--
+
+TRUNCATE TABLE `calificaciones`;
 --
 -- Volcado de datos para la tabla `calificaciones`
 --
@@ -202,7 +204,8 @@ INSERT INTO `calificaciones` (`id_calificacion`, `id_quotes`, `id_barbero`, `id_
 (5, 42, 12, 7, 47, 5, 4, '2026-11-08 02:22:01'),
 (7, 41, 12, 7, 47, 5, 5, '2026-11-08 02:29:09'),
 (8, 40, 12, 6, 47, 5, 5, '2026-11-08 02:29:28'),
-(9, 52, 43, 6, 47, 5, 5, '2026-11-08 03:33:50');
+(9, 52, 43, 6, 47, 5, 5, '2026-11-08 03:33:50'),
+(10, 58, 11, 6, 47, 5, 5, '2026-11-21 04:01:16');
 
 -- --------------------------------------------------------
 
@@ -223,10 +226,14 @@ CREATE TABLE IF NOT EXISTS `calificaciones_cliente` (
   UNIQUE KEY `uq_calificacion_cliente_cita` (`id_quotes`),
   KEY `fk_calcli_barbero` (`id_barbero`),
   KEY `fk_calcli_cliente` (`id_cliente`),
-  KEY `fk_calcli_servicio` (`id_servicio`),
-  CONSTRAINT `chk_calificacion_cliente` CHECK (`calificacion_cliente` BETWEEN 1 AND 5)
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+  KEY `fk_calcli_servicio` (`id_servicio`)
+) ;
 
+--
+-- Truncar tablas antes de insertar `calificaciones_cliente`
+--
+
+TRUNCATE TABLE `calificaciones_cliente`;
 --
 -- Volcado de datos para la tabla `calificaciones_cliente`
 --
@@ -248,6 +255,11 @@ CREATE TABLE IF NOT EXISTS `category_product` (
   PRIMARY KEY (`id_category`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+--
+-- Truncar tablas antes de insertar `category_product`
+--
+
+TRUNCATE TABLE `category_product`;
 --
 -- Volcado de datos para la tabla `category_product`
 --
@@ -273,6 +285,11 @@ CREATE TABLE IF NOT EXISTS `category_services` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
+-- Truncar tablas antes de insertar `category_services`
+--
+
+TRUNCATE TABLE `category_services`;
+--
 -- Volcado de datos para la tabla `category_services`
 --
 
@@ -282,6 +299,44 @@ INSERT INTO `category_services` (`id_category_services`, `name`) VALUES
 (3, 'Cejas'),
 (4, 'Tintes'),
 (5, 'Combos');
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `consumo_insumo`
+--
+
+DROP TABLE IF EXISTS `consumo_insumo`;
+CREATE TABLE IF NOT EXISTS `consumo_insumo` (
+  `id_consumo` int(11) NOT NULL AUTO_INCREMENT,
+  `id_product` int(11) NOT NULL,
+  `id_barbero` int(11) NOT NULL,
+  `cantidad` int(11) NOT NULL,
+  `fecha` date NOT NULL,
+  `creado_en` datetime NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`id_consumo`),
+  UNIQUE KEY `uk_consumo_dia` (`id_barbero`,`id_product`,`fecha`),
+  KEY `fk_consumo_product` (`id_product`)
+) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Truncar tablas antes de insertar `consumo_insumo`
+--
+
+TRUNCATE TABLE `consumo_insumo`;
+--
+-- Volcado de datos para la tabla `consumo_insumo`
+--
+
+INSERT INTO `consumo_insumo` (`id_consumo`, `id_product`, `id_barbero`, `cantidad`, `fecha`, `creado_en`) VALUES
+(1, 2, 11, 1, '2026-11-27', '2026-11-27 00:14:58'),
+(2, 1, 11, 0, '2026-11-27', '2026-11-27 00:14:58'),
+(3, 5, 11, 0, '2026-11-27', '2026-11-27 00:14:58'),
+(4, 3, 11, 0, '2026-11-27', '2026-11-27 00:14:58'),
+(5, 4, 11, 0, '2026-11-27', '2026-11-27 00:14:58'),
+(6, 8, 11, 0, '2026-11-27', '2026-11-27 00:14:58'),
+(7, 7, 11, 0, '2026-11-27', '2026-11-27 00:14:58'),
+(8, 6, 11, 0, '2026-11-27', '2026-11-27 00:14:58');
 
 -- --------------------------------------------------------
 
@@ -296,6 +351,11 @@ CREATE TABLE IF NOT EXISTS `document_type` (
   PRIMARY KEY (`id_doctypes`)
 ) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+--
+-- Truncar tablas antes de insertar `document_type`
+--
+
+TRUNCATE TABLE `document_type`;
 --
 -- Volcado de datos para la tabla `document_type`
 --
@@ -318,22 +378,29 @@ CREATE TABLE IF NOT EXISTS `dotacion` (
   `id_barbero` int(11) NOT NULL,
   `cantidad` int(11) NOT NULL DEFAULT 0,
   PRIMARY KEY (`id_dotacion`),
-  UNIQUE KEY `uk_dotacion_barbero_product` (`id_barbero`, `id_product`),
-  KEY `fk_dotacion_product` (`id_product`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+  UNIQUE KEY `uk_dotacion_barbero_product` (`id_barbero`,`id_product`),
+  KEY `fk_dotacion_product` (`id_product`),
+  KEY `fk_dotacion_barbero` (`id_barbero`)
+) ENGINE=InnoDB AUTO_INCREMENT=12 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
-DROP TABLE IF EXISTS `consumo_insumo`;
-CREATE TABLE IF NOT EXISTS `consumo_insumo` (
-  `id_consumo` int(11) NOT NULL AUTO_INCREMENT,
-  `id_product` int(11) NOT NULL,
-  `id_barbero` int(11) NOT NULL,
-  `cantidad` int(11) NOT NULL,
-  `fecha` date NOT NULL,
-  `creado_en` datetime NOT NULL DEFAULT current_timestamp(),
-  PRIMARY KEY (`id_consumo`),
-  UNIQUE KEY `uk_consumo_dia` (`id_barbero`, `id_product`, `fecha`),
-  KEY `fk_consumo_product` (`id_product`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+--
+-- Truncar tablas antes de insertar `dotacion`
+--
+
+TRUNCATE TABLE `dotacion`;
+--
+-- Volcado de datos para la tabla `dotacion`
+--
+
+INSERT INTO `dotacion` (`id_dotacion`, `id_product`, `id_barbero`, `cantidad`) VALUES
+(4, 2, 11, 1),
+(5, 1, 11, 2),
+(6, 5, 11, 2),
+(7, 3, 11, 2),
+(8, 4, 11, 2),
+(9, 8, 11, 2),
+(10, 7, 11, 2),
+(11, 6, 11, 2);
 
 -- --------------------------------------------------------
 
@@ -353,6 +420,11 @@ CREATE TABLE IF NOT EXISTS `module` (
   UNIQUE KEY `module_route` (`module_route`)
 ) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+--
+-- Truncar tablas antes de insertar `module`
+--
+
+TRUNCATE TABLE `module`;
 --
 -- Volcado de datos para la tabla `module`
 --
@@ -385,12 +457,17 @@ CREATE TABLE IF NOT EXISTS `product` (
 ) ENGINE=InnoDB AUTO_INCREMENT=12 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
+-- Truncar tablas antes de insertar `product`
+--
+
+TRUNCATE TABLE `product`;
+--
 -- Volcado de datos para la tabla `product`
 --
 
 INSERT INTO `product` (`id_product`, `name`, `price`, `description`, `amount`, `id_category`, `id_status`, `image`, `comprobante`) VALUES
 (1, 'Cepillo capilar', 15000, 'Cepillo para cabello delicado', 10, 1, 1, 'cepillo.jpg', NULL),
-(2, 'Cepillo barba', 10000, 'Cepillo para barbas bellas y bonitas', 15, 2, 1, 'image-1770153078459-820017996.jpg', NULL),
+(2, 'Cuchillas de afeitar', 10000, 'Cuchilla para afeitar barbas o cabello', 14, 2, 1, 'image-1795757129144-460693086.jfif', NULL),
 (3, 'Cera para cabello', 30000, 'Cera para cabello de macho bello', 5, 1, 1, 'image-1770175934248-67742671.png', NULL),
 (4, 'Crema de barba', 50000, 'Crema para depilacion de barba', 3, 2, 1, 'image-1770176008054-234384581.jpg', NULL),
 (5, 'Cera brillante', 35000, 'Cera brillante para el cabello', 20, 5, 1, 'image-1770176090017-663102808.jpg', NULL),
@@ -413,6 +490,11 @@ CREATE TABLE IF NOT EXISTS `product_status` (
   PRIMARY KEY (`id_status`)
 ) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+--
+-- Truncar tablas antes de insertar `product_status`
+--
+
+TRUNCATE TABLE `product_status`;
 --
 -- Volcado de datos para la tabla `product_status`
 --
@@ -441,8 +523,13 @@ CREATE TABLE IF NOT EXISTS `quotes` (
   KEY `fk_appointment_user` (`user_id`),
   KEY `fk_quotes_services` (`id_services`),
   KEY `fk_barber_user` (`barber_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=57 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=60 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+--
+-- Truncar tablas antes de insertar `quotes`
+--
+
+TRUNCATE TABLE `quotes`;
 --
 -- Volcado de datos para la tabla `quotes`
 --
@@ -497,7 +584,10 @@ INSERT INTO `quotes` (`id_quotes`, `date_time`, `end_time`, `state_quotes`, `use
 (53, '2026-11-10 16:00:00', '2026-11-10 17:10:00', 'pendiente', 46, 12, 23),
 (54, '2026-11-09 13:00:00', '2026-11-09 13:25:00', 'pendiente', 46, 14, 9),
 (55, '2026-11-11 17:00:00', '2026-11-11 17:30:00', 'pendiente', 46, 14, 18),
-(56, '2026-11-11 13:00:00', '2026-11-11 13:30:00', 'pendiente', 46, 11, 6);
+(56, '2026-11-11 13:00:00', '2026-11-11 13:30:00', 'pendiente', 46, 11, 6),
+(57, '2026-11-21 14:00:00', '2026-11-21 14:30:00', 'pendiente', 47, 12, 6),
+(58, '2026-11-21 04:00:51', '2026-11-25 13:30:00', 'finalizada', 47, 11, 6),
+(59, '2026-12-02 00:00:00', '2026-12-02 00:35:00', 'pendiente', 47, 11, 7);
 
 -- --------------------------------------------------------
 
@@ -513,6 +603,11 @@ CREATE TABLE IF NOT EXISTS `role` (
   UNIQUE KEY `role_name` (`role_name`)
 ) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+--
+-- Truncar tablas antes de insertar `role`
+--
+
+TRUNCATE TABLE `role`;
 --
 -- Volcado de datos para la tabla `role`
 --
@@ -538,6 +633,11 @@ CREATE TABLE IF NOT EXISTS `role_module` (
   KEY `role_module_module` (`module_fk`)
 ) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+--
+-- Truncar tablas antes de insertar `role_module`
+--
+
+TRUNCATE TABLE `role_module`;
 --
 -- Volcado de datos para la tabla `role_module`
 --
@@ -570,6 +670,11 @@ CREATE TABLE IF NOT EXISTS `services` (
   KEY `fk_status` (`id_status`)
 ) ENGINE=InnoDB AUTO_INCREMENT=31 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+--
+-- Truncar tablas antes de insertar `services`
+--
+
+TRUNCATE TABLE `services`;
 --
 -- Volcado de datos para la tabla `services`
 --
@@ -620,6 +725,11 @@ CREATE TABLE IF NOT EXISTS `service_status` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
+-- Truncar tablas antes de insertar `service_status`
+--
+
+TRUNCATE TABLE `service_status`;
+--
 -- Volcado de datos para la tabla `service_status`
 --
 
@@ -642,6 +752,11 @@ CREATE TABLE IF NOT EXISTS `type_of_quotes` (
   KEY `fk_type_appointment_service` (`id_services`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+--
+-- Truncar tablas antes de insertar `type_of_quotes`
+--
+
+TRUNCATE TABLE `type_of_quotes`;
 -- --------------------------------------------------------
 
 --
@@ -671,6 +786,11 @@ CREATE TABLE IF NOT EXISTS `user` (
   KEY `fk_id_tipo_docuemnto_User` (`type_document_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=48 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+--
+-- Truncar tablas antes de insertar `user`
+--
+
+TRUNCATE TABLE `user`;
 --
 -- Volcado de datos para la tabla `user`
 --
@@ -719,6 +839,11 @@ CREATE TABLE IF NOT EXISTS `userstatus` (
 ) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
+-- Truncar tablas antes de insertar `userstatus`
+--
+
+TRUNCATE TABLE `userstatus`;
+--
 -- Volcado de datos para la tabla `userstatus`
 --
 
@@ -757,15 +882,18 @@ ALTER TABLE `calificaciones_cliente`
   ADD CONSTRAINT `fk_calcli_servicio` FOREIGN KEY (`id_servicio`) REFERENCES `services` (`id_services`);
 
 --
+-- Filtros para la tabla `consumo_insumo`
+--
+ALTER TABLE `consumo_insumo`
+  ADD CONSTRAINT `fk_consumo_barbero` FOREIGN KEY (`id_barbero`) REFERENCES `user` (`user_id`),
+  ADD CONSTRAINT `fk_consumo_product` FOREIGN KEY (`id_product`) REFERENCES `product` (`id_product`);
+
+--
 -- Filtros para la tabla `dotacion`
 --
 ALTER TABLE `dotacion`
   ADD CONSTRAINT `fk_dotacion_barbero` FOREIGN KEY (`id_barbero`) REFERENCES `user` (`user_id`),
   ADD CONSTRAINT `fk_dotacion_product` FOREIGN KEY (`id_product`) REFERENCES `product` (`id_product`);
-
-ALTER TABLE `consumo_insumo`
-  ADD CONSTRAINT `fk_consumo_barbero` FOREIGN KEY (`id_barbero`) REFERENCES `user` (`user_id`),
-  ADD CONSTRAINT `fk_consumo_product` FOREIGN KEY (`id_product`) REFERENCES `product` (`id_product`);
 
 --
 -- Filtros para la tabla `product`
@@ -810,7 +938,6 @@ ALTER TABLE `user`
   ADD CONSTRAINT `fk_id_tipo_docuemnto_User` FOREIGN KEY (`type_document_id`) REFERENCES `document_type` (`id_doctypes`),
   ADD CONSTRAINT `user_role` FOREIGN KEY (`role_fk`) REFERENCES `role` (`role_id`),
   ADD CONSTRAINT `user_status` FOREIGN KEY (`userStatus_fk`) REFERENCES `userstatus` (`userStatus_id`);
-SET FOREIGN_KEY_CHECKS = 1;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
