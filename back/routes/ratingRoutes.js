@@ -24,6 +24,8 @@ const authenticateToken = require('../middlewares/authMiddleware');
  */
 router.get('/pending', authenticateToken, ratingController.pending);
 
+router.get('/barberos', authenticateToken, ratingController.barberos);
+
 /**
  * @swagger
  * /api/ratings/metrics:

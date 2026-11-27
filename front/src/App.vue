@@ -46,10 +46,29 @@ export default {
         this.cargandoRuta = true
       }, 160)
     })
-    router.afterEach(() => {
+    router.afterEach((to) => {
       clearTimeout(espera)
       this.cargandoRuta = false
+      this.marcarHeader(to)
+      this.marcarScroll()
     })
+  },
+  mounted() {
+    this.marcarHeader(this.$route)
+    this.marcarScroll()
+    document.addEventListener('scroll', this.marcarScroll, { passive: true, capture: true })
+  },
+  beforeUnmount() {
+    document.removeEventListener('scroll', this.marcarScroll, true)
+  },
+  methods: {
+    marcarHeader(ruta) {
+      document.documentElement.classList.toggle('con-header', !ruta.meta.hideLayout)
+    },
+    marcarScroll() {
+      const y = window.scrollY || document.documentElement.scrollTop || document.body.scrollTop
+      document.documentElement.classList.toggle('bajando', y > 120)
+    }
   }
 }
 </script>

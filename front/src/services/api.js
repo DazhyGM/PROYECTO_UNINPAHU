@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { cerrarSesionLocal, confirmarSesionLocal, invalidarConfirmacion } from '@/services/sesionLocal';
 
 const API_URL = 'http://localhost:5000/api/users';
 const API = axios.create({
@@ -17,18 +18,42 @@ API.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-// 🔄 Interceptor de respuesta para manejar errores 401 automáticamente
-API.interceptors.response.use(
-  response => response,
-  async (error) => {
-    if (error.response && error.response.status === 401) {
-      console.warn("⚠️ Token inválido o expirado");
-      localStorage.removeItem('token');
-      window.location.href = '/login';
-    }
-    return Promise.reject(error);
+const rutaPublica = (path) => {
+  const ruta = String(path || '').toLowerCase();
+  return ruta === '/'
+    || ruta.startsWith('/login')
+    || ruta.startsWith('/register')
+    || ruta.startsWith('/forgotpassword')
+    || ruta.startsWith('/reset-password')
+    || ruta.startsWith('/error');
+};
+
+const guardarTokenRenovado = (response) => {
+  const nuevo = response?.headers?.['x-new-token'];
+  if (nuevo && nuevo !== localStorage.getItem('token')) {
+    localStorage.setItem('token', nuevo);
+    confirmarSesionLocal(nuevo);
   }
-);
+  return response;
+};
+
+const cerrarSiElServidorRechaza = (error) => {
+  if (!error.response && !error.config?.skipAuthRedirect) {
+    invalidarConfirmacion();
+  }
+  const sesionCerrada = error.response?.status === 401 && error.response?.data?.code === 'SESION_CERRADA';
+  if (sesionCerrada && !error.config?.skipAuthRedirect) {
+    cerrarSesionLocal();
+    if (!rutaPublica(window.location.pathname)) {
+      window.location.assign('/Login');
+    }
+  }
+  return Promise.reject(error);
+};
+
+// Citas, servicios, calificaciones y el asistente usan axios directo.
+axios.interceptors.response.use(guardarTokenRenovado, cerrarSiElServidorRechaza);
+API.interceptors.response.use(guardarTokenRenovado, cerrarSiElServidorRechaza);
 
 export default API;
 
@@ -158,21 +183,9 @@ export const deleteUser = async (id) => {
 
   //Mostrar usuarios inactivos
   export const getInactiveUsers = async () => {
-    const token = localStorage.getItem('token');
     try {
-        const response = await fetch(`${API_URL}/inactives`, {
-            method: 'GET',
-            headers: {
-                'Authorization': `Bearer ${token}`, 
-                'Content-Type': 'application/json'
-            }
-        });
-
-        if (!response.ok) {
-            throw new Error('Error al obtener los usuarios inactivos');
-        }
-
-        return await response.json();
+        const response = await API.get(`${API_URL}/inactives`);
+        return response.data;
     } catch (error) {
         console.error(error);
         return [];

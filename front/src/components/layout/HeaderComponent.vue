@@ -36,6 +36,7 @@
 import { ref, onMounted, onUnmounted, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import { defineProps } from 'vue'
+import { cerrarSesion } from '@/services/sesion';
 
 const props = defineProps({
   isHome: Boolean
@@ -69,10 +70,8 @@ onUnmounted(() => {
   document.removeEventListener('click', closeMenu);
 });
 
-const logout = () => {
-  localStorage.removeItem('token');
-  localStorage.removeItem('user');
-  sessionStorage.removeItem('barberCitasModal');
+const logout = async () => {
+  await cerrarSesion();
   router.push('/');
 };
 

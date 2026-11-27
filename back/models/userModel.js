@@ -239,6 +239,21 @@ exports.deleteAccount = (userId) => {
     });
 };
 
+exports.getSessionUser = (userId) => {
+    const query = `
+        SELECT u.user_id, u.userStatus_fk, r.role_name
+        FROM user u
+        JOIN role r ON u.role_fk = r.role_id
+        WHERE u.user_id = ?
+    `;
+    return new Promise((resolve, reject) => {
+        db.query(query, [userId], (err, results) => {
+            if (err) return reject(err);
+            resolve(results[0] || null);
+        });
+    });
+};
+
 // 🔹 Verificar si ya existe una cédula registrada
 exports.getUserByDocument = (document_number) => {
     const query = 'SELECT * FROM user WHERE document_number = ?';

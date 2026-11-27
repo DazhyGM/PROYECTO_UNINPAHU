@@ -16,7 +16,7 @@
 </template>
 
 <script setup>
-import { computed, onMounted, ref, watch } from 'vue';
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import FormularioCalificacion from '@/components/ratings/FormularioCalificacion.vue';
 import { getPendingRatings } from '@/services/ratingsApi';
@@ -78,7 +78,13 @@ const alGuardar = () => {
   visible.value = pendientes.value.length > 0;
 };
 
-onMounted(cargar);
+onMounted(() => {
+  cargar();
+  window.addEventListener('sesion-cambiada', cargar);
+});
+onUnmounted(() => {
+  window.removeEventListener('sesion-cambiada', cargar);
+});
 watch(() => route.fullPath, cargar);
 </script>
 

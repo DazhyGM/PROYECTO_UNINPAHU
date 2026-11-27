@@ -133,7 +133,7 @@
       </div>
       <!-- Botón para elegir un producto con más espacio abajo -->
       <div class="text-center mt-4 mb-4">
-        <a href="/Products" class="btn btn-custom">Ver inventario</a>
+        <a href="/Products" class="btn btn-custom">{{ user.role === 'Employee' ? 'Mis insumos' : 'Ver inventario' }}</a>
       </div>
 
     </div>
@@ -217,6 +217,7 @@ import { getUserData } from "@/services/api";
 import { getQuotesWithServiceDetails } from "@/services/quotesApi";
 import { getPopularServices } from "@/services/servicesApi";
 import SkeletonCarga from "@/components/ui/SkeletonCarga.vue";
+import { cerrarSesion } from "@/services/sesion";
 
 const router = useRouter();
 const isMenuOpen = ref(false);
@@ -350,10 +351,8 @@ onUnmounted(() => {
 });
 
 // Cerrar sesión
-const logout = () => {
-  localStorage.removeItem('token');
-  localStorage.removeItem('user');
-  sessionStorage.removeItem('barberCitasModal');
+const logout = async () => {
+  await cerrarSesion();
   router.push('/');
 };
 

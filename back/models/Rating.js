@@ -108,6 +108,27 @@ class Rating {
     };
   }
 
+  static async getPublicByBarber() {
+    const filas = await run(`
+      SELECT
+        c.id_barbero,
+        u.full_name AS barbero,
+        COUNT(*) AS total,
+        ROUND(AVG(c.calificacion_servicio), 2) AS promedio
+      FROM calificaciones c
+      JOIN user u ON u.user_id = c.id_barbero
+      GROUP BY c.id_barbero, u.full_name
+      ORDER BY promedio DESC, barbero ASC
+    `);
+
+    return filas.map((fila) => ({
+      id_barbero: fila.id_barbero,
+      barbero: fila.barbero,
+      total: Number(fila.total),
+      promedio: comoNumero(fila.promedio),
+    }));
+  }
+
   static async findClientRatingByQuote(quoteId) {
     const rows = await run(
       'SELECT * FROM calificaciones_cliente WHERE id_quotes = ?',

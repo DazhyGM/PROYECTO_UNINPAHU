@@ -78,7 +78,8 @@ export const updateProduct = async (productId, productData) => {
     });
     return response.data;
   } catch (error) {
-    throw 'Error al actualizar el producto';
+    console.error("Error al actualizar el producto:", error.response?.data || error);
+    throw error;
   }
 };
 
@@ -110,6 +111,30 @@ export const deleteProduct = async (productId) => {
     console.error("Error al eliminar el producto:", error);
     throw new Error('Error al eliminar el producto.');
   }
+};
+
+const authHeaders = () => ({
+  Authorization: `Bearer ${localStorage.getItem('token')}`,
+});
+
+export const getMiDotacion = async () => {
+  const response = await axios.get(`${API_URL}/asignaciones/mias`, { headers: authHeaders() });
+  return response.data;
+};
+
+export const getAsignacion = async (barberoId) => {
+  const response = await axios.get(`${API_URL}/asignaciones/${barberoId}`, { headers: authHeaders() });
+  return response.data;
+};
+
+export const guardarAsignacion = async (barberoId, items) => {
+  const response = await axios.put(`${API_URL}/asignaciones/${barberoId}`, { items }, { headers: authHeaders() });
+  return response.data;
+};
+
+export const registrarConsumo = async (items) => {
+  const response = await axios.post(`${API_URL}/consumo`, { items }, { headers: authHeaders() });
+  return response.data;
 };
 
 
