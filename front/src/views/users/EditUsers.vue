@@ -1,8 +1,7 @@
 <template>
-  <div class="row mb-3">
-    <ul class="nav col-12 justify-content-center mx-auto">
-      <h1 class="titulo-header">Editar Usuario</h1>
-    </ul>
+  <div class="page-top">
+    <button class="page-back" type="button" @click="goBack">Regresar</button>
+    <h1 class="titulo-header">Editar Usuario</h1>
   </div>
 
   <div class="recover-container">
@@ -54,7 +53,6 @@
       <HorarioBarbero v-if="Number(form.role) === 2" :days="form.schedules" />
       <button type="submit" class="btn button-guardar">Guardar Cambios</button>
     </form>
-    <button class="back-button" @click="goBack">Regresar</button>
   </div>
 </template>
 
@@ -65,6 +63,7 @@ import { useRoute, useRouter } from 'vue-router';
 import SelectCampo from '@/components/ui/SelectCampo.vue';
 import HorarioBarbero from '@/components/users/HorarioBarbero.vue';
 import { defaultSchedules, applySchedules, schedulesPayload, validateSchedules } from '@/utils/barberSchedule';
+import { notificar } from '@/utils/alerts';
 
 export default {
   components: { SelectCampo, HorarioBarbero },
@@ -95,7 +94,7 @@ export default {
       try {
         const token = localStorage.getItem('token');
         if (!token) {
-          alert('No tienes autorización. Inicia sesión de nuevo.');
+          notificar('No tienes autorización. Inicia sesión de nuevo.');
           router.push('/Login');
           return;
         }
@@ -121,7 +120,7 @@ export default {
         }
       } catch (error) {
         console.error('Error al cargar el usuario:', error);
-        alert('No se pudo cargar la información del usuario.');
+        notificar('No se pudo cargar la información del usuario.');
       }
     });
 
@@ -130,7 +129,7 @@ export default {
       const trimmedConfirmPassword = form.confirmPassword.trim();
 
       if (trimmedPassword !== trimmedConfirmPassword) {
-        alert('Las contraseñas no coinciden');
+        notificar('Las contraseñas no coinciden');
         return;
       }
 
@@ -138,7 +137,7 @@ export default {
       if (isBarber) {
         const scheduleError = validateSchedules(form.schedules);
         if (scheduleError) {
-          alert(scheduleError);
+          notificar(scheduleError);
           return;
         }
       }
@@ -146,7 +145,7 @@ export default {
       try {
         const token = localStorage.getItem('token');
         if (!token) {
-          alert('No tienes autorización. Inicia sesión de nuevo.');
+          notificar('No tienes autorización. Inicia sesión de nuevo.');
           router.push('/Login');
           return;
         }
@@ -170,11 +169,11 @@ export default {
           { headers: { Authorization: `Bearer ${token}` } }
         );
 
-        alert(response.data.message);
+        await notificar(response.data.message);
         router.push('/Users');
       } catch (error) {
         console.error('Error al editar el usuario:', error);
-        alert(error.response?.data?.message || 'Hubo un error al editar el usuario.');
+        notificar(error.response?.data?.message || 'Hubo un error al editar el usuario.');
       }
     };
 

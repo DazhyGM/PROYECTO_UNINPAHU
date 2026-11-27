@@ -1,4 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router';
+import { notificar } from '@/utils/alerts';
 
 //Home
 const Index = () => import('@/views/home/HomeIndex.vue');
@@ -123,7 +124,7 @@ router.beforeEach((to, from, next) => {
       localStorage.removeItem('user');
       localStorage.removeItem('token');
 
-      alert('No tienes permisos para acceder a esta página. Sesión cerrada.');
+      notificar('No tienes permisos para acceder a esta página. Sesión cerrada.', 'error');
       next('/errorRole');
     } else {
       next();

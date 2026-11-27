@@ -1,6 +1,29 @@
 const db = require('../config/db');
 
 const ServiceModel = {
+  getPopularServices: (limit, callback) => {
+    const query = `
+      SELECT
+        s.id_services,
+        s.name_service,
+        s.description,
+        s.price,
+        s.image,
+        cs.name AS category_name,
+        COUNT(q.id_quotes) AS total_citas
+      FROM services s
+      INNER JOIN category_services cs ON s.id_category_services = cs.id_category_services
+      LEFT JOIN quotes q
+        ON q.id_services = s.id_services
+        AND q.state_quotes <> 'cancelada'
+      WHERE s.id_status = 1
+      GROUP BY s.id_services, s.name_service, s.description, s.price, s.image, cs.name
+      ORDER BY total_citas DESC, s.name_service ASC
+      LIMIT ?
+    `;
+    db.query(query, [limit], callback);
+  },
+
   getAllActiveServices: (callback) => {
     const query = `
       SELECT 

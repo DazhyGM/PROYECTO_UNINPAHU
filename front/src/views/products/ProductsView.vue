@@ -1,9 +1,8 @@
 <template>
   <div class="container-scaled-wrapper">
-    <div class="row mb-2">
-      <ul class="nav col-12 justify-content-center mx-auto">
-        <h1 class="titulo-header">Insumos</h1>
-      </ul>
+    <div class="page-top">
+      <button class="page-back" type="button" @click="goBack">Regresar</button>
+      <h1 class="titulo-header">Insumos</h1>
     </div>
     <div class="container">
 
@@ -18,7 +17,8 @@
         </router-link>
       </div>
 
-      <div class="product-grid">
+      <SkeletonCarga v-if="cargando" tipo="tarjetas" :cantidad="4" />
+      <div v-else class="product-grid">
         <div class="product-card" v-for="product in products" :key="product.id_product">
           <img :src="getImageUrl(product.image)" alt="Imagen del producto" class="product-img" />
           <h2 class="product-name">{{ product.name }}</h2>
@@ -43,9 +43,6 @@
       </div>
     </div>
 
-  </div>
-  <div>
-    <button class="btn back-button" @click="goBack">Regresar</button>
   </div>
 
   <div v-if="showSidebar && userRole === 'Client'" class="cart-add-box">
@@ -110,6 +107,8 @@ import { useRouter } from "vue-router";
 import { getProducts, updateProductStatus } from "@/services/productsApi";
 import { addToCartAPI, getCartAPI, updateCartItemAPI } from "@/services/shoppingCartApi";
 import axios from 'axios';
+import { confirmar, notificar } from '@/utils/alerts';
+import SkeletonCarga from '@/components/ui/SkeletonCarga.vue';
 
 const router = useRouter();
 const products = ref([]);
@@ -124,8 +123,15 @@ const getImageUrl = (imageName) => `http://localhost:5000/uploads/${imageName}`;
 
 
 
+const cargando = ref(true);
+
 const loadProducts = async () => {
-  products.value = await getProducts();
+  cargando.value = true;
+  try {
+    products.value = await getProducts();
+  } finally {
+    cargando.value = false;
+  }
 };
 
 const fetchUserRole = async () => {
@@ -159,7 +165,7 @@ const toggleSwitch = async (product) => {
   const newStatus = product.id_status === 1 ? 2 : 1;
   const action = newStatus === 1 ? "activo" : "agotado";
 
-  const confirmed = confirm(`¿Estás seguro que deseas poner este producto en estado ${action}?`);
+  const confirmed = await confirmar(`¿Estás seguro que deseas poner este producto en estado ${action}?`);
   if (!confirmed) {
     await loadProducts();
     return;
@@ -170,7 +176,7 @@ const toggleSwitch = async (product) => {
 };
 
 const confirmInactivate = async (id_product) => {
-  const confirmDelete = confirm("¿Estás seguro que deseas eliminar (inactivar) este producto?");
+  const confirmDelete = await confirmar("¿Estás seguro que deseas eliminar (inactivar) este producto?");
   if (!confirmDelete) return;
 
   await updateProductStatus(id_product, 3);
@@ -203,20 +209,20 @@ const clearPendingCartAndClose = () => {
 
 const confirmAddToCart = async () => {
   if (pendingCartItems.value.length === 0) {
-    alert("No hay productos seleccionados para agregar al carrito.");
+    notificar("No hay productos seleccionados para agregar al carrito.");
     return;
   }
 
   const user_id = getUserIdFromToken();
   if (!user_id) {
-    alert("No se pudo obtener el ID del usuario.");
+    notificar("No se pudo obtener el ID del usuario.");
     return;
   }
 
   let allProductsSuccessfullyAdded = true;
   for (const pendingItem of pendingCartItems.value) {
     if (pendingItem.quantity <= 0 || pendingItem.quantity > pendingItem.amount) {
-      alert(`Error: Cantidad inválida (${pendingItem.quantity}) para "${pendingItem.name}". Por favor, ajusta la cantidad.`);
+      notificar(`Error: Cantidad inválida (${pendingItem.quantity}) para "${pendingItem.name}". Por favor, ajusta la cantidad.`);
       allProductsSuccessfullyAdded = false;
       continue;
     }
@@ -229,7 +235,7 @@ const confirmAddToCart = async () => {
       if (existingItemInBackendCart) {
         const newAmount = existingItemInBackendCart.amount + pendingItem.quantity;
         if (newAmount > pendingItem.amount) {
-          alert(`Advertencia: No se pueden agregar ${pendingItem.quantity} unidades de "${pendingItem.name}". Solo hay ${pendingItem.amount - existingItemInBackendCart.amount} disponibles adicionales.`);
+          notificar(`Advertencia: No se pueden agregar ${pendingItem.quantity} unidades de "${pendingItem.name}". Solo hay ${pendingItem.amount - existingItemInBackendCart.amount} disponibles adicionales.`);
           allProductsSuccessfullyAdded = false;
           continue;
         }
@@ -244,19 +250,19 @@ const confirmAddToCart = async () => {
       }
     } catch (error) {
       console.error(`Error al procesar "${pendingItem.name}" para el carrito:`, error);
-      alert(`Error al agregar "${pendingItem.name}" al carrito. Por favor, inténtalo de nuevo.`);
+      notificar(`Error al agregar "${pendingItem.name}" al carrito. Por favor, inténtalo de nuevo.`);
       allProductsSuccessfullyAdded = false;
       continue;
     }
   }
 
   if (allProductsSuccessfullyAdded) {
-    alert("Todos los productos seleccionados fueron agregados/actualizados en el carrito.");
+    await notificar("Todos los productos seleccionados fueron agregados/actualizados en el carrito.", "success");
     pendingCartItems.value = [];
     showSidebar.value = false;
     router.push("/Cart");
   } else {
-    alert("Algunos productos no pudieron ser agregados/actualizados. Por favor, revisa las cantidades y disponibilidad.");
+    notificar("Algunos productos no pudieron ser agregados/actualizados. Por favor, revisa las cantidades y disponibilidad.");
   }
 };
 

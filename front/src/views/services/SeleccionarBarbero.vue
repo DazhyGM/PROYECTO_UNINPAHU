@@ -3,6 +3,9 @@
   <div class="container-select-barber">
     <header
       class="d-flex flex-wrap align-items-center justify-content-center justify-content-md-between py-3 mb-4 border-bottom">
+      <div class="page-back-row">
+        <button class="page-back" type="button" @click="goBack">Regresar</button>
+      </div>
       <div class="col-md-3 mb-2 mb-md-0">
         <img src="/img/background/LOGO.png" alt="Logo" width="125" height="125" class="d-inline-block align-text-top" />
       </div>
@@ -32,7 +35,6 @@
           <template #actions>
             <button class="btn btn-delete-select-barber" @click="clearSelection">Eliminar selección</button>
             <button class="btn btn-continuar-barber" @click="goToCalendar" :disabled="!selectedBarber">Continuar</button>
-            <button class="btn back-button-barber" @click="goBack">Regresar</button>
           </template>
         </ResumenSeleccion>
       </div>
@@ -43,6 +45,7 @@
 <script>
 import { getBarbers } from '@/services/api';
 import ResumenSeleccion from '@/components/services/ResumenSeleccion.vue';
+import { notificar } from '@/utils/alerts';
 
 export default {
   name: 'SeleccionarBarbero',
@@ -70,7 +73,7 @@ export default {
         this.barbers = await getBarbers();
       } catch (error) {
         console.error('❌ Error al obtener barberos:', error);
-        alert('No se pudieron cargar los barberos.');
+        notificar('No se pudieron cargar los barberos.');
       }
     },
 
@@ -107,7 +110,7 @@ export default {
 
     goToCalendar() {
       if (!this.selectedBarber) {
-        return alert('Por favor selecciona un barbero antes de continuar.');
+        return notificar('Por favor selecciona un barbero antes de continuar.');
       }
 
       localStorage.setItem('barberId', this.selectedBarber.user_id);

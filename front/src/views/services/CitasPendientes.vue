@@ -1,6 +1,7 @@
 <template>
   <div class="citas-page">
-    <header class="citas-header">
+    <header class="citas-header page-top">
+      <button class="page-back" type="button" @click="$router.push('/Home')">Regresar</button>
       <h1 class="citas-title">Mis Citas</h1>
       <p class="citas-subtitle">Revisa fecha, barbero, servicio y estado de cada cita.</p>
     </header>
@@ -72,7 +73,7 @@
         <p class="citas-rango">{{ textoRango }}</p>
       </div>
 
-      <div v-if="cargando" class="citas-state">Cargando citas...</div>
+      <SkeletonCarga v-if="cargando" tipo="filas" :cantidad="5" />
       <div v-else-if="!citas.length" class="citas-state">No hay citas registradas.</div>
       <div v-else-if="!citasFiltradas.length" class="citas-state">No hay citas para ese filtro.</div>
       <div v-else class="citas-scroll">
@@ -152,10 +153,6 @@
       </div>
     </section>
 
-    <div class="citas-footer">
-      <button class="btn back-button" type="button" @click="$router.push('/Home')">Regresar</button>
-    </div>
-
     <CalificarCliente
       v-if="citaCliente"
       :cita="citaCliente"
@@ -170,11 +167,13 @@
 import axios from 'axios';
 import { getQuotesWithServiceDetails, cancelQuote, finishQuote } from '@/services/quotesApi';
 import SelectCampo from '@/components/ui/SelectCampo.vue';
+import { notificar } from '@/utils/alerts';
+import SkeletonCarga from '@/components/ui/SkeletonCarga.vue';
 import CalificarCliente from '@/components/ratings/CalificarCliente.vue';
 
 export default {
   name: 'CitasPendientes',
-  components: { SelectCampo, CalificarCliente },
+  components: { SelectCampo, SkeletonCarga, CalificarCliente },
   data() {
     return {
       opcionesPagina: [
@@ -307,7 +306,7 @@ export default {
       try {
         const token = localStorage.getItem('token');
         if (!token) {
-          alert("No se ha iniciado sesión.");
+          notificar("No se ha iniciado sesión.");
           this.$router.push('/');
           return;
         }
@@ -323,7 +322,7 @@ export default {
         this.citas = citasData;
       } catch (error) {
         console.error('❌ Error al cargar citas:', error);
-        alert("No se pudieron cargar las citas.");
+        notificar("No se pudieron cargar las citas.");
       } finally {
         this.cargando = false;
       }
@@ -466,12 +465,11 @@ export default {
     async cancelarCita(id) {
       try {
         await cancelQuote(id);
-        alert('Cita cancelada con éxito');
-        // Redirige a /Home después de cancelar
+        await notificar('Cita cancelada con éxito', 'success');
         this.$router.push('/Home');
       } catch (error) {
         console.error('❌ Error al cancelar cita:', error);
-        alert('No se pudo cancelar la cita.');
+        notificar('No se pudo cancelar la cita.');
       }
     },
     puedeCalificar(cita) {
@@ -519,11 +517,11 @@ export default {
           await this.cargarCitas();
           return;
         }
-        alert(respuesta.message || 'Cita finalizada con éxito');
+        await notificar(respuesta.message || 'Cita finalizada con éxito', 'success');
         this.$router.push('/Home');
       } catch (error) {
         console.error('❌ Error al finalizar cita:', error);
-        alert(error.response?.data?.message || 'No se pudo finalizar la cita.');
+        notificar(error.response?.data?.message || 'No se pudo finalizar la cita.');
       }
     }
   },

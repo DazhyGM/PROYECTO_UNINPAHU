@@ -1,9 +1,8 @@
 <template>
   <div class="container">
-    <div class="row mb-2">
-      <ul class="nav col-12 justify-content-center mx-auto">
-        <h1 class="titulo-header">Productos Inactivos</h1>
-      </ul>
+    <div class="page-top">
+      <button class="page-back" type="button" @click="goBack">Regresar</button>
+      <h1 class="titulo-header">Productos Inactivos</h1>
     </div>
     <div class="content">
       <div class="product-grid">
@@ -28,9 +27,6 @@
           </div>
         </div>
       </div>
-      <div class="text-center mt-4">
-        <button class="btn back-button" @click="goBack">Regresar</button>
-      </div>
     </div>
   </div>
 </template>
@@ -39,6 +35,7 @@
 import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { getInactiveProducts, updateProductStatus } from '@/services/productsApi';
+import { confirmar } from '@/utils/alerts';
 
 const router = useRouter();
 const inactiveProducts = ref([]);
@@ -52,7 +49,7 @@ const loadInactiveProducts = async () => {
 };
 
 const activateProductHandler = async (product) => {
-  const confirmActivation = confirm(`¿Estás seguro de que deseas activar el producto "${product.name}"?`);
+  const confirmActivation = await confirmar(`¿Estás seguro de que deseas activar el producto "${product.name}"?`);
   if (!confirmActivation) return;
 
   try {

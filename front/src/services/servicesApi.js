@@ -8,6 +8,11 @@ const getAuthHeaders = () => ({
   }
 });
 
+export const getPopularServices = async () => {
+  const response = await axios.get(`${SERVICE_API_URL}/popular`, getAuthHeaders());
+  return response.data;
+};
+
 export const getAllServices = async () => {
   const response = await axios.get(SERVICE_API_URL, getAuthHeaders());
   return response.data;

@@ -2,6 +2,9 @@
   <div class="container-calendario">
     <header
       class="d-flex flex-wrap align-items-center justify-content-center justify-content-md-between py-3 mb-4 border-bottom">
+      <div class="page-back-row">
+        <button class="page-back" type="button" @click="regresar">Regresar</button>
+      </div>
       <div class="col-md-3 mb-2 mb-md-0">
         <img src="/img/background/LOGO.png" alt="Logo" width="125" height="125" class="d-inline-block align-text-top" />
       </div>
@@ -9,9 +12,6 @@
         <h1 class="titulo-header">Seleccione la fecha y horario</h1>
       </ul>
     </header>
-    <div v-if="!userId || !barberId" class="alert alert-warning text-center" style="color: #f5c30f;">
-      ⚠️ Faltan datos del usuario o del barbero. La cita no podrá confirmarse.
-    </div>
     <div class="main-content">
       <div class="left-column">
         <div>
@@ -39,7 +39,7 @@
 
         <div class="time-list">
           <p v-if="scheduleLabel" class="schedule-label">{{ scheduleLabel }}</p>
-          <p v-if="loadingTimes" class="time-empty">Cargando horarios...</p>
+          <SkeletonCarga v-if="loadingTimes" tipo="filas" :cantidad="4" />
           <p v-else-if="timeMessage" class="time-empty">{{ timeMessage }}</p>
           <p v-else-if="!selectedDate" class="time-empty">Selecciona un día para ver los horarios del barbero.</p>
           <div v-else class="time-scroll">
@@ -59,7 +59,6 @@
               @click="confirmQuote">
               Siguiente
             </button>
-            <button class="back-button-calendar" @click="regresar">Regresar</button>
           </template>
         </ResumenSeleccion>
       </div>
@@ -70,10 +69,12 @@
 <script>
 import ResumenSeleccion from '@/components/services/ResumenSeleccion.vue';
 import { getAvailability, getBarberSchedule } from '@/services/quotesApi';
+import { notificar } from '@/utils/alerts';
+import SkeletonCarga from '@/components/ui/SkeletonCarga.vue';
 
 export default {
   name: 'CalendarioCitas',
-  components: { ResumenSeleccion },
+  components: { ResumenSeleccion, SkeletonCarga },
   data() {
     return {
       selectedDate: '',
@@ -262,7 +263,7 @@ export default {
       // Validar que haya exactamente un servicio
       if (!this.selectedServices?.length || this.selectedServices.length !== 1) {
         console.error('Error en servicios:', this.selectedServices);
-        return alert('Debes seleccionar exactamente un servicio');
+        return notificar('Debes seleccionar exactamente un servicio');
       }
 
       const selectedService = this.selectedServices[0];
@@ -272,17 +273,17 @@ export default {
 
       if (!serviceId) {
         console.error('Servicio sin ID válido:', selectedService);
-        return alert('El servicio seleccionado no tiene un ID válido');
+        return notificar('El servicio seleccionado no tiene un ID válido');
       }
 
       // Validar fecha y hora
       if (!this.selectedDate || !this.selectedTime) {
-        return alert('Selecciona fecha y hora');
+        return notificar('Selecciona fecha y hora');
       }
 
       // Validar usuario y barbero
       if (!this.userId || !this.barberId) {
-        return alert('Faltan datos de usuario o barbero');
+        return notificar('Faltan datos de usuario o barbero');
       }
 
       // Guardamos solamente los datos temporalmente
@@ -345,7 +346,7 @@ export default {
     });
 
     if (!this.userId || !this.barberId) {
-      console.warn('Faltan datos esenciales (userId o barberId)');
+      notificar('Faltan datos del usuario o del barbero. La cita no podrá confirmarse.', 'warning');
     }
 
     this.loadSchedule();

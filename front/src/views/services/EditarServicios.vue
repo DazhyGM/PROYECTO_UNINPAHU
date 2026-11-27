@@ -1,8 +1,7 @@
 <template>
-  <div class="row mb-2">
-    <ul class="nav col-12 justify-content-center mx-auto">
-      <h1 class="titulo-header">Editar Servicio</h1>
-    </ul>
+  <div class="page-top">
+    <router-link to="/Services" class="page-back">Regresar</router-link>
+    <h1 class="titulo-header">Editar Servicio</h1>
   </div>
 
   <div class="container-edit-services">
@@ -69,15 +68,6 @@
         </form>
       </div>
     </div>
-    <div class="text-center mt-3">
-      <p v-if="message" class="text-success">{{ message }}</p>
-      <p v-if="error" class="text-danger">{{ error }}</p>
-    </div>
-  </div>
-  <div class="text-center mt-3">
-    <router-link to="/Services" class="btn back-button">
-      Regresar
-    </router-link>
   </div>
 </template>
 
@@ -86,6 +76,7 @@ import { ref, onMounted } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { getServiceById, updateService } from '@/services/servicesApi';
 import SelectCampo from '@/components/ui/SelectCampo.vue';
+import { notificar } from '@/utils/alerts';
 
 export default {
   components: { SelectCampo },
@@ -106,8 +97,6 @@ export default {
       id_status: 1,
     });
 
-    const message = ref('');
-    const error = ref('');
     const categoriasServicio = [
       { value: '1', label: 'Corte' },
       { value: '2', label: 'Barba' },
@@ -148,7 +137,7 @@ export default {
         }
       } catch (err) {
         console.error(err);
-        error.value = 'Error al cargar el servicio.';
+        notificar('Error al cargar el servicio.', 'error');
       }
     };
 
@@ -161,9 +150,6 @@ export default {
     };
 
     const handleSubmit = async () => {
-      message.value = '';
-      error.value = '';
-
       if (
         !form.value.name_service.trim() ||
         !form.value.description.trim() ||
@@ -171,7 +157,7 @@ export default {
         !form.value.price ||
         !form.value.id_category_services
       ) {
-        error.value = 'Por favor, complete todos los campos antes de continuar.';
+        notificar('Por favor, complete todos los campos antes de continuar.', 'warning');
         return;
       }
 
@@ -186,13 +172,11 @@ export default {
 
       try {
         await updateService(id, formData);
-        message.value = 'Servicio actualizado correctamente.';
-        setTimeout(() => {
-          router.push('/Services');
-        }, 1000);
+        await notificar('Servicio actualizado correctamente.', 'success');
+        router.push('/Services');
       } catch (err) {
         console.error(err);
-        error.value = 'Error al actualizar el servicio.';
+        notificar('Error al actualizar el servicio.', 'error');
       }
     };
 
@@ -205,8 +189,6 @@ export default {
       imagePreview,
       handleSubmit,
       handleImageUpload,
-      message,
-      error,
     };
   }
 };

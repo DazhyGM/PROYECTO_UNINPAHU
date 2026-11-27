@@ -11,6 +11,10 @@
   box-sizing: border-box; 
 }
 
+.factura-wrapper .page-back {
+  margin-bottom: 16px;
+}
+
 .factura-content {
   flex: 1;
   display: flex;

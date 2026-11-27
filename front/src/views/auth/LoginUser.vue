@@ -8,8 +8,6 @@
 
     <section class="login-panel">
       <form @submit.prevent="logIn" class="login-form">
-        <p v-if="message" class="login-message">{{ message }}</p>
-
         <label class="login-field" for="email">
           <span>Correo electrónico</span>
           <input type="email" id="email" v-model="email" required placeholder="Ingresa tu correo electrónico" />
@@ -37,18 +35,18 @@
 import { ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { login } from "@/services/api";
+import { notificar } from "@/utils/alerts";
 
 const router = useRouter();
 const route = useRoute();
 
 const email = ref("");
 const password = ref("");
-const message = ref("");
 const loading = ref(false);
 
 const logIn = async () => {
   if (!email.value || !password.value) {
-    message.value = "⚠️ Todos los campos son obligatorios";
+    notificar("Todos los campos son obligatorios", "warning");
     return;
   }
 
@@ -62,8 +60,6 @@ const logIn = async () => {
       throw new Error("No se recibió un token");
     }
 
-    message.value = "✅ Inicio de sesión exitoso";
-
     localStorage.setItem("token", data.token);
     localStorage.setItem("user", JSON.stringify(data.user));
 
@@ -73,14 +69,12 @@ const logIn = async () => {
       sessionStorage.removeItem("barberCitasModal");
     }
 
+    await notificar("Inicio de sesión exitoso", "success");
     const redirect = route.query.redirect;
     const destino = typeof redirect === 'string' && redirect.startsWith('/') && !redirect.startsWith('//')
       ? redirect
       : '/Home';
-
-    setTimeout(() => {
-      router.push(destino);
-    }, 1000);
+    router.push(destino);
 
   } catch (error) {
     console.error("⚠️ Error en el login:", error);
@@ -93,12 +87,12 @@ const logIn = async () => {
                 router.push("/errorUserDeleted"); // Redirige si el usuario está eliminado
             }
         } else if (error.response.status === 401) {
-            message.value = error.response.data.error || "Credenciales incorrectas. Intenta nuevamente."; 
+            notificar(error.response.data.error || "Credenciales incorrectas. Intenta nuevamente.", "error");
         } else {
-            message.value = error.response.data.error || "Ocurrió un error inesperado.";
+            notificar(error.response.data.error || "Ocurrió un error inesperado.", "error");
         }
     } else {
-        message.value = "Error de conexión con el servidor.";
+        notificar("Error de conexión con el servidor.", "error");
     }
   }
   finally {
