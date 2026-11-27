@@ -1,29 +1,18 @@
 <template>
   <div class="editar-producto">
-    <div class="row mb-2">
-      <ul class="nav col-12 justify-content-center mx-auto">
-        <h1 class="titulo-header">Editar producto</h1>
-      </ul>
+    <div class="page-top">
+      <button class="page-back" type="button" @click="goBack">Regresar</button>
+      <h1 class="titulo-header">Editar producto</h1>
     </div>
 
     <div class="row edit-product-container">
       <div class="col-md-5 text-center">
         <div class="mb-3">
-          <label class="form-label">Imagen actual:</label>
+          <label class="form-label">Imagen</label>
           <div class="image-placeholder mx-auto mb-3">
-            <img v-if="product.image" :src="getImageUrl(product.image)" alt="Producto Actual" class="preview-image" />
-            <img v-else src="/img/background/signointerrogacion.jpg" alt="Sin imagen" class="preview-image" />
+            <img :src="imagenVisible" alt="Imagen del producto" class="preview-image" />
           </div>
-        </div>
-
-        <div class="mb-3">
-          <label class="form-label">Previsualización de nueva imagen:</label>
-          <div class="image-placeholder mx-auto mb-3">
-            <img :src="newImagePreview || '/img/background/signointerrogacion.jpg'" alt="Nueva imagen"
-              class="preview-image" />
-          </div>
-          <label class="form-label">Nueva imagen (opcional):</label>
-          <input type="file" @change="onImageSelected" class="form-select custom-input" />
+          <input type="file" accept="image/*" @change="onImageSelected" class="form-select custom-input" />
         </div>
 
         <div class="mb-3">
@@ -95,18 +84,15 @@
 
     </div>
 
-    <div class="text-center mt-3">
-      <p v-if="message" class="text-success">{{ message }}</p>
-      <p v-if="error" class="text-danger">{{ error }}</p>
-    </div>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted } from "vue";
+import { computed, ref, onMounted } from "vue";
 import SelectCampo from "@/components/ui/SelectCampo.vue";
 import { useRoute, useRouter } from "vue-router";
 import { getProductById, updateProduct } from "@/services/productsApi";
+import { notificar } from "@/utils/alerts";
 
 const route = useRoute();
 const router = useRouter();
@@ -122,10 +108,8 @@ const product = ref({
   image: "",
 });
 const newImage = ref(null);
-const newImagePreview = ref(null);
-
-const message = ref('');
-const error = ref('');
+const imagenLocal = ref('');
+const imagenVisible = computed(() => imagenLocal.value || getImageUrl(product.value.image));
 
 const categories = ref([
   { id: 1, name: "Cabello" },
@@ -136,7 +120,10 @@ const categories = ref([
 ]);
 
 const getImageUrl = (imageName) => {
-  return `http://localhost:5000/uploads/products/${imageName}`;
+  const nombre = String(imageName || '').trim();
+  if (!nombre) return '/img/background/signointerrogacion.jpg';
+  if (nombre.startsWith('http') || nombre.startsWith('/')) return nombre;
+  return `http://localhost:5000/uploads/${nombre}`;
 };
 
 const loadProduct = async () => {
@@ -153,32 +140,26 @@ const loadProduct = async () => {
         id_status: data.id_status != null ? Number(data.id_status) : 1,
       };
       newImage.value = null;
-      newImagePreview.value = null;
+      if (imagenLocal.value) URL.revokeObjectURL(imagenLocal.value);
+      imagenLocal.value = '';
     } else {
-      error.value = 'Producto no encontrado.';
+      notificar('Producto no encontrado.', 'error');
     }
   } catch (err) {
     console.error("Error al cargar el producto:", err);
-    error.value = 'Error al cargar el producto. Intente de nuevo.';
+    notificar('Error al cargar el producto. Intente de nuevo.', 'error');
   }
 };
 
 const onImageSelected = (event) => {
   const file = event.target.files[0];
-  if (file) {
-    newImage.value = file;
-    newImagePreview.value = URL.createObjectURL(file);
-  } else {
-    newImage.value = null;
-    newImagePreview.value = null;
-  }
+  if (!file) return;
+  if (imagenLocal.value) URL.revokeObjectURL(imagenLocal.value);
+  newImage.value = file;
+  imagenLocal.value = URL.createObjectURL(file);
 };
 
 const update = async () => {
-  message.value = '';
-  error.value = '';
-
-  // Validación básica
   if (
     !product.value.name.trim() ||
     !product.value.price ||
@@ -186,16 +167,16 @@ const update = async () => {
     !product.value.amount ||
     !product.value.id_category
   ) {
-    error.value = 'Por favor, complete todos los campos requeridos.';
+    notificar('Por favor, complete todos los campos requeridos.', 'warning');
     return;
   }
 
   if (product.value.price <= 0) {
-    error.value = 'El precio debe ser un valor positivo.';
+    notificar('El precio debe ser un valor positivo.', 'warning');
     return;
   }
   if (product.value.amount <= 0) {
-    error.value = 'La cantidad debe ser al menos 1.';
+    notificar('La cantidad debe ser al menos 1.', 'warning');
     return;
   }
 
@@ -208,23 +189,24 @@ const update = async () => {
     formData.append("id_category", product.value.id_category);
     formData.append("id_status", product.value.id_status);
 
-    if (newImage.value) {
+    if (newImage.value instanceof File && newImage.value.size > 0) {
+      const tipo = String(newImage.value.type || '');
+      const nombre = String(newImage.value.name || '').toLowerCase();
+      const pareceImagen = tipo.startsWith('image/') || /\.(jpe?g|png|gif|webp|bmp|jfif)$/.test(nombre);
+      if (!pareceImagen) {
+        notificar('Selecciona un archivo de imagen.', 'warning');
+        return;
+      }
       formData.append("image", newImage.value);
     }
 
     await updateProduct(route.params.id, formData);
-    message.value = "Producto actualizado correctamente.";
-
-    setTimeout(() => {
-      router.push("/Products");
-    }, 1500);
-
+    await notificar("Producto actualizado correctamente.", "success");
+    router.push("/Products");
   } catch (err) {
     console.error("Error al actualizar producto:", err);
-    error.value = "Error al actualizar el producto. Intente de nuevo.";
-    if (err.response && err.response.data && err.response.data.message) {
-      error.value += ` (${err.response.data.message})`;
-    }
+    const detalle = err.response?.data?.error || err.response?.data?.message;
+    notificar(detalle || "Error al actualizar el producto. Intente de nuevo.", "error");
   }
 };
 

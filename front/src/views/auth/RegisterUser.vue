@@ -1,6 +1,9 @@
 <template>
   <div class="container">
     <header class="d-flex flex-wrap align-items-center justify-content-center justify-content-md-between py-3 mb-4 border-bottom">
+      <div class="page-back-row">
+        <button class="page-back" type="button" @click="goBack">Regresar</button>
+      </div>
       <div class="col-md-3 mb-2 mb-md-0">
   <router-link to="/Home">
     <img src="/img/background/LOGO.png" alt="Logo" width="125" height="125" class="d-inline-block align-text-top" />
@@ -47,10 +50,7 @@
       </div>
 
       <button type="submit" class="btn button-registrar">Registrarse</button>
-      <p v-if="errorMessage" class="error-text">{{ errorMessage }}</p>
-
     </form>
-    <button class="back-button" @click="goBack">Regresar</button>
   </div>
   <footer class="py-3 my-4">
       <ul class="nav justify-content-center border-bottom pb-3 mb-3"></ul>
@@ -58,9 +58,10 @@
 </template>
 
 <script>
-import { reactive, ref } from 'vue';
+import { reactive } from 'vue';
 import axios from 'axios';
 import '@/assets/css/auth/registerUser.css';
+import { notificar } from '@/utils/alerts';
 
 export default {
   setup() {
@@ -76,11 +77,7 @@ export default {
       role: 3
     });
 
-    const errorMessage = ref('');
-
     const confirmRegistro = async () => {
-  errorMessage.value = '';
-
   const trimmedPassword = form.password.trim();
   const trimmedConfirmPassword = form.confirmPassword.trim();
 
@@ -88,63 +85,65 @@ export default {
   const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/;
 
   // Validaciones 
+  const avisar = (texto) => notificar(texto, 'warning');
+
   if (!form.docType) {
-    errorMessage.value = 'Por favor selecciona el tipo de documento.';
+    avisar('Por favor selecciona el tipo de documento.');
     return;
   }
 
   if (!form.fullName.trim()) {
-    errorMessage.value = 'El nombre completo es obligatorio.';
+    avisar('El nombre completo es obligatorio.');
     return;
   }
 
   if (!form.email.trim()) {
-    errorMessage.value = 'El correo electrónico es obligatorio.';
+    avisar('El correo electrónico es obligatorio.');
     return;
   }
 
   if (!emailRegex.test(form.email)) {
-    errorMessage.value = 'El correo electrónico no tiene un formato válido.';
+    avisar('El correo electrónico no tiene un formato válido.');
     return;
   }
 
   if (!form.idNumber.trim()) {
-    errorMessage.value = 'El número de documento es obligatorio.';
+    avisar('El número de documento es obligatorio.');
     return;
   }
 
   if (!/^\d+$/.test(form.idNumber.trim())) {
-    errorMessage.value = 'El número de documento solo debe contener números.';
+    avisar('El número de documento solo debe contener números.');
     return;
   }
 
   if (!form.address.trim()) {
-    errorMessage.value = 'La dirección es obligatoria.';
+    avisar('La dirección es obligatoria.');
     return;
   }
 
   if (!form.phone.trim()) {
-    errorMessage.value = 'El teléfono es obligatorio.';
+    avisar('El teléfono es obligatorio.');
     return;
   }
 
   if (!/^\d+$/.test(form.phone.trim())) {
-  errorMessage.value = 'El teléfono solo debe contener números.';
-  return;
+    avisar('El teléfono solo debe contener números.');
+    return;
   }
 
   if (!trimmedPassword || !trimmedConfirmPassword) {
-    errorMessage.value = 'Ambos campos de contraseña son obligatorios.';
+    avisar('Ambos campos de contraseña son obligatorios.');
     return;
   }
 
   if (trimmedPassword !== trimmedConfirmPassword) {
-    errorMessage.value = 'Las contraseñas no coinciden.';
+    avisar('Las contraseñas no coinciden.');
     return;
   }
 
   if (!passwordRegex.test(trimmedPassword)) {
-    errorMessage.value = 'La contraseña debe tener mínimo 8 caracteres, incluyendo una mayúscula, una minúscula, un número y un símbolo.';
+    avisar('La contraseña debe tener mínimo 8 caracteres, incluyendo una mayúscula, una minúscula, un número y un símbolo.');
     return;
   }
 
@@ -160,11 +159,11 @@ export default {
       role_fk: form.role
     });
 
-    alert(response.data.message);
+    await notificar(response.data.message, 'success');
     window.location.href = '/Login';
   } catch (error) {
     console.error(error);
-    errorMessage.value = error.response?.data?.message || 'Hubo un error al registrar el usuario.';
+    notificar(error.response?.data?.message || 'Hubo un error al registrar el usuario.', 'error');
   }
 };
 
@@ -174,7 +173,7 @@ export default {
       window.location.href = '/';
     };
 
-    return { form, confirmRegistro, goBack, errorMessage };
+    return { form, confirmRegistro, goBack };
   }
 };
 

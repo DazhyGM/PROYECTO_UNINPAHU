@@ -1,11 +1,11 @@
 <template>
-  <div class="row mb-2">
-    <ul class="nav col-12 justify-content-center mx-auto">
-      <h1 class="titulo-header">Detalles del Servicio</h1>
-    </ul>
+  <div class="page-top">
+    <router-link to="/Services" class="page-back">Regresar</router-link>
+    <h1 class="titulo-header">Detalles del Servicio</h1>
   </div>
 
-  <div class="container-service mt-5 text-white">
+  <SkeletonCarga v-if="cargando" tipo="detalle" />
+  <div v-else class="container-service mt-5 text-white">
     <div class="card p-4 text-white">
       <h2 class="text-center mb-4">{{ service.name_service }}</h2>
 
@@ -23,10 +23,6 @@
         </div>
       </div>
 
-      <!-- Botón volver -->
-      <div class="text-center mt-4">
-        <router-link to="/Services" class="btn btn-volver">Volver a Servicios</router-link>
-      </div>
     </div>
   </div>
 </template>
@@ -35,21 +31,27 @@
 import { ref, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { getServiceById } from '@/services/servicesApi';
+import { notificar } from '@/utils/alerts';
+import SkeletonCarga from '@/components/ui/SkeletonCarga.vue';
 
 const route = useRoute();
 const router = useRouter();
 const service = ref({});
+const cargando = ref(true);
 
 // Obtener datos del servicio
 const fetchService = async () => {
+  cargando.value = true;
   try {
     const id = route.params.id;
     if (!id) throw new Error("ID no proporcionado");
     service.value = await getServiceById(id);
   } catch (error) {
     console.error("Error al obtener el servicio:", error);
-    alert("No se pudo cargar el servicio.");
+    notificar("No se pudo cargar el servicio.");
     router.push('/Services');
+  } finally {
+    cargando.value = false;
   }
 };
 

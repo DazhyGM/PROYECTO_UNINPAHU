@@ -10,13 +10,12 @@ const userRoutes = require('./routes/userRoutes');
 const serviceRoutes = require('./routes/serviceRoutes');
 const quoteRoutes = require('./routes/quotesRoutes');
 const productRoutes = require('./routes/productRoutes');
-const shoppingCartRoutes = require('./routes/shoppingCartRoutes');
 const ratingRoutes = require('./routes/ratingRoutes');
 const assistantRoutes = require('./routes/assistantRoutes');
 
 
 const app = express();
-app.use(cors());
+app.use(cors({ exposedHeaders: ['x-new-token'] }));
 app.use(express.json());
 
 app.use('/uploads', express.static('uploads'));
@@ -63,8 +62,7 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 app.use('/api/users', userRoutes);
 app.use('/api/services', serviceRoutes);
 app.use('/api/quotes', quoteRoutes);
-app.use('/api/products', productRoutes)
-app.use('/api/cart', shoppingCartRoutes);
+app.use('/api/products', productRoutes);
 app.use('/api/ratings', ratingRoutes);
 app.use('/api/assistant', assistantRoutes);
 

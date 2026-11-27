@@ -3,12 +3,88 @@
   margin: 28px auto 40px;
 }
 
-.reportes-header h1 {
+.reportes-header.page-top {
+  width: 100%;
   margin: 0 0 18px;
+}
+
+.reportes-header h1 {
+  margin: 0;
   color: #f4e7c4;
   font-size: 2.4rem;
   font-weight: 400;
   text-align: center;
+}
+
+.atajos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.atajos button {
+  padding: 7px 12px;
+  color: #f4e7c4;
+  background: #0c0c0c;
+  border: 1px solid rgba(204, 175, 84, 0.45);
+  border-radius: 999px;
+  cursor: pointer;
+}
+
+.atajos button.activo,
+.atajos button:hover {
+  color: #111111;
+  background: #ccaf54;
+}
+
+.busqueda-reporte {
+  width: 100%;
+  min-height: 42px;
+  padding: 8px 12px;
+  color: #ffffff;
+  background: #0c0c0c;
+  border: 1px solid rgba(204, 175, 84, 0.45);
+  border-radius: 10px;
+}
+
+.tabla-reporte {
+  margin-top: 22px;
+}
+
+.tabla-vacia {
+  margin: 0;
+  padding: 28px 16px;
+  color: #cfcfcf;
+  text-align: center;
+  background: #111111;
+  border: 1px solid rgba(204, 175, 84, 0.4);
+  border-radius: 18px;
+}
+
+.tabla-reporte table {
+  width: 100%;
+  border-collapse: collapse;
+  color: #f4e7c4;
+  background: #111111;
+  border: 1px solid rgba(204, 175, 84, 0.4);
+  border-radius: 18px;
+  overflow: hidden;
+}
+
+.tabla-reporte th,
+.tabla-reporte td {
+  padding: 10px 12px;
+  text-align: left;
+  border-bottom: 1px solid rgba(204, 175, 84, 0.18);
+}
+
+.tabla-reporte th {
+  color: #ccaf54;
+  font-weight: 600;
+}
+
+.table-responsive {
+  overflow-x: auto;
 }
 
 .reportes-nav {

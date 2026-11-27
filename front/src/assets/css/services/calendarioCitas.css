@@ -34,7 +34,21 @@
 .left-column {
   flex: 2;
   margin-right: 20px;
-  min-width: 300px;
+  min-width: min(300px, 100%);
+}
+
+@media (max-width: 720px) {
+  .left-column,
+  .right-column {
+    flex: 1 1 100%;
+    max-width: 100%;
+    min-width: 0;
+    margin-right: 0;
+  }
+
+  .main-content {
+    padding: 12px;
+  }
 }
 
 .right-column {

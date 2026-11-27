@@ -2,13 +2,13 @@
   <div class="factura-container">
     <div class="factura-content">
       <div class="factura-wrapper">
+        <button class="page-back" type="button" @click="volver">Regresar</button>
         <p class="mini-title">MysticalCut</p>
         <h1 class="resumen-title">Resumen Servicio</h1>
         <ResumenSeleccion :services="serviciosVisibles" :barber-name="barberName" :date="date" :time="time"
           :email="userEmail">
           <template #actions>
             <button class="confirmar-btn" @click="confirmarCita">Confirmar Cita</button>
-            <button class="volver-btn" @click="volver">Volver / Editar Cita</button>
           </template>
         </ResumenSeleccion>
       </div>
@@ -22,6 +22,7 @@ import {
   sendQuoteEmail
 } from '@/services/quotesApi';
 import ResumenSeleccion from '@/components/services/ResumenSeleccion.vue';
+import { notificar } from '@/utils/alerts';
 
 export default {
   name: 'FacturaServicios',
@@ -135,18 +136,18 @@ export default {
       try {
 
         if (!this.userId || !this.barberId) {
-          alert('Faltan datos del usuario o del barbero.');
+          notificar('Faltan datos del usuario o del barbero.');
           return;
         }
 
         if (!this.date || !this.time) {
-          alert('Faltan la fecha o la hora de la cita.');
+          notificar('Faltan la fecha o la hora de la cita.');
           return;
         }
 
         if (!this.servicioSeleccionado?.id &&
           !this.servicioSeleccionado?.id_services) {
-          alert('No se encontró el servicio seleccionado.');
+          notificar('No se encontró el servicio seleccionado.');
           return;
         }
 
@@ -167,10 +168,11 @@ export default {
         const enviado = await this.enviarCorreo();
 
         if (enviado) {
-          alert('Cita confirmada correctamente y correo enviado ✅');
+          await notificar('Cita confirmada correctamente y correo enviado', 'success');
         } else {
-          alert(
-            'Cita confirmada correctamente, pero hubo un problema con el correo ⚠️'
+          await notificar(
+            'Cita confirmada correctamente, pero hubo un problema con el correo',
+            'warning'
           );
         }
 
@@ -187,11 +189,11 @@ export default {
         });
 
         if (error.response?.data?.message) {
-          alert(error.response.data.message);
+          notificar(error.response.data.message);
         } else if (error.response?.status === 409) {
-          alert('El barbero ya tiene una cita en ese horario.');
+          notificar('El barbero ya tiene una cita en ese horario.');
         } else {
-          alert(
+          notificar(
             'No fue posible confirmar la cita: ' +
             (error.response?.data?.message || error.message)
           );

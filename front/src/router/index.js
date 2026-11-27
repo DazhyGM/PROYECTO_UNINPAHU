@@ -1,4 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router';
+import { notificar } from '@/utils/alerts';
+import { leerUsuario } from '@/services/sesionLocal';
+import { cerrarSesion, validarSesion } from '@/services/sesion';
 
 //Home
 const Index = () => import('@/views/home/HomeIndex.vue');
@@ -37,7 +40,8 @@ const Products = () => import('@/views/products/ProductsView.vue');
 const ProductsInactives = () => import('@/views/products/ProductsInactives.vue');
 const CrearProducto = () => import('@/views/products/CrearProducto.vue');
 const EditarProducto = () => import('@/views/products/EditarProducto.vue');
-const CartView = () => import('@/views/products/CartView.vue');
+const AsignarInsumos = () => import('@/views/products/AsignarInsumos.vue');
+const CierreTurno = () => import('@/views/products/CierreTurno.vue');
 
 //Errors
 const ErrorAuth = () => import('@/views/errors/ErrorAuth.vue');
@@ -85,7 +89,8 @@ const routes = [
   { path: '/ProductsInactives', component: ProductsInactives, meta: { title: 'Insumos inactivos | MysticalCut', requiresAuth: true, roles: ['Admin'] } },
   { path: '/Create-Products', component: CrearProducto, meta: { title: 'Crear insumo | MysticalCut', requiresAuth: true, roles: ['Admin'] } },
   { path: '/Edit-Products/:id', component: EditarProducto, meta: { title: 'Editar insumo | MysticalCut', requiresAuth: true, roles: ['Admin'] } },
-  { path: '/Cart', component: CartView, meta: { title: 'Carrito | MysticalCut', requiresAuth: true, roles: ['Admin'] } },
+  { path: '/Asignar-Insumos', component: AsignarInsumos, meta: { title: 'Asignar insumos | MysticalCut', requiresAuth: true, roles: ['Admin'] } },
+  { path: '/Cierre-Turno', component: CierreTurno, meta: { title: 'Cierre de turno | MysticalCut', requiresAuth: true, roles: ['Employee'] } },
 
   //Errores
   { path: '/error', component: ErrorAuth, meta: { title: 'Error 404 | MysticalCut', hideLayout: true } },
@@ -109,28 +114,37 @@ router.afterEach((to) => {
   }
 });
 //Protección de rutas
-router.beforeEach((to, from, next) => {
-  const user = JSON.parse(localStorage.getItem('user'));
+router.beforeEach(async (to, from, next) => {
+  const habiaSesion = Boolean(localStorage.getItem('token') || localStorage.getItem('user'));
+  const activa = await validarSesion();
+  const user = activa ? leerUsuario() : null;
+  const entradaPublica = to.path === '/' || to.path === '/Login';
+
+  if (activa && user && entradaPublica) {
+    next('/Home');
+    return;
+  }
 
   if (to.meta.requiresAuth) {
     if (!user) {
-      if (to.path.startsWith('/Calificar')) {
+      if (habiaSesion || to.path.startsWith('/Calificar')) {
         next({ path: '/Login', query: { redirect: to.fullPath } });
       } else {
         next('/error');
       }
-    } else if ((to.meta.roles || (to.meta.role ? [to.meta.role] : null)) && !(to.meta.roles || [to.meta.role]).includes(user.role)) {
-      localStorage.removeItem('user');
-      localStorage.removeItem('token');
-
-      alert('No tienes permisos para acceder a esta página. Sesión cerrada.');
-      next('/errorRole');
-    } else {
-      next();
+      return;
     }
-  } else {
-    next();
+
+    const roles = to.meta.roles || (to.meta.role ? [to.meta.role] : null);
+    if (roles && !roles.includes(user.role)) {
+      await cerrarSesion();
+      notificar('No tienes permisos para acceder a esta página. Sesión cerrada.', 'error');
+      next('/errorRole');
+      return;
+    }
   }
+
+  next();
 });
 
 

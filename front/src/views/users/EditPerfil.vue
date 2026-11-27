@@ -1,9 +1,8 @@
 <template>
   <div>
-    <div class="row mb-2">
-      <ul class="nav col-12 justify-content-center mx-auto">
-        <h1 class="titulo-header">Editar perfil</h1>
-      </ul>
+    <div class="page-top">
+      <button class="page-back" type="button" @click="goBack">Regresar</button>
+      <h1 class="titulo-header">Editar perfil</h1>
     </div>
   </div>
 
@@ -58,7 +57,6 @@
 
       <button type="submit" class="btn button-guardar">Guardar Cambios</button>
     </form>
-    <button class="btn back-button" @click="goBack">Regresar</button>
   </div>
 
 </template>
@@ -68,6 +66,7 @@ import { reactive, ref, onMounted, computed } from 'vue';
 import axios from 'axios';
 import { useRoute, useRouter } from 'vue-router';
 import SelectCampo from '@/components/ui/SelectCampo.vue';
+import { notificar } from '@/utils/alerts';
 
 export default {
   components: { SelectCampo },
@@ -100,7 +99,7 @@ export default {
       try {
         const token = localStorage.getItem('token');
         if (!token) {
-          alert('No tienes autorización. Inicia sesión de nuevo.');
+          notificar('No tienes autorización. Inicia sesión de nuevo.');
           router.push('/Login');
           return;
         }
@@ -119,20 +118,20 @@ export default {
         form.docType = user.type_document_id;
       } catch (error) {
         console.error('Error al cargar el usuario:', error);
-        alert('No se pudo cargar la información del usuario.');
+        notificar('No se pudo cargar la información del usuario.');
       }
     });
 
     const confirmEdit = async () => {
       if (form.password.trim() !== form.confirmPassword.trim()) {
-        alert('Las contraseñas no coinciden');
+        notificar('Las contraseñas no coinciden');
         return;
       }
 
       try {
         const token = localStorage.getItem('token');
         if (!token) {
-          alert('No tienes autorización. Inicia sesión de nuevo.');
+          notificar('No tienes autorización. Inicia sesión de nuevo.');
           router.push('/Login');
           return;
         }
@@ -153,11 +152,11 @@ export default {
           { headers: { Authorization: `Bearer ${token}` } }
         );
 
-        alert(response.data.message);
+        await notificar(response.data.message);
         router.push('/Perfil');
       } catch (error) {
         console.error('Error al editar el usuario:', error);
-        alert('Hubo un error al editar el usuario.');
+        notificar('Hubo un error al editar el usuario.');
       }
     };
 

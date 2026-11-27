@@ -46,6 +46,8 @@ router.get('/inactive', authenticateToken, serviceController.getInactiveServices
  */
 router.put('/activate/:id', authenticateToken, serviceController.activateService);
 
+router.get('/popular', authenticateToken, serviceController.getPopularServices);
+
 /**
  * @swagger
  * /api/services:

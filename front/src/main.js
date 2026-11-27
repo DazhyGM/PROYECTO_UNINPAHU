@@ -2,6 +2,7 @@ import { createApp } from 'vue'
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'font-awesome/css/font-awesome.min.css';
 import 'bootstrap/dist/js/bootstrap.bundle.min.js';
+import 'sweetalert2/dist/sweetalert2.min.css';
 import '@/assets/css/style.css'
 
 

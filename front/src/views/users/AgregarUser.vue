@@ -1,8 +1,7 @@
 <template>
-  <div>
-    <ul class="nav col-12 justify-content-center mx-auto">
-      <h1 class="titulo-header">Agregar Usuario</h1>
-    </ul>
+  <div class="page-top">
+    <button class="page-back" type="button" @click="goBack">Regresar</button>
+    <h1 class="titulo-header">Agregar Usuario</h1>
   </div>
 
   <div class="add-user-container">
@@ -54,7 +53,6 @@
 
       <button type="submit" class="btn button-add-user">Agregar Usuario</button>
     </form>
-    <button class="back-button" @click="goBack">Regresar</button>
   </div>
 </template>
 
@@ -64,6 +62,7 @@ import axios from 'axios';
 import SelectCampo from '@/components/ui/SelectCampo.vue';
 import HorarioBarbero from '@/components/users/HorarioBarbero.vue';
 import { defaultSchedules, schedulesPayload, validateSchedules } from '@/utils/barberSchedule';
+import { notificar } from '@/utils/alerts';
 
 export default {
   components: { SelectCampo, HorarioBarbero },
@@ -89,7 +88,7 @@ export default {
 
     const confirmRegistro = async () => {
       if (form.password.trim() !== form.confirmPassword.trim()) {
-        alert('Las contraseñas no coinciden');
+        notificar('Las contraseñas no coinciden');
         return;
       }
 
@@ -97,7 +96,7 @@ export default {
       if (isBarber) {
         const scheduleError = validateSchedules(form.schedules);
         if (scheduleError) {
-          alert(scheduleError);
+          notificar(scheduleError);
           return;
         }
       }
@@ -115,12 +114,12 @@ export default {
           schedules: isBarber ? schedulesPayload(form.schedules) : []
         });
 
-        alert(response.data.message);
+        await notificar(response.data.message);
         console.log(response.data);
         window.location.href = '/Users';
       } catch (error) {
         console.error(error);
-        alert(error.response?.data?.message || 'Hubo un error al registrar el usuario');
+        notificar(error.response?.data?.message || 'Hubo un error al registrar el usuario');
       }
     };
 

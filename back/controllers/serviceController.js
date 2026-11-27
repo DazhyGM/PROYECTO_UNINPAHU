@@ -2,6 +2,17 @@ const fs = require('fs');
 const path = require('path');
 const ServiceModel = require('../models/serviceModel');
 
+exports.getPopularServices = (req, res) => {
+  const limit = 4;
+  ServiceModel.getPopularServices(limit, (err, results) => {
+    if (err) {
+      console.error('Error al obtener los servicios populares:', err);
+      return res.status(500).json({ error: 'Error al obtener los servicios populares' });
+    }
+    res.json(results);
+  });
+};
+
 // Obtener todos los servicios activos
 exports.getAllServices = (req, res) => {
   ServiceModel.getAllActiveServices((err, results) => {

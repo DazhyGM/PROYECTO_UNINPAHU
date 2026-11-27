@@ -15,6 +15,7 @@ const {
     resetPassword,
     getBarbers,
     getUserByEmail,
+    getSessionUser,
     filterUsersByRole,
     deleteAccount,
     activateUser,
@@ -25,6 +26,7 @@ const {
     saveForBarber,
     deleteForBarber
 } = require('../models/barberScheduleModel');
+const { abrir, cerrar, responderCerrada } = require('../services/sesionesActivas');
 
 class UserController {
 
@@ -127,10 +129,11 @@ class UserController {
                 await activateUser(user.user_id);
             }
 
+            const sid = abrir(user.user_id);
             const token = jwt.sign(
-                { id: user.user_id, role: user.role_name },
+                { id: user.user_id, role: user.role_name, sid },
                 process.env.JWT_SECRET,
-                { expiresIn: '1h' }
+                { expiresIn: '1h', algorithm: 'HS256' }
             );
 
             res.json({
@@ -145,6 +148,33 @@ class UserController {
 
         } catch (error) {
             res.status(500).json({ message: 'Error al iniciar sesión', error: error.message });
+        }
+    }
+
+    async logoutUser(req, res) {
+        cerrar(req.user?.sid);
+        res.status(200).json({ message: 'Sesión cerrada' });
+    }
+
+    async sessionStatus(req, res) {
+        try {
+            const user = await getSessionUser(req.user.id);
+            const bloqueada = !user || user.userStatus_fk === 2 || user.userStatus_fk === 4;
+            const rolDistinto = user && user.role_name !== req.user.role;
+            if (bloqueada || rolDistinto) {
+                cerrar(req.user.sid);
+                return responderCerrada(res);
+            }
+
+            res.status(200).json({
+                ok: true,
+                user: {
+                    id: user.user_id,
+                    role: user.role_name,
+                },
+            });
+        } catch (error) {
+            res.status(500).json({ message: 'No se pudo comprobar la sesión' });
         }
     }
 
@@ -346,6 +376,7 @@ class UserController {
     async deleteAccount(req, res) {
         try {
             const result = await deleteAccount(req.user.id);
+            cerrar(req.user?.sid);
             res.status(200).json(result);
         } catch (error) {
             res.status(500).json({ message: 'Error al eliminar la cuenta', error });

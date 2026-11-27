@@ -1,8 +1,19 @@
 const express = require('express');
 const router = express.Router();
 const productController = require('../controllers/productController');
+const insumoController = require('../controllers/insumoController');
 const authenticate = require('../middlewares/authenticate');
-const upload = require('../middlewares/upload'); // Multer para subir imágenes
+const upload = require('../middlewares/upload');
+
+const subirImagen = (req, res, next) => {
+  upload.single('image')(req, res, (error) => {
+    if (!error) return next();
+    const mensaje = error.code === 'LIMIT_FILE_SIZE'
+      ? 'La imagen no puede superar 5 MB.'
+      : (error.message || 'No se pudo subir la imagen.');
+    res.status(400).json({ error: mensaje });
+  });
+};
 
 /**
  * @swagger
@@ -24,6 +35,10 @@ const upload = require('../middlewares/upload'); // Multer para subir imágenes
  *         description: Lista de productos
  */
 router.get('/', authenticate, productController.getProducts);
+router.get('/asignaciones/mias', authenticate, insumoController.miDotacion);
+router.get('/asignaciones/:barberoId', authenticate, insumoController.verAsignacion);
+router.put('/asignaciones/:barberoId', authenticate, insumoController.guardarAsignacion);
+router.post('/consumo', authenticate, insumoController.registrarConsumo);
 
 /**
  * @swagger
@@ -99,7 +114,7 @@ router.get('/:id', authenticate, productController.getProductById);
  *       201:
  *         description: Producto creado
  */
-router.post('/create', authenticate, upload.single('image'), productController.createProduct);
+router.post('/create', authenticate, subirImagen, productController.createProduct);
 
 /**
  * @swagger
@@ -140,7 +155,7 @@ router.post('/create', authenticate, upload.single('image'), productController.c
  *       200:
  *         description: Producto actualizado
  */
-router.put('/:id', authenticate, upload.single('image'), productController.updateProduct);
+router.put('/:id', authenticate, subirImagen, productController.updateProduct);
 
 /**
  * @swagger

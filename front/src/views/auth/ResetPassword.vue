@@ -19,38 +19,35 @@
       <input v-model="confirmPassword" type="password" placeholder="Confirma la contraseña" required />
       <button class="btn btn-update" type="submit">Actualizar Contraseña</button>
     </form>
-    <p v-if="message">{{ message }}</p>
   </div>
 </template>
 
 <script>
 import { resetPassword } from '@/services/api.js';
+import { notificar } from '@/utils/alerts';
 
 export default {
   data() {
     return {
       newPassword: '',
-      confirmPassword: '',
-      message: ''
+      confirmPassword: ''
     };
   },
   methods: {
     async resetPassword() {
       if (this.newPassword !== this.confirmPassword) {
-        this.message = '❌ Las contraseñas no coinciden';
+        notificar('Las contraseñas no coinciden', 'warning');
         return;
       }
 
       try {
         const token = this.$route.params.token;
         const response = await resetPassword(token, this.newPassword);
-        this.message = response.message;
-
-        alert("✅ Contraseña cambiada exitosamente.");
+        await notificar(response.message || 'Contraseña cambiada exitosamente.', 'success');
         this.$router.push("/login");
 
       } catch (error) {
-        this.message = '❌ Ocurrió un error, intenta nuevamente';
+        notificar('Ocurrió un error, intenta nuevamente', 'error');
         console.error("Error en resetPassword:", error);
       }
     }

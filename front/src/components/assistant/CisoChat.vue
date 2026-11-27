@@ -71,7 +71,8 @@
 </template>
 
 <script>
-import { NOMBRE_CISO, crearSesionCiso, responderCiso, saludoCiso, sugerenciasDe } from '@/services/cisoEngine';
+import { NOMBRE_CISO, crearSesionCiso, responderCiso, saludoCiso, sugerenciasIniciales } from '@/services/cisoEngine';
+import { validarSesion } from '@/services/sesion';
 
 const ESPERA_CIERRE = 60000;
 const LECTURA_DESPEDIDA = 1800;
@@ -108,6 +109,7 @@ export default {
       esperaCierre: null,
       despedida: null,
       despedidaId: null,
+      revision: 0,
     };
   },
   computed: {
@@ -123,33 +125,44 @@ export default {
   mounted() {
     this.sincronizarSesion();
     window.addEventListener('storage', this.sincronizarSesion);
+    window.addEventListener('sesion-cambiada', this.sincronizarSesion);
     window.addEventListener('keydown', this.alPulsarTecla);
   },
   beforeUnmount() {
     this.cancelarCierre();
     window.removeEventListener('storage', this.sincronizarSesion);
+    window.removeEventListener('sesion-cambiada', this.sincronizarSesion);
     window.removeEventListener('keydown', this.alPulsarTecla);
   },
   methods: {
-    sincronizarSesion() {
-      const token = localStorage.getItem('token');
-      const crudo = localStorage.getItem('user');
-      if (!token || !crudo) {
-        this.cancelarCierre();
-        this.visible = false;
-        this.abierto = false;
-        this.mensajes = [];
-        this.sesion = null;
-        this.usuarioClave = '';
+    ocultar() {
+      this.cancelarCierre();
+      this.visible = false;
+      this.abierto = false;
+      this.mensajes = [];
+      this.sesion = null;
+      this.usuarioClave = '';
+    },
+    async sincronizarSesion() {
+      this.revision += 1;
+      const revision = this.revision;
+      const activa = await validarSesion();
+      if (revision !== this.revision) return;
+      if (!activa) {
+        this.ocultar();
         return;
       }
 
+      const crudo = localStorage.getItem('user');
       let usuario = null;
       try {
         usuario = JSON.parse(crudo);
       } catch (error) {
-        this.visible = false;
-        this.abierto = false;
+        this.ocultar();
+        return;
+      }
+      if (!usuario) {
+        this.ocultar();
         return;
       }
 
@@ -175,7 +188,9 @@ export default {
       if (!this.sesion) return;
       this.abierto = true;
       if (!this.mensajes.length) {
-        this.mensajes.push(this.mensajeDe('ciso', saludoCiso(this.sesion)));
+        const saludo = this.mensajeDe('ciso', saludoCiso(this.sesion));
+        this.mensajes.push(saludo);
+        this.ponerSugerencias(saludo.id);
       }
       this.$nextTick(() => {
         this.bajar();
@@ -254,11 +269,14 @@ export default {
           this.mensajes.push(this.mensajeDe('ciso', mensaje));
         });
         if (entregados.some((mensaje) => mensaje.listo)) {
+          const ultimo = this.mensajes[this.mensajes.length - 1];
+          const opciones = ultimo?.opciones || [];
+          if (ultimo) ultimo.opciones = [];
           this.mensajes.push({
             id: this.siguienteId(),
             autor: 'ciso',
             texto: '¿Puedo ayudarte en algo más?',
-            opciones: sugerenciasDe(this.sesion.usuario.role),
+            opciones,
           });
           this.programarCierre();
         }
@@ -271,6 +289,16 @@ export default {
       } finally {
         this.pensando = false;
         this.$nextTick(this.bajar);
+      }
+    },
+    async ponerSugerencias(id) {
+      try {
+        const opciones = await sugerenciasIniciales(this.sesion);
+        const mensaje = this.mensajes.find((item) => item.id === id);
+        if (!mensaje || this.hayInteraccion) return;
+        mensaje.opciones = opciones;
+      } catch (error) {
+        console.warn('Ciso:', error?.message || 'sin sugerencias');
       }
     },
     mensajeDe(autor, mensaje) {

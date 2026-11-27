@@ -24,6 +24,11 @@ export const createRating = async (payload) => {
   return response.data;
 };
 
+export const getBarberRatings = async () => {
+  const response = await axios.get(`${RATINGS_API_URL}/barberos`, getAuthHeaders());
+  return response.data;
+};
+
 export const getRatingMetrics = async () => {
   const response = await axios.get(`${RATINGS_API_URL}/metrics`, getAuthHeaders());
   return response.data;
