@@ -44,7 +44,7 @@ export default {
         const token = this.$route.params.token;
         const response = await resetPassword(token, this.newPassword);
         await notificar(response.message || 'Contraseña cambiada exitosamente.', 'success');
-        this.$router.push("/login");
+        this.$router.push("/Login");
 
       } catch (error) {
         notificar('Ocurrió un error, intenta nuevamente', 'error');

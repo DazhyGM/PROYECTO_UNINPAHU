@@ -82,7 +82,7 @@ export const login = async (email, password) => {
 // 🔹 Obtener datos del usuario autenticado
 export const getUserData = async (token) => {
     try {
-        const response = await API.get(`${API_URL}/profile`, {
+        const response = await API.get('/users/profile', {
             headers: { Authorization: `Bearer ${token}` },
         });
         return response.data;
@@ -98,7 +98,7 @@ export const getUserData = async (token) => {
 export const getUsers = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await API.get(`${API_URL}/users`, {
+      const response = await API.get('/users/users', {
         headers: {
           Authorization: `Bearer ${token}`
         }
@@ -117,7 +117,7 @@ export const getUsers = async () => {
 export const getUserById = async (userId) => {
   try {
     const token = localStorage.getItem('token');
-    const response = await API.get(`${API_URL}/users/${userId}`, {
+    const response = await API.get(`/users/users/${userId}`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
@@ -133,7 +133,7 @@ export const getUserById = async (userId) => {
 // 🔹 Actualizar usuario
 export const updateUser = async (id, userData) => {
     try {
-        const response = await API.put(`${API_URL}/${id}`, userData);
+        const response = await API.put(`/users/${id}`, userData);
         return response.data;
     } catch (error) {
         throw 'Error al actualizar el usuario';
@@ -146,7 +146,7 @@ export const updateUserStatus = async (id, status) => {
     const token = localStorage.getItem('token');
 
     const response = await API.put(
-      `${API_URL}/users/status/${id}`,
+      `/users/users/status/${id}`,
       { userStatus_fk: status },
       {
         headers: { Authorization: `Bearer ${token}` }
@@ -170,7 +170,7 @@ export const deleteUser = async (id) => {
     }
   
     try {
-      await API.delete(`${API_URL}/users/${id}`, {
+      await API.delete(`/users/users/${id}`, {
         headers: {
           Authorization: `Bearer ${token}`,  
         }
@@ -184,7 +184,7 @@ export const deleteUser = async (id) => {
   //Mostrar usuarios inactivos
   export const getInactiveUsers = async () => {
     try {
-        const response = await API.get(`${API_URL}/inactives`);
+        const response = await API.get('/users/inactives');
         return response.data;
     } catch (error) {
         console.error(error);

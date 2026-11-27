@@ -24,7 +24,7 @@
 
         <div class="links">
           <a href="/forgotPassword">Recuperar contraseña</a>
-          <a href="/register">¿No tienes usuario? Regístrate aquí</a>
+          <a href="/Register">¿No tienes usuario? Regístrate aquí</a>
         </div>
       </form>
     </section>
@@ -71,11 +71,12 @@ const logIn = async () => {
     }
 
     await notificar("Inicio de sesión exitoso", "success");
-    const redirect = route.query.redirect;
-    const destino = typeof redirect === 'string' && redirect.startsWith('/') && !redirect.startsWith('//')
-      ? redirect
-      : '/Home';
-    router.push(destino);
+    const redirect = typeof route.query.redirect === 'string' ? route.query.redirect : '';
+    const resuelto = redirect.startsWith('/') && !redirect.startsWith('//')
+      ? router.resolve(redirect)
+      : null;
+    const destinoValido = Boolean(resuelto && resuelto.matched.some((ruta) => ruta.path !== '/:pathMatch(.*)*'));
+    router.push(destinoValido ? redirect : '/Home');
 
   } catch (error) {
     console.error("⚠️ Error en el login:", error);

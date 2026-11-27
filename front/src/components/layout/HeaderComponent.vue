@@ -77,7 +77,7 @@ const logout = async () => {
 
 const goToProfile = () => {
   isMenuOpen.value = false;
-  router.push('/perfil');
+  router.push('/Perfil');
 };
 
 const user = ref({ full_name: '' });

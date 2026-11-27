@@ -58,7 +58,7 @@ const fetchUserData = async () => {
     const token = localStorage.getItem("token");
     if (!token) {
       console.warn("⚠️ No hay token en localStorage, redirigiendo al login.");
-      router.push('/login');
+      router.push('/Login');
       return;
     }
 
@@ -76,7 +76,7 @@ const fetchUserData = async () => {
     };
   } catch (error) {
     console.error("Error al obtener los datos del usuario:", error);
-    router.push('/login');
+    router.push('/Login');
   } finally {
     cargando.value = false;
   }

@@ -54,17 +54,17 @@ const ErrorPNF = () => import('@/views/errors/ErrorPNF.vue');
 const routes = [
   //Home
   { path: '/', component: Index, meta: { title: 'Inicio | MysticalCut', hideLayout: true } },
-  { path: '/Home', component: Home, meta: { title: 'Home | MysticalCut', requiresAuth: true, isHome: true, hideLayout: true } },
+  { path: '/Home', alias: '/home', component: Home, meta: { title: 'Home | MysticalCut', requiresAuth: true, isHome: true, hideLayout: true } },
 
   //Auth
-  { path: '/Login', component: Login, meta: { title: 'Login | MysticalCut', hideLayout: true } },
-  { path: '/Register', component: Register, meta: { title: 'Registrate | MysticalCut', hideLayout: true} },
+  { path: '/Login', alias: '/login', component: Login, meta: { title: 'Login | MysticalCut', hideLayout: true } },
+  { path: '/Register', alias: '/register', component: Register, meta: { title: 'Registrate | MysticalCut', hideLayout: true} },
   { path: '/forgotPassword', component: ForgotPassword, meta: { title: 'Recuperar Contraseña | MysticalCut', hideLayout: true } },
   { path: '/reset-password/:token', component: ResetPassword, meta: { title: 'Resetear Contraseña | MysticalCut', hideLayout: true } },
 
   //Users
   { path: '/Users', component: Users, meta: { title: 'Users | MysticalCut', requiresAuth: true, role: 'Admin' } },
-  { path: '/Perfil', component: Perfil, meta: { title: 'Perfil | MysticalCut', requiresAuth: true } },
+  { path: '/Perfil', alias: '/perfil', component: Perfil, meta: { title: 'Perfil | MysticalCut', requiresAuth: true } },
   { path: '/EditUser/:id', component: EditUser, meta: { title: 'Editar | MysticalCut', requiresAuth: true, role: 'Admin' } },
   { path: '/VerUser/:id', component: VerUser, meta: { title: 'Ver | MysticalCut', requiresAuth: true, role: 'Admin' } },
   { path: '/AgregarUser', component: AgregarUser, meta: { title: 'Agregar | MysticalCut', requiresAuth:true, role: 'Admin' } },
