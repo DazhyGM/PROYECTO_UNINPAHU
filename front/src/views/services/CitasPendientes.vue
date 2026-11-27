@@ -153,12 +153,6 @@
       </div>
     </section>
 
-<<<<<<< HEAD
-=======
-    <div class="citas-footer">
-      <button class="btn back-button" type="button" @click="$router.push('/Home')">Regresar</button>
-    </div>
-
     <CalificarCliente
       v-if="citaCliente"
       :cita="citaCliente"
@@ -166,7 +160,6 @@
       @guardada="alCalificarCliente"
       @cerrar="cerrarCalificacionCliente"
     />
->>>>>>> 69c8b0b1cb2248b10e6d8f0136764461b46540dd
   </div>
 </template>
 
@@ -174,20 +167,13 @@
 import axios from 'axios';
 import { getQuotesWithServiceDetails, cancelQuote, finishQuote } from '@/services/quotesApi';
 import SelectCampo from '@/components/ui/SelectCampo.vue';
-<<<<<<< HEAD
 import { notificar } from '@/utils/alerts';
 import SkeletonCarga from '@/components/ui/SkeletonCarga.vue';
-
-export default {
-  name: 'CitasPendientes',
-  components: { SelectCampo, SkeletonCarga },
-=======
 import CalificarCliente from '@/components/ratings/CalificarCliente.vue';
 
 export default {
   name: 'CitasPendientes',
-  components: { SelectCampo, CalificarCliente },
->>>>>>> 69c8b0b1cb2248b10e6d8f0136764461b46540dd
+  components: { SelectCampo, SkeletonCarga, CalificarCliente },
   data() {
     return {
       opcionesPagina: [
@@ -521,14 +507,6 @@ export default {
     async finalizarCita(id) {
       const cita = this.citas.find((item) => Number(item.id_quotes) === Number(id));
       try {
-<<<<<<< HEAD
-        await finishQuote(id);
-        await notificar('Cita finalizada con éxito', 'success');
-        this.$router.push('/Home');
-      } catch (error) {
-        console.error('❌ Error al finalizar cita:', error);
-        notificar('No se pudo finalizar la cita.');
-=======
         const respuesta = await finishQuote(id);
         const esSuCita = cita && Number(cita.barber_id) === Number(this.userId);
         if (esSuCita) {
@@ -539,12 +517,11 @@ export default {
           await this.cargarCitas();
           return;
         }
-        alert(respuesta.message || 'Cita finalizada con éxito');
+        await notificar(respuesta.message || 'Cita finalizada con éxito', 'success');
         this.$router.push('/Home');
       } catch (error) {
         console.error('❌ Error al finalizar cita:', error);
-        alert(error.response?.data?.message || 'No se pudo finalizar la cita.');
->>>>>>> 69c8b0b1cb2248b10e6d8f0136764461b46540dd
+        notificar(error.response?.data?.message || 'No se pudo finalizar la cita.');
       }
     }
   },

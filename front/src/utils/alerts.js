@@ -12,9 +12,9 @@ const aviso = Swal.mixin({
 
 function limpiar(texto) {
   return String(texto ?? '')
-    .replace(/✅/g, '')
-    .replace(/❌/g, '')
-    .replace(/⚠️/g, '')
+    .replace(/\u2705/g, '')
+    .replace(/\u274C/g, '')
+    .replace(/\u26A0\uFE0F?/g, '')
     .replace(/\s+/g, ' ')
     .trim();
 }

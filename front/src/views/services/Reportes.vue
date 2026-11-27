@@ -1,17 +1,7 @@
 <template>
-<<<<<<< HEAD
-  <div class="container-reporte text-white">
-    <div class="page-top">
-      <button class="page-back" type="button" @click="$router.push('/Home')">Regresar</button>
-      <h1 class="titulo-header">Reportes</h1>
-    </div>
-    <div class="mb-4">
-      <div class="row g-3 align-items-end">
-        <div class="col-md-3">
-          <label for="reportType" class="form-label">Tipo de Reporte:</label>
-=======
   <div class="reportes-page">
-    <header class="reportes-header">
+    <header class="reportes-header page-top">
+      <button class="page-back" type="button" @click="$router.push('/Home')">Regresar</button>
       <h1>Reportes</h1>
     </header>
 
@@ -45,6 +35,16 @@
       </article>
 
       <div class="dashboard-controles">
+        <div class="atajos" aria-label="Rangos rápidos">
+          <button
+            v-for="atajo in atajos"
+            :key="atajo.id"
+            type="button"
+            :class="{ activo: atajoActivo === atajo.id }"
+            @click="aplicarAtajo(atajo.id)"
+          >{{ atajo.label }}</button>
+        </div>
+
         <label class="control">
           <span>Rango de fechas</span>
           <div class="fecha-picker">
@@ -82,7 +82,6 @@
 
         <label class="control">
           <span>{{ vista === 'citas' ? 'Barbero' : 'Calificación' }}</span>
->>>>>>> 69c8b0b1cb2248b10e6d8f0136764461b46540dd
           <SelectCampo
             v-if="vista === 'citas'"
             v-model="barberoId"
@@ -97,56 +96,59 @@
           />
         </label>
 
+        <label class="control" for="busqueda-reporte">
+          <span>Buscar por texto</span>
+          <input
+            id="busqueda-reporte"
+            v-model="busqueda"
+            class="busqueda-reporte"
+            type="search"
+            placeholder="Barbero, cliente, servicio..."
+          />
+        </label>
+
         <button class="btn-descarga" type="button" :disabled="!filasInforme.length" @click="descargarExcel">
           Descargar informe
         </button>
       </div>
-<<<<<<< HEAD
-    </div>
-
-    <SkeletonCarga v-if="loading" tipo="filas" :cantidad="5" />
-    <div v-else-if="filteredCitas.length === 0" class="alert alert-info text-center">
-      No hay citas registradas para los criterios seleccionados.
-    </div>
-    
-    <div v-if="!loading" class="reporte-form-container">
-    <div class="table-responsive">
-      <table class="table table-dark table-striped">
-        <thead>
-          <tr>
-            <th>#</th>
-            <th>Fecha</th>
-            <th>Hora</th>
-            <th>Cliente</th>
-            <th>Barbero</th>
-            <th>Servicio</th>
-            <th>Valor</th>
-            <th>Estado</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="(cita, index) in filteredCitas" :key="cita.id_quotes">
-            <td>{{ index + 1 }}</td>
-            <td>{{ formatDate(cita.date_time) }}</td>
-            <td>{{ formatTime(cita.date_time) }}</td>
-            <td>{{ cita.client_name || 'N/A' }}</td>
-            <td>{{ cita.barber_name || 'N/A' }}</td>
-            <td>{{ cita.name_service || 'No disponible' }}</td>
-            <td>${{ cita.price ? cita.price.toLocaleString('es-CO') : 'N/A' }}</td>
-            <td>{{ cita.state_quotes }}</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-    </div>
-
-=======
     </section>
 
-    <div class="text-center my-4">
-      <button class="btn back-button" type="button" @click="$router.push('/Home')">Regresar</button>
-    </div>
->>>>>>> 69c8b0b1cb2248b10e6d8f0136764461b46540dd
+    <section class="tabla-reporte">
+      <SkeletonCarga v-if="cargando" tipo="filas" :cantidad="5" />
+      <p v-else-if="!citasTabla.length" class="tabla-vacia">
+        No hay citas registradas para los criterios seleccionados.
+      </p>
+      <div v-else class="table-responsive">
+        <table>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Fecha</th>
+              <th>Hora</th>
+              <th>Cliente</th>
+              <th>Barbero</th>
+              <th>Servicio</th>
+              <th>Valor</th>
+              <th>Estado</th>
+              <th>Calificación</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="(cita, index) in citasTabla" :key="cita.id_quotes || index">
+              <td>{{ index + 1 }}</td>
+              <td>{{ formatDate(cita.date_time) }}</td>
+              <td>{{ formatTime(cita.date_time) }}</td>
+              <td>{{ cita.client_name || 'N/A' }}</td>
+              <td>{{ cita.barber_name || 'N/A' }}</td>
+              <td>{{ cita.name_service || 'No disponible' }}</td>
+              <td>${{ cita.price ? Number(cita.price).toLocaleString('es-CO') : 'N/A' }}</td>
+              <td>{{ cita.state_quotes }}</td>
+              <td>{{ cita.calificacion_servicio || '—' }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
   </div>
 </template>
 
@@ -155,10 +157,8 @@ import axios from 'axios';
 import { getReportQuotes } from '@/services/quotesApi';
 import { getBarbers } from '@/services/api';
 import SelectCampo from '@/components/ui/SelectCampo.vue';
-<<<<<<< HEAD
 import SkeletonCarga from '@/components/ui/SkeletonCarga.vue';
 import { notificar } from '@/utils/alerts';
-=======
 import {
   claveDe,
   filtrarCitasReporte,
@@ -182,7 +182,13 @@ function arco(cx, cy, radio, inicio, fin) {
   const grande = fin - inicio > Math.PI ? 1 : 0;
   return `M ${cx} ${cy} L ${x0} ${y0} A ${radio} ${radio} 0 ${grande} 1 ${x1} ${y1} Z`;
 }
->>>>>>> 69c8b0b1cb2248b10e6d8f0136764461b46540dd
+
+function normalizar(texto) {
+  return String(texto || '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase();
+}
 
 export default {
   name: 'CitasReportes',
@@ -195,6 +201,14 @@ export default {
       barberos: [],
       barberoId: '',
       calificacion: '',
+      busqueda: '',
+      atajoActivo: 'daily',
+      atajos: [
+        { id: 'daily', label: 'Hoy' },
+        { id: 'weekly', label: 'Esta semana' },
+        { id: 'monthly', label: 'Este mes' },
+        { id: 'custom', label: 'Todas las citas' },
+      ],
       fechaDesde: hoy,
       fechaHasta: hoy,
       fechaPendiente: '',
@@ -219,8 +233,29 @@ export default {
         ...this.barberos.map((barbero) => ({ value: String(barbero.user_id), label: barbero.full_name })),
       ];
     },
+    citasBuscadas() {
+      const consulta = normalizar(this.busqueda);
+      if (!consulta) return this.citas;
+      return this.citas.filter((cita) => {
+        return [cita.client_name, cita.barber_name, cita.name_service]
+          .some((campo) => normalizar(campo).includes(consulta));
+      });
+    },
+    citasTabla() {
+      return this.citasBuscadas.filter((cita) => {
+        if (this.vista === 'citas' && this.barberoId && String(cita.barber_id) !== String(this.barberoId)) {
+          return false;
+        }
+        if (this.vista === 'calidad') {
+          const nota = Number(cita.calificacion_servicio);
+          if (!nota) return false;
+          if (this.calificacion && String(nota) !== String(this.calificacion)) return false;
+        }
+        return true;
+      });
+    },
     citasFiltradas() {
-      return filtrarCitasReporte(this.citas, {
+      return filtrarCitasReporte(this.citasBuscadas, {
         vista: this.vista,
         barberoId: this.barberoId,
         calificacion: this.calificacion,
@@ -255,6 +290,7 @@ export default {
       });
     },
     textoRango() {
+      if (this.fechaDesde === '2000-01-01' && this.fechaHasta === '2099-12-31') return 'Todas las citas';
       return textoRangoInforme(this.fechaDesde, this.fechaHasta);
     },
     tituloMes() {
@@ -291,6 +327,7 @@ export default {
     },
     elegirDia(celda) {
       if (!celda) return;
+      this.atajoActivo = '';
       if (!this.fechaPendiente) {
         this.fechaPendiente = celda.clave;
         this.fechaDesde = celda.clave;
@@ -307,16 +344,52 @@ export default {
       this.cargarCitas();
     },
     elegirHoy() {
-      const hoy = claveDe(new Date());
-      this.fechaDesde = hoy;
-      this.fechaHasta = hoy;
-      this.fechaPendiente = '';
-      this.mesVista = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
+      this.aplicarAtajo('daily');
       this.calendarioAbierto = false;
+    },
+    aplicarAtajo(tipo) {
+      const hoy = new Date();
+      this.atajoActivo = tipo;
+      this.fechaPendiente = '';
+      this.calendarioAbierto = false;
+
+      if (tipo === 'weekly') {
+        const day = hoy.getDay();
+        const diff = hoy.getDate() - day + (day === 0 ? -6 : 1);
+        const inicio = new Date(hoy.getFullYear(), hoy.getMonth(), diff);
+        const fin = new Date(inicio);
+        fin.setDate(inicio.getDate() + 6);
+        this.fechaDesde = claveDe(inicio);
+        this.fechaHasta = claveDe(fin);
+      } else if (tipo === 'monthly') {
+        this.fechaDesde = claveDe(new Date(hoy.getFullYear(), hoy.getMonth(), 1));
+        this.fechaHasta = claveDe(new Date(hoy.getFullYear(), hoy.getMonth() + 1, 0));
+      } else if (tipo === 'custom') {
+        this.fechaDesde = '2000-01-01';
+        this.fechaHasta = '2099-12-31';
+      } else {
+        const clave = claveDe(hoy);
+        this.fechaDesde = clave;
+        this.fechaHasta = clave;
+      }
+
+      this.mesVista = new Date(hoy.getFullYear(), hoy.getMonth(), 1);
       this.cargarCitas();
     },
     cerrarCalendario(event) {
       if (!event.target.closest('.fecha-picker')) this.calendarioAbierto = false;
+    },
+    formatDate(dateString) {
+      if (!dateString) return 'Fecha no disponible';
+      return new Date(dateString).toLocaleDateString('es-CO', {
+        day: '2-digit', month: '2-digit', year: 'numeric',
+      });
+    },
+    formatTime(dateString) {
+      if (!dateString) return 'Hora no disponible';
+      return new Date(dateString).toLocaleTimeString('es-CO', {
+        hour: '2-digit', minute: '2-digit',
+      });
     },
     async cargarCitas() {
       this.cargando = true;
@@ -324,6 +397,12 @@ export default {
         this.citas = await getReportQuotes(this.fechaDesde, this.fechaHasta);
       } catch (error) {
         console.error('No se pudo cargar el reporte:', error);
+        if (error.response && error.response.status === 403) {
+          notificar('No tienes permisos para ver este reporte. Debes iniciar sesión.');
+          this.$router.push('/');
+        } else {
+          notificar('No se pudo cargar el reporte de citas.');
+        }
         this.citas = [];
       } finally {
         this.cargando = false;
@@ -338,165 +417,40 @@ export default {
       }
     },
     async descargarExcel() {
-      await descargarInforme({
-        vista: this.vista,
-        citas: this.citas,
-        fechaDesde: this.fechaDesde,
-        fechaHasta: this.fechaHasta,
-        barberoId: this.barberoId,
-        barberos: this.barberos,
-        calificacion: this.calificacion,
-      });
+      try {
+        await descargarInforme({
+          vista: this.vista,
+          citas: this.citasBuscadas,
+          fechaDesde: this.fechaDesde,
+          fechaHasta: this.fechaHasta,
+          barberoId: this.barberoId,
+          barberos: this.barberos,
+          calificacion: this.calificacion,
+        });
+      } catch (error) {
+        console.error('No se pudo descargar el informe:', error);
+        notificar('No se pudo descargar el informe.');
+      }
     },
     async checkUserRole() {
       const token = localStorage.getItem('token');
       if (!token) {
+        notificar('No se ha iniciado sesión.');
         this.$router.push('/');
         return false;
       }
       try {
-<<<<<<< HEAD
-        const token = localStorage.getItem('token');
-        if (!token) {
-          notificar("No se ha iniciado sesión.");
-          this.$router.push('/');
-          return false;
-        }
-
-        const { data: userData } = await axios.get('http://localhost:5000/api/users/profile', {
-          headers: { Authorization: `Bearer ${token}` }
-=======
         await axios.get('http://localhost:5000/api/users/profile', {
           headers: { Authorization: `Bearer ${token}` },
->>>>>>> 69c8b0b1cb2248b10e6d8f0136764461b46540dd
         });
         return true;
       } catch (error) {
-<<<<<<< HEAD
         console.error('Error al verificar el rol del usuario:', error);
-        notificar("Error al verificar la sesión. Por favor, inicie sesión de nuevo.");
-=======
->>>>>>> 69c8b0b1cb2248b10e6d8f0136764461b46540dd
+        notificar('Error al verificar la sesión. Por favor, inicie sesión de nuevo.');
         this.$router.push('/');
         return false;
       }
     },
-<<<<<<< HEAD
-    async loadReport() {
-      if (!this.startDate || !this.endDate) {
-        if (this.selectedReportType === 'custom') {
-          notificar("Por favor, selecciona las fechas de inicio y fin para el reporte personalizado.");
-        }
-        return;
-      }
-
-      this.loading = true;
-      try {
-        const reportes = await getReportQuotes(this.startDate, this.endDate);
-        this.citas = reportes;
-      } catch (error) {
-        console.error('❌ Error al cargar el reporte de citas:', error);
-        if (error.response && error.response.status === 403) {
-          notificar("No tienes permisos para ver este reporte. Debes iniciar sesión.");
-          this.$router.push('/');
-        } else {
-          notificar("No se pudo cargar el reporte de citas.");
-        }
-        this.citas = [];
-      } finally {
-        this.loading = false;
-      }
-    },
-    applyFilters() {
-      // La propiedad computada `filteredCitas` se actualizará automáticamente.
-    },
-    resetFilters() {
-      this.selectedReportType = 'custom';
-      this.searchText = '';
-      this.startDate = '2000-01-01';
-      this.endDate = '2099-12-31';
-      this.loadReport();
-    },
-    getTodayDates() {
-      const today = new Date();
-      const start = new Date(today.setHours(0, 0, 0, 0));
-      const end = new Date(today.setHours(23, 59, 59, 999));
-      return { start, end };
-    },
-    getWeekDates() {
-      const today = new Date();
-      const dayOfWeek = today.getDay();
-      const diff = today.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1);
-
-      const startOfWeek = new Date(today.setDate(diff));
-      startOfWeek.setHours(0, 0, 0, 0);
-
-      const endOfWeek = new Date(startOfWeek);
-      endOfWeek.setDate(startOfWeek.getDate() + 6);
-      endOfWeek.setHours(23, 59, 59, 999);
-
-      return { start: startOfWeek, end: endOfWeek };
-    },
-    getMonthDates() {
-      const today = new Date();
-      const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
-      startOfMonth.setHours(0, 0, 0, 0);
-
-      const endOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
-      endOfMonth.setHours(23, 59, 59, 999);
-
-      return { start: startOfMonth, end: endOfMonth };
-    },
-    formatDateForInput(date) {
-      if (!date) return null;
-      const d = new Date(date);
-      let month = '' + (d.getMonth() + 1);
-      let day = '' + d.getDate();
-      const year = d.getFullYear();
-
-      if (month.length < 2) month = '0' + month;
-      if (day.length < 2) day = '0' + day;
-
-      return [year, month, day].join('-');
-    },
-    updateDatesForReportType() {
-      let dates;
-      switch (this.selectedReportType) {
-        case 'daily':
-          dates = this.getTodayDates();
-          break;
-        case 'weekly':
-          dates = this.getWeekDates();
-          break;
-        case 'monthly':
-          dates = this.getMonthDates();
-          break;
-        case 'custom':
-          this.startDate = '2000-01-01';
-          this.endDate = '2099-12-31';
-          this.loadReport();
-          return;
-        default:
-          return;
-      }
-      this.startDate = this.formatDateForInput(dates.start);
-      this.endDate = this.formatDateForInput(dates.end);
-      this.loadReport();
-    },
-    formatDate(dateString) {
-      if (!dateString) return 'Fecha no disponible';
-      return new Date(dateString).toLocaleDateString('es-CO', {
-        day: '2-digit', month: '2-digit', year: 'numeric'
-      });
-    },
-    formatTime(dateString) {
-      if (!dateString) return 'Hora no disponible';
-      return new Date(dateString).toLocaleTimeString('es-CO', {
-        hour: '2-digit', minute: '2-digit'
-      });
-    },
-=======
->>>>>>> 69c8b0b1cb2248b10e6d8f0136764461b46540dd
   },
   async mounted() {
     const acceso = await this.checkUserRole();

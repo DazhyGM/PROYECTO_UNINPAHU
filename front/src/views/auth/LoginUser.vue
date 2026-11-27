@@ -69,19 +69,12 @@ const logIn = async () => {
       sessionStorage.removeItem("barberCitasModal");
     }
 
-<<<<<<< HEAD
     await notificar("Inicio de sesión exitoso", "success");
-    router.push("/Home");
-=======
     const redirect = route.query.redirect;
     const destino = typeof redirect === 'string' && redirect.startsWith('/') && !redirect.startsWith('//')
       ? redirect
       : '/Home';
-
-    setTimeout(() => {
-      router.push(destino);
-    }, 1000);
->>>>>>> 69c8b0b1cb2248b10e6d8f0136764461b46540dd
+    router.push(destino);
 
   } catch (error) {
     console.error("⚠️ Error en el login:", error);
