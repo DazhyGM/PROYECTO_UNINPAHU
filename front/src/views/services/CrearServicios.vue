@@ -157,7 +157,7 @@ export default {
     };
 
     const regresar = () => {
-      router.push('/editarServiciosADM');
+      router.push('/Services');
     };
 
     return {

@@ -84,9 +84,9 @@ exports.getUserById = (id) => {
             user.phone, 
             user.role_fk, 
             user.userStatus_fk,
-            userStatus.userStatus_name 
+            userstatus.userStatus_name 
         FROM user 
-        JOIN userStatus ON user.userStatus_fk = userStatus.userStatus_id
+        JOIN userstatus ON user.userStatus_fk = userstatus.userStatus_id
         WHERE user.user_id = ?
     `;
     return new Promise((resolve, reject) => {

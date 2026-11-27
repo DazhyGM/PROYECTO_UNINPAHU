@@ -72,7 +72,7 @@ const routes = [
   { path: '/usersInactives', component: UsersInactives, meta: { title: 'Usuarios Inactivos | MysticalCut', requiresAuth: true, role: 'Admin' } },
 
   //Services
-  { path: '/Services', component: Service, meta: { title: 'Servicios | MysticalCut' } },
+  { path: '/Services', alias: '/services', component: Service, meta: { title: 'Servicios | MysticalCut' } },
   { path: '/Create-Services', component: CrearServicios , meta: { title: 'Crear Servicios | MysticalCut' } },
   { path: '/Editar-Services/:id', component: EditarServicios , meta: { title: 'Editar Servicios | MysticalCut' } },
   { path: '/Services-Inactivos', component: ServicesInactivos , meta: { title: 'Servicios inactivos| MysticalCut' } },
@@ -80,7 +80,7 @@ const routes = [
   { path: '/Select-Barbero', component: SeleccionarBarbero , meta: { title: 'Seleccionar Barbero | MysticalCut', hideLayout: true } },
   { path: '/Calendario', component: CalendarioCitas , meta: { title: 'Calendario | MysticalCut', hideLayout: true } },
   { path: '/FacturaServicios', component: FacturaServicios , meta: { title: 'factura | MysticalCut', hideLayout: true } },
-  { path: '/Citas', component: CitasPendientes , meta: { title: 'Citas | MysticalCut', requiresAuth: true } },
+  { path: '/Citas', alias: '/citas', component: CitasPendientes , meta: { title: 'Citas | MysticalCut', requiresAuth: true } },
   { path: '/Calificar/:id', component: CalificarCita, meta: { title: 'Calificar | MysticalCut', requiresAuth: true } },
   { path: '/Reportes', component: Reportes , meta: { title: 'Reportes | MysticalCut', requiresAuth: true, role: 'Admin'  } },
 

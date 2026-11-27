@@ -74,7 +74,7 @@ export default {
 
       if (!facturaData) {
         console.error('No se encontraron datos de factura en localStorage');
-        this.$router.push('/error-factura');
+        this.$router.push('/Services');
         return;
       }
 
@@ -99,7 +99,7 @@ export default {
 
       } catch (error) {
         console.error('Error al procesar datos de factura:', error);
-        this.$router.push('/error-factura');
+        this.$router.push('/Services');
       }
     },
     async enviarCorreo() {
@@ -178,7 +178,7 @@ export default {
 
         localStorage.removeItem('facturaData');
 
-        this.$router.push('/citas');
+        this.$router.push('/Citas');
 
       } catch (error) {
 

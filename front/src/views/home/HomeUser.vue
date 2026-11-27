@@ -109,7 +109,7 @@
         </div>
       </div>
       <div class="text-center mt-4">
-        <a href="/services" class="btn btn-custom">Agenda tu cita</a>
+        <a href="/Services" class="btn btn-custom">Agenda tu cita</a>
       </div>
 
     </div>
